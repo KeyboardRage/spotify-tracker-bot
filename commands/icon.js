@@ -70,7 +70,7 @@ module.exports = {
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd} <search term(s)> ["--all"]\``)
 			.addField("Valid arguments", "Result shows first 20 icon results.\nThe `--all` flag *includes* results that aren't necessarily licensed as CC0 *(public domain)*.")
-			.addField("Examples", `\`${doc.prefix}${this.cmd} boat --false\`\n\`${doc.prefix}${this.cmd} phone 3\`\n\`${doc.prefix}${this.cmd} tree 2 --false\``);
+			.addField("Examples", `\`${doc.prefix}${this.cmd} boat --all\`\n\`${doc.prefix}${this.cmd} phone\`\n\`${doc.prefix}${this.cmd} tree --all\``);
 		return msg.channel.send(embed);
 	}
 };
