@@ -1,0 +1,51 @@
+{
+	"guild_invite": "https://discord.gg/pnfYGVe",
+	"bot_invite": "https://discordapp.com/api/oauth2/authorize?client_id=232224611847241729&permissions=388288&scope=bot",
+	"client": {
+		"messageCacheMaxSize":10,
+		"messageCacheLifetime":60,
+		"messageSweepInterval":60,
+		"retryLimit":20,
+		"disabledEvents": [
+			"TYPING_START",
+			"VOICE_SERVER_UPDATE",
+			"VOICE_STATE_UPDATE",
+			"USER_NOTE_UPDATE",
+			"CHANNEL_PINS_UPDATE",
+			"RELATIONSHIP_ADD",
+			"RELATIONSHIP_REMOVE",
+			"GUILD_SYNC",
+			"GUILD_UPDATE",
+			"GUILD_ROLE_CREATE",
+			"GUILD_ROLE_UPDATE",
+			"GUILD_BAN_ADD",
+			"GUILD_BAN_REMOVE",
+			"CHANNEL_DELETE",
+			"CHANNEL_UPDATE",
+			"MESSAGE_DELETE",
+			"MESSAGE_UPDATE",
+			"MESSAGE_DELETE_BULK",
+			"MESSAGE_REACTION_REMOVE_ALL",
+			"MESSAGE_REACTION_REMOVE",
+			"USER_UPDATE",
+			"USER_SETTINGS_UPDATE",
+			"PRESENCE_UPDATE"
+		]
+	},
+	"notifyErrors":true,
+	"notifyErrorsChannel": "622231942204620821",
+	"notifyChannel": "589524709553602560",
+	"kill_signatures": ["SIGINT", "SIGTERM", "SIGQUIT"],
+	"messages": {
+		"cmd_locked":"**Unique session:** The session for this command is already in use.",
+		"user_locked":"**Unique session:** You cannot execute commands until you finish your onging session.",
+		"dm_only":"**Denied:** This command can only be used in guilds.",
+		"no_permission":"**Denied:** You do not have the necessary permissions for this command."
+	},
+	"colors": {
+		"red":"cd1818",
+		"green":"46A024",
+		"theme":"#b78d3b"
+	},
+	"bypassedCommands": ["settings channel", "settings channel enable"]
+}

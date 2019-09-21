@@ -1,0 +1,46 @@
+{
+  "name": "grafik-bot_v2",
+  "version": "1.0.0",
+  "description": "A discord bot for designer and artists with various useful tools",
+  "main": "bot.js",
+  "dependencies": {
+    "@sentry/node": "^5.6.2",
+    "chalk": "^2.4.2",
+    "discord.js": "^11.5.1",
+    "dotenv": "^8.1.0",
+    "html-entities": "^1.2.1",
+    "iso8601-duration": "^1.2.0",
+    "jimp": "^0.8.2",
+    "mongoose": "^5.7.1",
+    "mustache": "^3.1.0",
+    "node-lipsum": "^1.0.1",
+    "redis": "^2.8.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
+    "sharp": "^0.23.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeyboardRage/Grafik-bot.git"
+  },
+  "keywords": [
+    "Grafik",
+    "bot",
+    "discord",
+    "design",
+    "graphic",
+    "artist",
+    "illustrator",
+    "DiscordJS"
+  ],
+  "author": "\"Grafik\",",
+  "license": "SEE LICENSE IN license.md",
+  "bugs": {
+    "url": "https://github.com/KeyboardRage/Grafik-bot/issues"
+  },
+  "homepage": "https://github.com/KeyboardRage/Grafik-bot#readme"
+}
