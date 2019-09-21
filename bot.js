@@ -20,7 +20,6 @@ masterCacheLoader()
 //================================
 Client.on("ready", () => {
 	console.info(chalk.black.bgGreen(" ✓ ") + chalk.green(` Logged in as ${Client.user.tag}`));
-	Client.user.setActivity("But upgrade in process. Expect unresponsiveness.", {type:"WATCHING"});
 });
 Client.on("message", async msg => {
 	if(msg.author.bot||msg.content.length>500) return;

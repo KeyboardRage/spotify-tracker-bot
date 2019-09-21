@@ -30,7 +30,7 @@ module.exports = {
 				msg.channel.startTyping();
 				let res;
 				try {
-					res = await request(`https://api.grafik-bot.net/v1/icon?icon=${args}&cc0=${!meta.all}&page=1`, {json:true, timeout:5000});
+					res = await request(`${process.env.NEW_API}${process.env.API_VERSION}/icon?icon=${args}&cc0=${!meta.all}&page=1`, {json:true, timeout:5000});
 					if(typeof(res) === "string") {
 						res = JSON.parse(res);
 					}
