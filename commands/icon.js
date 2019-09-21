@@ -43,7 +43,7 @@ module.exports = {
 				if (res.hasOwnProperty("err") && res.err) {
 					meta.stop = true;
 					msg.channel.stopTyping();
-					return message.edit(res.msg);
+					return message.edit(res.message);
 				}
 				res.meta = meta;
 				res.meta.author_id = msg.author.id;
