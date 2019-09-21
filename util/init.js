@@ -125,8 +125,9 @@ async function cacher_bans() {
 					});
 				}
 			});
-			
+			let bans = false;
 			if(globalBans.length!==0) {
+				bans = true;
 				RedisDB.sadd(["global_bans", ...globalBans], (err,res) => {
 					if(err) return reject(err);
 					console.info(chalk.black.bgGreen(" ✓ ")+ " Global bans cached. N:" + globalBans.length);
@@ -134,6 +135,7 @@ async function cacher_bans() {
 				});
 			}
 			if(localBans.length!==0) {
+				bans = true;
 				localBans.forEach((bans,server) => {
 					RedisDB.sadd([`bans:${server}`, ...bans], (err, res) => {
 						if(err) return reject(err);
@@ -141,6 +143,10 @@ async function cacher_bans() {
 					});
 					console.info(chalk.black.bgGreen(" ✓ ") + " Local bans cached.");
 				});
+			}
+			if(!bans) {
+				console.info(chalk.black.bgGreen(" ✓ ") + " No bans to cache.");
+				return resolve(null);
 			}
 		});
 	});
