@@ -12,7 +12,7 @@ module.exports = {
 	exec(msg) {
 		msg.channel.send("Pulling…")
 			.then(message => {
-				exec("git pull", (err, stdout, stderr) => {
+				exec("git pull bot v2", (err, stdout, stderr) => {
 					if(err) throw err;
 					if(stderr) {
 						console.log("Stderr:");
