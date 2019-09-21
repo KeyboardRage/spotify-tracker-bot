@@ -140,6 +140,7 @@ async function action(message, data, reply) {
 		return loop(message, data, null, action);
 	} else if (!isNaN(reply)) {
 		try {
+			reply = parseInt(reply)-1;
 			let icon = await jimp.read(data.iconMap["icon_"+reply].image)
 				.then(image => {
 					return image
