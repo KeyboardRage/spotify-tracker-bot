@@ -5,7 +5,7 @@ module.exports = {
 	cmd: "vote",
 	aliases: ["vote"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.user,
 	dm:true,
 	desc: "Get link(s) to pages where you can vote for the bot.",
 	exec(msg) {
@@ -14,7 +14,7 @@ module.exports = {
 			.setTimestamp(Date())
 			.setColor(process.env.THEME)
 			.setFooter(msg.author.tag, msg.author.avatarURL)
-			.addField("Vote for the bot", "If ya' like the bot, consider voting.")
+			.addField("Vote for the bot", "If ya' like the bot, consider voting!")
 			.addField("Link(s)", "Discord Bots: https://discordbots.org/bot/232224611847241729/vote");
 		return msg.channel.send(embed);
 	},
