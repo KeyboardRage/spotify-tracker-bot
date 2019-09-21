@@ -62,7 +62,7 @@ module.exports = {
 			}
 		});
 		msg.channel.startTyping();
-		request.post(`https://app.grafik-bot.net/v1/watermark`, {form: options}, (err, res, body) => {
+		request.post(`${process.env.NEW_API}${process.env.API_VERSION}/watermark`, {form: options}, (err, res, body) => {
 			if(err) {
 				console.error(err);
 				msg.channel.stopTyping();
@@ -75,11 +75,11 @@ module.exports = {
 
 				if (body.err) {
 					msg.channel.stopTyping();
-					msg.channel.send(body.msg);
+					msg.channel.send(body.message);
 					return
 				}
 				msg.channel.stopTyping();
-				msg.channel.send(body.msg);
+				msg.channel.send(body.message);
 			}
 		});
 	},
