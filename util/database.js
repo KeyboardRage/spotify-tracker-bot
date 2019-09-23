@@ -194,7 +194,7 @@ let filesSubSchema = new mongoose.Schema({
 	"date": Date,
 	"size": String,
 	"meta": Number
-})
+});
 
 // Order template: master
 let orderSchema = new mongoose.Schema({

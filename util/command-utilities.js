@@ -533,7 +533,7 @@ async function findUser(msg, input, sameGuild=true) {
 	}
 
 	// By name
-	let u = (sameGuild) ? msg.guild.members.find(u => u.user.username === input) : msg.client.find(u => u.username === input);
+	let u = (sameGuild) ? msg.guild.members.find(u => u.user.username.toLowerCase() === input.toLowerCase()) : msg.client.find(u => u.username.toLowerCase() === input.toLowerCase());
 	if (u) return u;
 	return null;
 }

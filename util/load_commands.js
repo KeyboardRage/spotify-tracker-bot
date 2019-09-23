@@ -70,7 +70,7 @@ class Command {
 					}
 				}
 			}], (err, docs) => {
-				// Errors. Should return TRUE (Default: ACCESS.user) to let people at least use User commands
+				// Errors should return TRUE (Default: ACCESS.user) to let people at least use User commands
 				if (err) {
 					console.error(`ERROR → PermissionChecker.FindById: ${msg.author.id} failed: `, err);
 					return resolve({grant:this.permissionLevel & ACCESS.user, userLevel:parseInt(ACCESS.user)});
@@ -78,7 +78,8 @@ class Command {
 				
 				let userLevel = Number();
 				// Server Settings check:
-				// Is a guild, and not DM, and the command is not user level and permission is everyone (in which case skip)
+				// Guild doc exist, and not DM, and the (command is not user level and permission is everyone 
+				//										(in which case it'd skip and give access, cuz @everyone has access to user commands))
 				if (doc && msg.channel.type!=="dm" &&
 				doc.permission && doc.moderator &&
 				(doc.permission.value !== msg.guild.id && this.permissionLevel===ACCESS.user)) {
@@ -93,7 +94,7 @@ class Command {
 							// Role is inherit.
 							let role = msg.guild.roles.get(doc[(type===1)?"permission":"moderator"].value);
 							if(!role) userLevel = 0;
-							else if (role.possition<=hasRole.position) userLevel= (type===1)?ACCESS.user:ACCESS.user+ACCESS.mod;// User's role position is equal to or higher than required
+							else if (role.position<=hasRole.position) userLevel= (type===1)?ACCESS.user:ACCESS.user+ACCESS.mod;// User's role position is equal to or higher than required
 							else userLevel = 0; // Position too low
 						}
 					} else userLevel = 0;
