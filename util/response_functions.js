@@ -305,8 +305,10 @@ async function _parse_message(/**@type {"msg"}*/msg) {
 		message = await _sanitize_message(message);
 		let args = message.split(" ");
 		let cmd = args.shift();
-
-		return resolve({cmd:cmd,args:args,doc:doc.toObject()});
+		try {
+			doc = doc.toObject();
+		} catch (_) {}
+		return resolve({cmd:cmd,args:args,doc:doc});
 	});
 }
 
