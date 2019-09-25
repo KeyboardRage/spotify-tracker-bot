@@ -222,7 +222,8 @@ let reviewsScema = new mongoose.Schema({
 
 // Order template: buyer/seller
 let marketUserSchema = new mongoose.Schema({
-	"discord": String,
+	"_id": String, // User Discord ID
+	"discord": String, // Discord Tag?
 	"title": String,
 	"name": String,
 	"purchases": Number,
@@ -230,7 +231,8 @@ let marketUserSchema = new mongoose.Schema({
 	"reviews": [reviewsScema],
 	"open": Array,
 	"email": String,
-	"flags": Number // Random boolean info?
+	"flags": Number, // Random boolean info?
+	"last_updated": Date
 }, {collection: "marketUsers"});
 let marketUserModel = maindb.model("marketUserModel", marketUserSchema);
 module.exports.marketUserModel = marketUserModel;

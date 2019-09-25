@@ -27,7 +27,7 @@ Client.on("message", async msg => {
 	let {cmd,args,doc} = await fn.parse_message(msg);
 	cmd = await fn.check_alias(Client, cmd);
 	if(!cmd) return;
-	if(await fn.user_locked(msg, cmd));
+	if(await fn.user_locked(msg, cmd)) return;
 	if(msg.channel.type==="dm" && !Client.commands[cmd].dm) return msg.channel.send(config.messages.dm_only);
 	if(msg.channel.type!=="dm" && await fn.disabled(msg.channel.id, cmd, args, doc)) return;
 	fn.catch_new(msg.channel.id, cmd, doc);
