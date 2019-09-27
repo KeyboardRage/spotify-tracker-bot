@@ -100,7 +100,7 @@ class Command {
 					} else userLevel = 0;
 				} else userLevel = ACCESS.user;
 
-				if (msg.member.hasPermission("ADMINISTRATOR")) userLevel = parseInt(userLevel) + parseInt(ACCESS.mod) + parseInt(ACCESS.admin); // If user is Admin, also give mod+admin perms
+				if (msg.channel.type!=="dm" && msg.member.hasPermission("ADMINISTRATOR")) userLevel = parseInt(userLevel) + parseInt(ACCESS.mod) + parseInt(ACCESS.admin); // If user is Admin, also give mod+admin perms
 
 				// Return permission level. 0 means no access, so it stops.
 				if(!docs.length) return resolve({grant:this.permissionLevel & userLevel, userLevel:parseInt(userLevel)});
