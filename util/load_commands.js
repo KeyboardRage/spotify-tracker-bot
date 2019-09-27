@@ -55,7 +55,7 @@ class Command {
 			// UID's are unique, so store their ID's as the MongoDB ID (_id)
 			permsModel.aggregate([{
 				$match: {$or: [
-					{_id:"global"}, {_id:msg.guild.id}
+					{_id:"global"}, {_id:(msg.channel.type!=="dm")?msg.guild.id:null}
 				]}
 			},{
 				$project: {
