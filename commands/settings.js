@@ -393,7 +393,7 @@ function command(msg, args, doc) {
 		}
 
 		// Is it a high level perm command?
-		if(msg.client.commands[realCmd].permissionLevel & (ACCESS.mod+ACCESS.admin+ACCESS.community+ACCESS.premium+ACCESS.dev+ACCESS.owner)) {
+		if(msg.client.commands[realCmd].permissionLevel & (ACCESS.mod+ACCESS.admin+ACCESS.community+ACCESS.premium+ACCESS.dev+ACCESS.owner)||realCmd==="help") {
 			msg.channel.send("**Invalid argument:** Cannot disable moderator commands and higher.");
 			return;
 		}
