@@ -97,7 +97,7 @@ async function _remove_guild(/**@type {"Guild"}*/guild) {
 		if(!doc) return;
 
 		try {
-			_notify(guild.client, `The bot was removed from a guild with ${members} members and ${bots} bots!\nNow serving ${totalMembers} members and bots.\n**Guild name:** ${guild.name}\n**Guild ID:** \`${guild.id}\`\n**Guild owner:** ${guild.owner} (\`${guild.owner.id}\`)`, "#cd1818");
+			_notify(guild.client, `The bot was removed from a guild with ${members} members and ${bots} bots!\nNow serving ${totalMembers} members and bots.\n**Guild name:** ${guild.name}\n**Guild ID:** \`${guild.id}\`\n**Guild owner:** ${guild.owner} (${guild.owner.tag} \`${guild.owner.id}\`)`, "#cd1818");
 		} catch(err) {
 			throw err;
 		}

@@ -140,8 +140,7 @@ function save(msg, document, mixer, errorMessage, message, consoleErrorMessage, 
 	document.save(err => {
 		if(err) {
 			if(errorMessage) msg.channel.send(errorMessage);
-			console.log(`[${Date()}] ${(consoleErrorMessage) ? consoleErrorMessage : errorMessage}`);
-			console.error(err);
+			console.error(`[${Date()}] ${(consoleErrorMessage) ? consoleErrorMessage : errorMessage}`, err);
 			return;
 		}
 		if(message) msg.channel.send(message);
