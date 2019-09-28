@@ -377,19 +377,23 @@ async function _disabled(/**@type {String}*/channel_id, /**@type {String}*/cmd, 
 	});
 }
 
-async function _catch_new(/**@type {String}*/channel_id, /**@type {String}*/cmd, /**@type {Object}*/doc) {
+async function _catch_new(/**@type {String}*/msg, /**@type {String}*/cmd, /**@type {Object}*/doc) {
 	// Adds new commands/channels to the guild's settings
 	let save = 0;
-	if(!doc.enabledCommands.hasOwnProperty(cmd)) save = 2;
-	if(!doc.enabledChannels.hasOwnProperty(channel_id)) save += 4;
-	if(save) {
-		let d = await _get_doc(doc._id);
-		if(d) {
-			if(save&2) {d.enabledCommands[cmd] = true; d.markModified("enabledCommands");}
-			if(save&4) {d.enabledChannels[channel_id] = true; d.markModified("enabledChannels");}
-			d.save(err => {
-				if(err) throw err;
-			});
+	// Add to guild's enabled/disabled only if guild
+	if(msg.channel.type!=="dm") {
+		if(!doc.enabledCommands.hasOwnProperty(cmd)) save = 2;
+		if(!doc.enabledChannels.hasOwnProperty(msg.channel.id)) save += 4;
+	
+		if(save) {
+			let d = await _get_doc(doc._id);
+			if(d) {
+				if(save&2) {d.enabledCommands[cmd] = true; d.markModified("enabledCommands");}
+				if(save&4) {d.enabledChannels[msg.channel.id] = true; d.markModified("enabledChannels");}
+				d.save(err => {
+					if(err) throw err;
+				});
+			}
 		}
 	}
 }
@@ -472,7 +476,7 @@ module.exports = {
 		return await _disabled(channel_id, cmd, args, doc);
 	},
 
-	catch_new: async function(/**@type {String}*/channel_id, /**@type {String}*/cmd, /**@type {Object}*/doc) {
-		return await _catch_new(channel_id, cmd, doc);
+	catch_new: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {Object}*/doc) {
+		return await _catch_new(msg, cmd, doc);
 	}
 };

@@ -30,7 +30,7 @@ Client.on("message", async msg => {
 	if(!await fn.user_locked(msg, cmd)) return;
 	if(msg.channel.type==="dm" && !Client.commands[cmd].dm) return msg.channel.send(config.messages.dm_only);
 	if(msg.channel.type!=="dm" && await fn.disabled(msg.channel.id, cmd, args, doc)) return;
-	fn.catch_new(msg.channel.id, cmd, doc);
+	fn.catch_new(msg, cmd, doc);
 
 	doc.level = await Client.commands[cmd].permission(msg, doc);
 	if(process.env.DEBUG==="true") console.log(doc.level);
