@@ -9,18 +9,25 @@ module.exports = {
 	cooldown: {min: 8},
 	permissionLevel: ACCESS.user,
 	dm:true,
+	daccess: [""],
 	desc: "Search textures on Pexels by keyword(s).",
 	async exec(msg, cmd, args) {
 
 		if(args.length === 0) {
 			return msg.channel.send("**Missing argument:** You must give me keyword(s) to search for!");
 		}
+		let validArgs = Array();
+		args.forEach(arg => {
+			arg = arg.replace(/[^a-zA-Z0-9-]/g,"");
+			if(arg.length) validArgs.push(arg);
+		});
+		if (!validArgs.length) return msg.channel.send("**Missing argument:** There was nothing left of your search string after removing invalid characters.");
 
 		// Initialize reused data
 		let reuseData = {
 			author: msg.author,
 			imgno: 0,
-			args: args
+			args: validArgs
 		}
 		msg.channel.startTyping();
 		// Sets Data and Available and pass entire reuseData
@@ -57,7 +64,7 @@ module.exports = {
 			})
 			.catch(e => {
 				console.error(e);
-				fn.notifyErr(msg.client, err);
+				fn.notifyErr(msg.client, e);
 				msg.channel.stopTyping();
 				return msg.channel.send("Could not process your request ATM. Try again later.");
 			});
@@ -87,7 +94,7 @@ async function editEmbed(reuseData, message, Discord, action) {
 	//TODO: Make cache expiration in backend.
 	let newEmbed = new Discord.RichEmbed(message.embeds[0])
 		.setImage(reuseData.data[reuseData.imgno].image)
-		.setFooter(`${reuseData.author.tag} • Showing image ${reuseData.imgno+1} of ${reuseData.available}`, msg.author.avatarURL); //TODO: Some anomaly here. What if not that many images? Use array length instead.
+		.setFooter(`${reuseData.author.tag} • Showing image ${reuseData.imgno+1} of ${reuseData.available}`, reuseData.author.avatarURL); //TODO: Some anomaly here. What if not that many images? Use array length instead.
 	newEmbed.fields[0].value = `Photo by [${reuseData.data[reuseData.imgno].user}](${reuseData.data[reuseData.imgno].profile.replace(" ","%20")}) from [${reuseData.data[reuseData.imgno].sitename}](${reuseData.data[reuseData.imgno].url})\n[Download](${reuseData.data[reuseData.imgno].download})`;
 	message.edit(newEmbed)
 	.then(message => {

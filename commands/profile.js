@@ -10,6 +10,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner,
 	dm: true,
+	daccess: [""],
 	desc: "Show a user's Grafik profile",
 	async exec(msg, cmd, args) {
 		if(args[0]===undefined) {

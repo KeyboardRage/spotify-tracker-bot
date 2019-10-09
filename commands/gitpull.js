@@ -8,6 +8,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner,
 	dm:true,
+	daccess: [""],
 	desc: "Pulls new version from Github and restarts the bot with the update",
 	exec(msg) {
 		msg.channel.send("Pulling…")

@@ -7,6 +7,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm:true,
+	daccess: [""],
 	desc: "Calculation between PPI, Pixel dimensions, or real life size to get the unknown value.",
 	exec(msg, cmd, args, doc) {
 		

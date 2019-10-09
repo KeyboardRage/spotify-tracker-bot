@@ -7,6 +7,7 @@ module.exports = {
 	cooldown: {min: 3},
 	permissionLevel: ACCESS.user,
 	dm:true,
+	daccess: [""],
 	desc: "Gives brief general information regarding the bot.",
 	exec(msg, cmd, args, doc) {
 		if(args[0]!=="premium") {

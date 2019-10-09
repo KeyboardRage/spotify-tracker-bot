@@ -8,7 +8,8 @@ module.exports = {
 	aliases: ["colorconvert", "color"],
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
-	dm:true,
+	dm: true,
+	daccess: ["ATTACH_FILES", "EMBED_LINKS"],
 	desc: "Takes a colour and outputs other formats of that color, and a preview.",
 	exec(msg, cmd, args) {
 		if(args.length === 0) return msg.channel.send("**Missing argument:** You must specify a color. Use `+color ?` for a list of valid color types.");

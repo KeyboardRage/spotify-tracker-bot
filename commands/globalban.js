@@ -12,6 +12,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.dev+ACCESS.owner,
 	dm:true,
+	daccess: [""],
 	desc: "Globally bans one or more servers or users, permanently or until a set date, with or without a reason. Available only to bot devs.",
 	exec(msg, cmd, args) {
 		//? Get duration and reason defenitions

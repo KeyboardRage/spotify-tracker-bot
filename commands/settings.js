@@ -9,6 +9,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.admin,
 	dm:false,
+	daccess: [],
 	desc: "Get and set the bot settings for this server. Roles and channels can be defined by name *(case-insensitive)*, ID, or by tag.",
 	async exec(msg, cmd, args, doc) {
 		if(args.length === 0) {

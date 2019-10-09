@@ -9,6 +9,7 @@ module.exports = {
 	cooldown: {min: 3},
 	permissionLevel: ACCESS.user,
 	dm: true,
+	daccess: [""],
 	desc: "Generates 'Lorem Ipsum' dummy text based on options/default.",
 	async exec(msg, cmg, args) {
 		let options = {

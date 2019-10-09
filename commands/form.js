@@ -14,6 +14,7 @@ module.exports = {
 	cooldown: {min: 1},
 	permissionLevel: ACCESS.mod+ACCESS.admin,
 	dm: false,
+	daccess: [""],
 	desc: "[<:Grafik:588847763341705263> Premium] Create / use a customizeable form.",
 	async exec(msg, cmd, args, doc) {
 		if (args[0] === "demo") return msg.channel.send("https://youtu.be/mzX8Eh3cd5Y");

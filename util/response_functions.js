@@ -30,6 +30,7 @@ async function _notify(/**@type {"Client"}*/Client, /**@type {String}*/message, 
 }
 
 async function _reconnect(/**@type {"Client"}*/Client) {
+	//TODO: Change to setInterval ? 
 	Client.login(process.env.BOT_TOKEN_ID)
 		.then(()=>{
 			console.log(`[${Date()}] `+chalk.green("Reconnected successfully")+" as "+Client.user.tag);		
@@ -398,6 +399,38 @@ async function _catch_new(/**@type {String}*/msg, /**@type {String}*/cmd, /**@ty
 	}
 }
 
+async function _check_self_perms(/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {String}*/prefix) {
+	//TODO: Make this shit work.
+	let to_check = [];
+	to_check = [...msg.client.commands[cmd].daccess];
+	to_check.push("SEND_MESSAGES");
+	let missing = msg.channel.permissionsFor(msg.guild.me).missing(to_check);
+	return new Promise(resolve => {
+		// Checking for "view_channel" is done intitially already.
+		// User does not need any of those permissions.	
+		console.log("To check: ", to_check);
+		console.log("Missing: ", missing);
+		if(!missing.length) return resolve(true);
+		if (missing.includes("SEND_MESSAGES")) {
+			// Try DM if bot can't send "no perms" message
+			console.log("Cannot send msg, trying DM");
+			try {
+				msg.author.send(`**Could not use command:** I do not have permission to send messages in that channel.\n*(<:Info:588844523052859392> If intentional, Admin should \`${prefix}settings channel disable ${msg.channel.id}\` in a message enabled channel instead)*`);
+			}
+			catch(_) {
+				//
+				console.log("Could not send DM");
+
+			}
+			return resolve(false);
+		} else {
+			console.log("Cannot send msg");
+			msg.channel.send("**Could not use command:** Missing these guild permissions to use the command: `"+missing.join("`, `")+"`.");
+			return resolve(false);
+		}
+	});
+}
+
 // MASTER FUNCTION EXPORT.
 module.exports = {
 	notifyErr: async function(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
@@ -478,5 +511,8 @@ module.exports = {
 
 	catch_new: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {Object}*/doc) {
 		return await _catch_new(msg, cmd, doc);
+	},
+	check_self_perms: async function (/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {String}*/prefix) {
+		return await _check_self_perms(msg, cmd, prefix);
 	}
 };

@@ -12,6 +12,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
+	daccess: [""],
 	desc: "Submits feedback on the bot, or suggest a feature.",
 	async exec(msg, cmd, args) {
 		if (args.length != 0) {

@@ -7,6 +7,7 @@ module.exports = {
 	cooldown: {min: 2},
 	permissionLevel: ACCESS.user,
 	dm:true,
+	daccess: [""],
 	desc: "Replies with the invite link for the bot.",
 	exec(msg) {
 		// The response for help on this command.

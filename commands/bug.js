@@ -11,6 +11,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
+	daccess: ["ATTACH_FILES", "EMBED_LINKS"],
 	desc: "Submits bug report on the bot. Report a bug or unexpected behaviour.",
 	async exec(msg, cmd, args) {
 		if(args.length != 0) {

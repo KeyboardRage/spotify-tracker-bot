@@ -6,6 +6,7 @@ module.exports = {
 	cooldown: {min: 3},
 	permissionLevel: ACCESS.owner,
 	dm:true,
+	daccess: [""],
 	desc: "Does a unfiltered JS eval.",
 	async exec(msg, cmd, args, doc) {
 		try {

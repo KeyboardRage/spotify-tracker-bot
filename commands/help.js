@@ -7,6 +7,7 @@ module.exports = {
 	cooldown: {min: 2},
 	permissionLevel: ACCESS.user,
 	dm:true,
+	daccess: [""],
 	desc: "Lists all commands you have access to or gets information on commands.",
 	exec(msg, cmd, args, doc) {
 		// The response for help on this command.

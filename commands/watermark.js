@@ -8,6 +8,7 @@ module.exports = {
 	cooldown: {min:8},
 	permissionLevel: ACCESS.user,
 	dm: true,
+	daccess: [""],
 	desc:"Generate a watermarked version of your image.",
 	exec(msg, cmd, args, doc) {
 		let options = {

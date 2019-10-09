@@ -23,6 +23,7 @@ Client.on("ready", () => {
 });
 Client.on("message", async msg => {
 	if(msg.author.bot||msg.content.length>500) return;
+	// if(msg.guild.me.permissions.bitfield ^ config.DACCESS.VIEW_CHANNEL) return;
 	if(await fn.check_ban((msg.channel.type!=="dm")?msg.guild.id:null, msg.author.id)) return;
 	let {cmd,args,doc} = await fn.parse_message(msg);
 	cmd = await fn.check_alias(Client, cmd);
@@ -31,7 +32,8 @@ Client.on("message", async msg => {
 	if(msg.channel.type==="dm" && !Client.commands[cmd].dm) return msg.channel.send(config.messages.dm_only);
 	if(msg.channel.type!=="dm" && await fn.disabled(msg.channel.id, cmd, args, doc)) return;
 	fn.catch_new(msg, cmd, doc);
-
+	if(msg.channel.type!=="dm" && !await fn.check_self_perms(msg, cmd, doc.prefix)) return;
+	
 	doc.level = await Client.commands[cmd].permission(msg, doc);
 	if(process.env.DEBUG==="true") console.log(doc.level);
 

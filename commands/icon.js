@@ -10,6 +10,7 @@ module.exports = {
 	cooldown: {min: 8},
 	permissionLevel: ACCESS.user,
 	dm:true,
+	daccess: [""],
 	desc: "Searches for icons on The Noun Project.",
 	async exec(msg, cmd, args, doc) {
 		if(!args.length) return msg.channel.send(`**Missing input:** You must give me keyword(s) to search for: \`${doc.prefix}icon <keyword(s)> ["--all"]\``);

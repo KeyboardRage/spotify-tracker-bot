@@ -12,6 +12,7 @@ module.exports = {
 	cooldown: {min: 20},
 	permissionLevel: ACCESS.admin,
 	dm: false,
+	daccess: [],
 	desc: "Starts the bot setup guide. Guides you though setting all the bot settings.",
 	async exec(msg, cmd, args, doc) {
 		msg.client.locks = {

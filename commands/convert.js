@@ -8,6 +8,7 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm:true,
+	daccess: [""],
 	desc: "Generic conversion of a value from unit A to unit B.",
 	exec(msg, cmd, args) {
 		if (!/^(\d+(\.\d+)?)|(\.\d+)$/.test(args[0])) return msg.reply("First argument must be the `amount`. Second is `from`, third is `to`.");
