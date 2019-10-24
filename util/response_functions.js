@@ -16,7 +16,8 @@ async function _notifyErr(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
 	}
 }
 
-async function _notify(/**@type {"Client"}*/Client, /**@type {String}*/message, /**@type {"HEX"}*/colour="#46A024", /**@type {String}*/channel=config.notifyChannel) {
+async function _notify(/**@type {"Client"}*/Client, /**@type {String}*/message, /**@type {"HEX"}*/colour="#46A024", /**@type {String}*/channel) {
+	channel = (channel)?channel:config.notifyChannel;
 	const embed = new Discord.RichEmbed()
 		.setColor(colour)
 		.setTimestamp(Date())
