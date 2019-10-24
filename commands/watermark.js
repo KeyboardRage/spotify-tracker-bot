@@ -16,7 +16,7 @@ module.exports = {
 			opacity: 50,
 			url: null
 		};
-		msg.delete();
+		if (msg.channel.type !== "dm") msg.delete();
 
 		let pass = {url: null,pass: false},
 			imageUrl = new RegExp(/^(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?(\.jpg|\.jpeg|\.png|\.webp)/, "i");

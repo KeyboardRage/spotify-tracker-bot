@@ -135,14 +135,13 @@ async function _add_guild(/**@type {"Guild"}*/guild, /**@type {"Client"}*/Client
 					bots: bots,
 					members: members,
 					botAdded: Date(),
-					botRemoved: null,
-					commandStats: "x",
+					botRemoved: null
 				});
 
 				server.save((err,new_doc)=>{
 					if(err) throw err;
 					try {
-						_notify(guild.client, `The bot was added to a guild with ${members} members and ${bots} bots!\nNow serving ${totalMembers} members and bots.\n**Guild name:** ${guild.name}\n**Guild ID:** \`${guild.id}\`\n**Guild owner:** ${guild.owner} (${guild.owner.user.tag} \`${guild.owner.id}\`)`, "#cd1818");
+						_notify(guild.client, `The bot was added to a guild with ${members} members and ${bots} bots!\nNow serving ${totalMembers} members and bots.\n**Guild name:** ${guild.name}\n**Guild ID:** \`${guild.id}\`\n**Guild owner:** ${guild.owner} (${guild.owner.user.tag} \`${guild.owner.id}\`)`);
 					} catch(err) {throw err;}
 					return resolve(new_doc);
 				});
