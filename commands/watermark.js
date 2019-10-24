@@ -16,13 +16,15 @@ module.exports = {
 			opacity: 50,
 			url: null
 		};
+		msg.delete();
+
 		let pass = {url: null,pass: false},
-			imageUrl = new RegExp(/^(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?(\.jpg|\.jpeg|\.png|\.webp)$/, "i");
+			imageUrl = new RegExp(/^(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?(\.jpg|\.jpeg|\.png|\.webp)/, "i");
 		args.forEach(arg => {
 			if(imageUrl.test(arg)) {
 				pass = {
 					pass:true,
-					url: arg
+					url: pathFromUrl(arg)
 				};
 			}
 		});
@@ -99,3 +101,7 @@ module.exports = {
 		msg.channel.send(embed);
 	}
 };
+
+function pathFromUrl(url) {
+	return url.split(/[?#]/)[0];
+}

@@ -18,11 +18,14 @@ module.exports = {
 	desc: "[<:Grafik:588847763341705263> Premium] Create / use a customizeable form.",
 	async exec(msg, cmd, args, doc) {
 		if (args[0] === "demo") return msg.channel.send("https://youtu.be/mzX8Eh3cd5Y");
-		if (!doc.premium) {
+		if (!doc.premium && !["info", "v"].includes(args[0])) {
 			return msg.channel.send("<:Grafik:588847763341705263> **Premium needed** <:Grafik:588847763341705263>\
-			\nThis guild does not have any premium features.\
+			\n**This guild does not have any premium features.**\
 			\nPremium costs $2 a month, but is currently not yet available for public.\
-			\nFor a demo video of this command, use `"+doc.prefix+"form demo`.");
+			\nCommands you can use:\
+			\n– `"+doc.prefix+"form demo` for a demo of how it works\
+			\n– `"+doc.prefix+"form v [variable]` list variables or test them\
+			\n– `"+doc.prefix+"form info` list all commands and what it does");
 		}
 
 		if(args.length===0) return this.help(msg, cmd, args, doc);
@@ -94,7 +97,7 @@ module.exports = {
 			.addField("Notes", `\`form\` and its sub-commands are meant for Admins. Normal users have the \`f\` command to use forms: \`${doc.prefix}f <form name>\` to use a form, and \`${doc.prefix}f --list\` to show list of all forms.`)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd} <"info"|action>\``)
-			.addField("Examples", `\`${doc.prefix}f my-form\` *(command for normal users)*\n\`${doc.prefix}${this.cmd} info\`\n\`${doc.prefix}${this.cmd} new my-form\`\n\`${doc.prefix}${this.cmd} +\`\n\`${doc.prefix}${this.cmd} edit channel #requests-channel\``);
+			.addField("Examples", `\`${doc.prefix}f my-form\` *(command for normal users)*\n\`${doc.prefix}${this.cmd} info\` *(list all commands)*\n\`${doc.prefix}${this.cmd} new my-form\`\n\`${doc.prefix}${this.cmd} +\`\n\`${doc.prefix}${this.cmd} edit channel #requests-channel\``);
 		msg.channel.send(embed);
 	}
 };

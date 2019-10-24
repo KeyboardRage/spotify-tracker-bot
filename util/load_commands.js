@@ -88,6 +88,8 @@ class Command {
 					// Does user have role?
 					let type = (this.permissionLevel===ACCESS.user)?1:(this.permissionLevel===ACCESS.mod)?2:0;
 					if(type) {
+						//TODO: If the role set no longer exists, it doesn't fallback to @everyone! 
+						//TODO: Additionally, add something to IGNORE those who don't even have ACCESS.user. Give warning for ACCESS.user trying higher only
 						let hasRole = msg.member.roles.find(role=>role.id===doc[(type===1)?"permission":"moderator"].value);
 						// User doesn't have role. If type is "role", then nope.
 						if(hasRole && doc[(type===1)?"permission":"moderator"].type==="role") userLevel = (type===1)?ACCESS.user:ACCESS.user+ACCESS.mod;
