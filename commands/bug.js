@@ -33,7 +33,7 @@ module.exports = {
 					msg.channel.send("An error occurred trying to submit bug report. Please try again at a later point in time.");
 					throw err;
 				} else {
-					fn.notify(msg.client, message, config.colors.red);
+					fn.notify(msg.client, message, config.colors.red, null, "586135924069367808");
 					return msg.channel.send(`\`ID: ${feedback._id}\` → Bug report successful.`);
 				}
 			});

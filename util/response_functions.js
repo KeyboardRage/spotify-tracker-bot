@@ -16,13 +16,13 @@ async function _notifyErr(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
 	}
 }
 
-async function _notify(/**@type {"Client"}*/Client, /**@type {String}*/message, /**@type {"HEX"}*/colour="#46A024") {
+async function _notify(/**@type {"Client"}*/Client, /**@type {String}*/message, /**@type {"HEX"}*/colour="#46A024", /**@type {String}*/channel=config.notifyChannel) {
 	const embed = new Discord.RichEmbed()
 		.setColor(colour)
 		.setTimestamp(Date())
 		.addField("Notification:", message);
 	try {
-		Client.channels.get(config.notifyChannel).send(embed);
+		Client.channels.get(channel).send(embed);
 	} catch (err) {
 		console.error(err);
 		return;
@@ -436,8 +436,8 @@ module.exports = {
 		return _notifyErr(Client, err);
 	},
 
-	notify: async function(/**@type {"Client"}*/Client, /**@type {String}*/message, /**@type {String}*/color) {
-		return _notify(Client, message, color);
+	notify: async function(/**@type {"Client"}*/Client, /**@type {String}*/message, /**@type {String}*/color, /**@type {String}*/channel) {
+		return _notify(Client, message, color, channel);
 	},
 
 	reconnect: async function (/**@type {"Client"}*/Client) {
