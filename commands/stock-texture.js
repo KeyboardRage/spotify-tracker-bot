@@ -12,6 +12,7 @@ module.exports = {
 	daccess: [""],
 	desc: "Search textures on Pexels by keyword(s).",
 	async exec(msg, cmd, args) {
+		return msg.channel.send("This command is temporarily disabled for today.");
 
 		if(args.length === 0) {
 			return msg.channel.send("**Missing argument:** You must give me keyword(s) to search for!");
