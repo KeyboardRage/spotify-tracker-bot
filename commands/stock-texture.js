@@ -1,5 +1,6 @@
 const request = require("request"),
 	fn = require("../util/response_functions"),
+	fs = require("fs"),
 	path = require("path"),
 	cache_path = path.join(require.main.filename, "../bucket-storage/cache/"),
 	{emotes} = require("../util/command-utilities");
