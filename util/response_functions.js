@@ -404,12 +404,14 @@ async function _check_self_perms(/**@type {"msg"}*/msg, /**@type {String}*/cmd, 
 	let to_check = [];
 	to_check = [...msg.client.commands[cmd].daccess];
 	to_check.push("SEND_MESSAGES");
+
 	let missing = msg.channel.permissionsFor(msg.guild.me).missing(to_check);
 	return new Promise(resolve => {
 		// Checking for "view_channel" is done intitially already.
 		// User does not need any of those permissions.	
 		console.log("To check: ", to_check);
 		console.log("Missing: ", missing);
+
 		if(!missing.length) return resolve(true);
 		if (missing.includes("SEND_MESSAGES")) {
 			// Try DM if bot can't send "no perms" message

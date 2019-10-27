@@ -1,8 +1,11 @@
 const request = require("request"),
 	fn = require("../util/response_functions"),
+	path = require("path"),
+	cache_path = path.join(require.main.filename, "../bucket-storage/cache/");
 	{emotes} = require("../util/command-utilities");
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
+
 module.exports = {
 	cmd: "texture",
 	aliases: ["txt", "textures"],
@@ -12,8 +15,8 @@ module.exports = {
 	daccess: [""],
 	desc: "Search textures on Pexels by keyword(s).",
 	async exec(msg, cmd, args) {
-		return msg.channel.send("This command is temporarily disabled for today.");
-
+		if (msg.author.id !== "164736401051484160") return msg.channel.send("This command is temporarily disabled while being worked on today.");
+		
 		if(args.length === 0) {
 			return msg.channel.send("**Missing argument:** You must give me keyword(s) to search for!");
 		}
@@ -34,6 +37,7 @@ module.exports = {
 		// Sets Data and Available and pass entire reuseData
 		reuseData = await getImage(reuseData)
 		.catch(e => {
+			console.log(e);
 			msg.channel.stopTyping();
 			msg.channel.send("Couldn't handle your request at this time. Try again later.");
 			console.error(e);
@@ -234,7 +238,7 @@ async function createListener(reuseData, message, Discord) {
  */
 async function getImage(reuseData) {
 	return new Promise((resolve,reject) => {
-		tryCache(reuseData.args)
+		tryCache_v2(reuseData.args)
 		.then(data => {
 			reuseData.available = data.length;
 			reuseData.data = data;
@@ -243,31 +247,55 @@ async function getImage(reuseData) {
 		.catch(e => {
 			console.error(e);
 			tryApi(reuseData.args)
-			.then(data => {
-				// Request was had no errors, but also no success, e.g. no images found.
-				if(data.hasOwnProperty("success") && data.success === false) return resolve(data);
+				.then(data => {
+					// Request was had no errors, but also no success, e.g. no images found.
+					if(data.hasOwnProperty("success") && data.success === false) return resolve(data);
 
-				reuseData.available = data.length;
-				reuseData.data = data;
-				return resolve(reuseData);
-			})
-			.catch(e => {
-				console.error(e);
-				return reject(e);
-			});
+					reuseData.available = data.length;
+					reuseData.data = data;
+					return resolve(reuseData);
+				})
+				.catch(e => {
+					console.error(e);
+					return reject(e);
+				});
 		});
 	});
 }
 
 function tryCache(args) {
+	//TODO: This no longer works because of fucking backend was taken down
+	//TODO: Re-write to write local cache instead or something. That or set up Google hosting on it
+	
 	return new Promise((resolve, reject) => {
-		request.get("https://cdn.grafik-bot.net/cache/stock-textures/" + args.join("_") +"_1"+ ".json", (err, res) => {
+		request.get("https://app.grafik-bot.net/cache/stock-textures/" + args.join("_") +"_1"+ ".json", (err, res) => {
 			if (err) return reject(err);
 			try {
 				if (res.statusCode === 200) return resolve(JSON.parse(res.body));
 				else return reject(res.statusCode, res.body);
 			} catch (e) {
 				return reject(e);
+			}
+		});
+	});
+}
+
+function tryCache_v2(keyword) {
+	return new Promise((resolve, reject) => {
+		let filepath = path.join(cache_path, "/", keyword.replace(" ", "_"), ".json");
+		console.log(filepath);
+
+		fs.readdir(filepath, (err, files) => {
+			if (err) return reject(err);
+			if (files.includes(keyword.replace(" ", "_") + ".json")) {
+				let data = require(filepath);
+				return resolve(data);
+			} else {
+				return reject({
+					err: false,
+					success: false,
+					msg: "No file in cache."
+				});
 			}
 		});
 	});
