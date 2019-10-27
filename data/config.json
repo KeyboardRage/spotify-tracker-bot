@@ -36,7 +36,7 @@
 	"notifyErrors":true,
 	"notifyErrorsChannel": "622231942204620821",
 	"notifyChannel": "589524709553602560",
-	"kill_signatures": ["SIGINT", "SIGTERM", "SIGQUIT"],
+	"kill_signatures": ["SIGINT", "SIGTERM", "SIGQUIT", "SIGKILL"],
 	"messages": {
 		"cmd_locked":"**Unique session:** The session for this command is already in use.",
 		"user_locked":"**Unique session:** You cannot execute commands until you finish your onging session.",
