@@ -282,7 +282,8 @@ function tryCache(args) {
 
 function tryCache_v2(keyword) {
 	return new Promise((resolve, reject) => {
-		let filepath = path.join(cache_path, "/", keyword.replace(" ", "_"), ".json");
+		console.log(keyword);
+		let filepath = path.join(cache_path, "/", keyword.replace(/ +/, "_"), ".json");
 		console.log(filepath);
 
 		fs.readdir(filepath, (err, files) => {
