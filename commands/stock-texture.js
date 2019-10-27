@@ -287,7 +287,7 @@ function tryCache_v2(keyword) {
 		let filepath = path.join(cache_path, "/", keyword.join("_")+".json");
 		console.log(filepath);
 
-		fs.readdir(filepath, (err, files) => {
+		fs.readdir(cache_path, (err, files) => {
 			if (err) return reject(err);
 			if (files.includes(keyword.join("_") + ".json")) {
 				let data = require(filepath);
