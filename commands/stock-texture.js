@@ -1,7 +1,7 @@
 const request = require("request"),
 	fn = require("../util/response_functions"),
 	path = require("path"),
-	cache_path = path.join(require.main.filename, "../bucket-storage/cache/");
+	cache_path = path.join(require.main.filename, "../bucket-storage/cache/"),
 	{emotes} = require("../util/command-utilities");
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
