@@ -2,7 +2,7 @@ const request = require("request"),
 	fn = require("../util/response_functions"),
 	fs = require("fs"),
 	path = require("path"),
-	cache_path = path.join(require.main.filename, "../../bucket-storage/cache/"),
+	cache_path = path.join(require.main.filename, "../../../bucket-storage/cache/"),
 	{emotes} = require("../util/command-utilities");
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
@@ -284,12 +284,12 @@ function tryCache(args) {
 function tryCache_v2(keyword) {
 	return new Promise((resolve, reject) => {
 		console.log(keyword);
-		let filepath = path.join(cache_path, "/", keyword.join("_"), ".json");
+		let filepath = path.join(cache_path, "/", keyword.join("_")+".json");
 		console.log(filepath);
 
 		fs.readdir(filepath, (err, files) => {
 			if (err) return reject(err);
-			if (files.includes(keyword.replace(" ", "_") + ".json")) {
+			if (files.includes(keyword.join("_") + ".json")) {
 				let data = require(filepath);
 				return resolve(data);
 			} else {
