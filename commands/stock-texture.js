@@ -16,7 +16,6 @@ module.exports = {
 	daccess: [""],
 	desc: "Search textures on Pexels by keyword(s).",
 	async exec(msg, cmd, args) {
-		if (msg.author.id !== "164736401051484160") return msg.channel.send("This command is temporarily disabled while being worked on today.");
 		
 		if(args.length === 0) {
 			return msg.channel.send("**Missing argument:** You must give me keyword(s) to search for!");
@@ -264,28 +263,9 @@ async function getImage(reuseData) {
 	});
 }
 
-function tryCache(args) {
-	//TODO: This no longer works because of fucking backend was taken down
-	//TODO: Re-write to write local cache instead or something. That or set up Google hosting on it
-	
-	return new Promise((resolve, reject) => {
-		request.get("https://app.grafik-bot.net/cache/stock-textures/" + args.join("_") +"_1"+ ".json", (err, res) => {
-			if (err) return reject(err);
-			try {
-				if (res.statusCode === 200) return resolve(JSON.parse(res.body));
-				else return reject(res.statusCode, res.body);
-			} catch (e) {
-				return reject(e);
-			}
-		});
-	});
-}
-
 function tryCache_v2(keyword) {
 	return new Promise((resolve, reject) => {
-		console.log(keyword);
 		let filepath = path.join(cache_path, "/", keyword.join("_")+".json");
-		console.log(filepath);
 
 		fs.readdir(cache_path, (err, files) => {
 			if (err) return reject(err);
