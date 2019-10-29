@@ -24,6 +24,9 @@ let maindb = mongoose.createConnection(process.env.DB_URI, {
 		console.info(chalk.black.bgGreen(" ✓ ") + " Connected MongoDB.");
 	}
 });
+maindb.on("close", () => {
+	maindb.removeAllListeners();
+});
 module.exports.maindb = maindb;
 
 //?======= SCHEMAS & MODELS ==========
