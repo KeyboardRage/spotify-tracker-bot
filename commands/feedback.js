@@ -17,7 +17,7 @@ module.exports = {
 	async exec(msg, cmd, args) {
 		if (args.length != 0) {
 			let message = args.join(" ");
-			let num = await counter_number("feedbackNumber");
+			let num = await counter_number("feedbackNumber", msg);
 
 			let feedback = new feedbackModel({
 				_id: await num,

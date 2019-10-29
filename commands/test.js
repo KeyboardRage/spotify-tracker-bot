@@ -10,7 +10,7 @@ module.exports = {
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg) {
 		console.log(ACCESS);
-		msg.channel.send("Hi");
+		msg.react("588844523204116501");
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);

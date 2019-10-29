@@ -17,6 +17,7 @@ let maindb = mongoose.createConnection(process.env.DB_URI, {
 	useUnifiedTopology: true
 }, err => {
 	if (err) {
+		maindb.removeAllListeners();
 		console.error(chalk.black.bgRed(" × ") + " Could not connect to MongoDB:", err);
 		throw err;
 	} else {

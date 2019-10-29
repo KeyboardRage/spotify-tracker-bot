@@ -10,6 +10,7 @@ RedisDB.on("ready", () => {
 });
 RedisDB.on("error", err => {
 	console.error(chalk.black.bgRed(" × ") + " Could not connect to Redis:", err);
+	RedisDB.removeAllListeners();
 	throw err;
 });
 

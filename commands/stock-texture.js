@@ -64,7 +64,7 @@ module.exports = {
 		msg.channel.send(embed)
 			.then(async message => {
 				// Adds emotes.
-				reuseData.emotes = await emotes(msg.client, message, ["previous", "stop", "ellipsis", "next"]);
+				reuseData.emotes = await emotes(msg.client, message, ["588844523204116501", "588844523832999936", "588844515461300448", "588844523128487936"]);
 				return createListener(reuseData, message, Discord);
 			})
 			.catch(e => {

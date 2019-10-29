@@ -4,6 +4,7 @@
 
 const iso = require("iso8601-duration");
 const {counterModel} = require("./database");
+const fn = require("./response_functions");
 
 /**
  * Slices an array from start to end. End being a word or index.
@@ -279,76 +280,76 @@ module.exports.emoteGuild = emoteGuild;
 function emote(Client, emote) {
 	let emojiGuild = emoteGuild(Client);
 	switch (emote) {
-		case "one":
-			return emojiGuild.emojis.get("588844523329683476");
-		case "two":
-			return emojiGuild.emojis.get("588844524659540030");
-		case "three":
-			return emojiGuild.emojis.get("588844524659539972");
-		case "four":
-			return emojiGuild.emojis.get("588844515520020598");
-		case "five":
-			return emojiGuild.emojis.get("588844516283252736");
-		case "six":
-			return emojiGuild.emojis.get("588844524332384276");
-		case "seven":
-			return emojiGuild.emojis.get("588844523938119680");
-		case "eight":
-			return emojiGuild.emojis.get("588844512286343179");
-		case "nine":
-			return emojiGuild.emojis.get("588844524433047552");
-		case "zero":
-			return emojiGuild.emojis.get("588844524474859531");
-		case "a":
-			return emojiGuild.emojis.get("588844508968386753");
-		case "b":
-			return emojiGuild.emojis.get("588844511858393091");
-		case "c":
-			return emojiGuild.emojis.get("588844512168902705");
-		case "d":
-			return emojiGuild.emojis.get("588844512244269167");
-		case "e":
-			return emojiGuild.emojis.get("588844512433012746");
-		case "f":
-			return emojiGuild.emojis.get("588844515406905345");
-		case "g":
-			return emojiGuild.emojis.get("588844515813621779");
-		case "h":
-			return emojiGuild.emojis.get("588844522591486122");
-		case "i":
-			return emojiGuild.emojis.get("588844523040407592");
-		case "j":
-			return emojiGuild.emojis.get("588844523019304963");
-		case "add":
-			return emojiGuild.emojis.get("588844511489425408");
-		case "subtract":
-		case "remove":
-			return emojiGuild.emojis.get("588844523879137290");
-		case "stop":
-		case "abort":	
-			return emojiGuild.emojis.get("588844523832999936");
-		case "pause":
-			return emojiGuild.emojis.get("588844523640061975");
-		case "resume":
-		case "play":
-			return emojiGuild.emojis.get("588844523782799405");
-		case "previous":
-			return emojiGuild.emojis.get("588844523204116501");
-		case "next":
-			return emojiGuild.emojis.get("588844523128487936");
-		case "info":
-			return emojiGuild.emojis.get("588844523052859392");
-		case "about":
-			return emojiGuild.emojis.get("588844511103287336");
-		case "ellipsis":
-			return emojiGuild.emojis.get("588844515461300448");
-		case "check":
-		case "yes":
-			return emojiGuild.emojis.get("588844524177195047");
-		case "grafik":
-			return emojiGuild.emojis.get("588847763341705263");
-		default:
-			throw new Error("No emote defined!");
+	case "one":
+		return emojiGuild.emojis.get("588844523329683476");
+	case "two":
+		return emojiGuild.emojis.get("588844524659540030");
+	case "three":
+		return emojiGuild.emojis.get("588844524659539972");
+	case "four":
+		return emojiGuild.emojis.get("588844515520020598");
+	case "five":
+		return emojiGuild.emojis.get("588844516283252736");
+	case "six":
+		return emojiGuild.emojis.get("588844524332384276");
+	case "seven":
+		return emojiGuild.emojis.get("588844523938119680");
+	case "eight":
+		return emojiGuild.emojis.get("588844512286343179");
+	case "nine":
+		return emojiGuild.emojis.get("588844524433047552");
+	case "zero":
+		return emojiGuild.emojis.get("588844524474859531");
+	case "a":
+		return emojiGuild.emojis.get("588844508968386753");
+	case "b":
+		return emojiGuild.emojis.get("588844511858393091");
+	case "c":
+		return emojiGuild.emojis.get("588844512168902705");
+	case "d":
+		return emojiGuild.emojis.get("588844512244269167");
+	case "e":
+		return emojiGuild.emojis.get("588844512433012746");
+	case "f":
+		return emojiGuild.emojis.get("588844515406905345");
+	case "g":
+		return emojiGuild.emojis.get("588844515813621779");
+	case "h":
+		return emojiGuild.emojis.get("588844522591486122");
+	case "i":
+		return emojiGuild.emojis.get("588844523040407592");
+	case "j":
+		return emojiGuild.emojis.get("588844523019304963");
+	case "add":
+		return emojiGuild.emojis.get("588844511489425408");
+	case "subtract":
+	case "remove":
+		return emojiGuild.emojis.get("588844523879137290");
+	case "stop":
+	case "abort":	
+		return emojiGuild.emojis.get("588844523832999936");
+	case "pause":
+		return emojiGuild.emojis.get("588844523640061975");
+	case "resume":
+	case "play":
+		return emojiGuild.emojis.get("588844523782799405");
+	case "previous":
+		return emojiGuild.emojis.get("588844523204116501");
+	case "next":
+		return emojiGuild.emojis.get("588844523128487936");
+	case "info":
+		return emojiGuild.emojis.get("588844523052859392");
+	case "about":
+		return emojiGuild.emojis.get("588844511103287336");
+	case "ellipsis":
+		return emojiGuild.emojis.get("588844515461300448");
+	case "check":
+	case "yes":
+		return emojiGuild.emojis.get("588844524177195047");
+	case "grafik":
+		return emojiGuild.emojis.get("588847763341705263");
+	default:
+		throw new Error("No emote defined!");
 	}
 }
 module.exports.emote = emote;
@@ -368,9 +369,10 @@ async function asyncForEach(array, callback) {
 async function emotes(Client, msg, array) {
 	let usedEmotes = Array();
 	await asyncForEach(array, async reaction => {
-		let getEmote = emote(Client, reaction);
-		usedEmotes.push(getEmote.id);
-		await msg.react(getEmote);
+		// let getEmote = emote(Client, reaction);
+		// usedEmotes.push(getEmote.id);
+		usedEmotes.push(reaction);
+		await msg.react(reaction);
 	});
 	return usedEmotes;
 }
@@ -388,7 +390,7 @@ function myPerms(msg, perms) {
 		obj = Object();
 
 	perms.forEach(perm => {
-		obj = {...obj, [perm]:botty.hasPermission(perm)}
+		obj = {...obj, [perm]:botty.hasPermission(perm)};
 	});
 
 	obj.missing = Object.keys(obj).filter(key => !obj[key]);
@@ -413,15 +415,15 @@ module.exports.myPerms = myPerms;
 async function dmAndAwait(author, text, options={maxMatches: 1,time: 120000,errors:["time"]}) {
 	return new Promise((resolve,reject) => {
 		author.send(text)
-		.then(message => {
-			return message.channel.awaitMessages(msg=>!msg.author.bot, options);
-		})
-		.then(collected => {
-			return resolve(collected.first().content);
-		})
-		.catch(err => {
-			return reject(err);
-		});
+			.then(message => {
+				return message.channel.awaitMessages(msg=>!msg.author.bot, options);
+			})
+			.then(collected => {
+				return resolve(collected.first().content);
+			})
+			.catch(err => {
+				return reject(err);
+			});
 	});
 }
 module.exports.dmAndAwait = dmAndAwait;
@@ -481,7 +483,7 @@ class Role {
 
 				let guildRole = function(id) {
 					return this.roles.get(id);
-				}
+				};
 				
 				// Get role by pure ID
 				if (/^(\d+)$/.test(input)) {
@@ -540,10 +542,11 @@ async function findUser(msg, input, sameGuild=true) {
 module.exports.findUser = findUser;
 
 
-async function counter_number(sequenceName) {
+async function counter_number(sequenceName, msg) {
 	return new Promise(resolve => {
 		counterModel.findOneAndUpdate({_id: sequenceName}, {$inc:{sequenceValue:1}}, {"new":true}, (err,doc) => {
 			if(err) {
+				// eslint-disable-next-line no-console
 				console.error(err);
 				fn.notifyErr(msg.client, err);
 				throw err;
