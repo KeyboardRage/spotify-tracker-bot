@@ -221,296 +221,319 @@ async function prefix(msg, doc, meta, reply) {
 }
 
 async function permission(msg, doc, meta, reply) {
-	// This function is re-used for setting Moderator as well.
-	let response,
-		cb;
+	try {
+		// This function is re-used for setting Moderator as well.
+		let response,
+			cb;
 
-	if (meta.step === 3 || meta.step === 9) {
-		let md = String();
-		if(doc.moderator.value==="NONE") md = "Unset. There was no ideal default.";
-		else if (!checkRoleExist(msg, doc, "moderator")) md = "Unset. The previous role no longer exist."
-		else md = `Mods must have **${roleTag(doc.moderator.value)}** ${(doc.moderator.type==="role")?"":"*or higher* "}to be considered moderators.`;
-		
-		let prm = String(),
-			_ = msg.guild.roles.find(r => r.id === doc.permission.value);
-		if (!checkRoleExist(msg, doc, "permission")) prm = "Unset. The previous role no longer exist.";
-		else if (_.name === "@everyone" && _.position===0) prm = "**Everyone** has access to use bot.";
-		else prm = `Users must have **${roleTag(doc.permission.value)}** ${(doc.permission.type==="role")?"":"*or higher* "}to use bot.`;
+		if (meta.step === 3 || meta.step === 9) {
+			let md = String();
+			if(doc.moderator.value==="NONE") md = "Unset. There was no ideal default.";
+			else if (!checkRoleExist(msg, doc, "moderator")) md = "Unset. The previous role no longer exist."
+			else md = `Mods must have **${roleTag(doc.moderator.value)}** ${(doc.moderator.type==="role")?"":"*or higher* "}to be considered moderators.`;
+			
+			let prm = String(),
+				_ = msg.guild.roles.find(r => r.id === doc.permission.value);
+			if (!checkRoleExist(msg, doc, "permission")) prm = "Unset. The previous role no longer exist.";
+			else if (_.name === "@everyone" && _.position===0) prm = "**Everyone** has access to use bot.";
+			else prm = `Users must have **${roleTag(doc.permission.value)}** ${(doc.permission.type==="role")?"":"*or higher* "}to use bot.`;
 
-		response = (meta.step === 3) ?
-			`**PERMISSIONS**\
-			\nYou will now decide the permission users need to use the normal features of the bot.\
-			\n> ~~                                                                                 ${(doc.permission.type==="role")?"":"                       "}~~\
-			\n> **Current:** ${prm}\
-			\n> **Role ID:** \`${doc.permission.value}\` ${(checkRoleExist(msg, doc, "permission")===null)?"*(deleted)*":""}\
-			\n> ~~                                                                                 ${(doc.permission.type==="role")?"":"                       "}~~\
-			\n**Options**\
-			\nThere's two options for permissions:\
-			\n•    Users need *a specific* role to use the commands\
-			\n•    Users need a specific role *or higher* to use the commands\
-			\n\n**Reply with…**\
-			\n•    \`next\` if these settings are fine\
-			\n•    \`no\` if they are not`:
-			`**MODERATORS**\
-			\nYou are now going to set a moderator permission for the bot. This bot does not do guild moderation. This setting is for upcomming features you want only staff to have access to.\
-			\n> ~~                                                                                 ${(doc.moderator.type==="role")?"":"                       "}~~\
-			\n> **Current:** ${md}\
-			\n> **Role ID:** \`${(doc.moderator.value!=="NONE")?doc.moderator.value:"None"}\`\
-			\n> ~~                                                                                 ${(doc.moderator.type==="role")?"":"                       "}~~\
-			\n**Options**\
-			\nThere's two options for permissions:\
-			\n•    Users need *a specific* role to use the commands\
-			\n•    Users need a specific role *or higher* to use the commands\
-			\n\n**Reply with…**\
-			\n•    \`next\` if current settings are fine\
-			\n•    \`no\` if they are not`;
-		meta.step++;
-		cb=permission;
-	} else if (meta.step === 4 || meta.step === 10) {
-		if (reply === "next") {
-			cb = (meta.step === 4) ? permission : channels;
-			meta.step = (meta.step === 4) ? 9 : 15;
-			meta.run = true;
-		} else if (reply === "no") {
-			meta.run = true;
+			response = (meta.step === 3) ?
+				`**PERMISSIONS**\
+				\nYou will now decide the permission users need to use the normal features of the bot.\
+				\n> ~~                                                                                 ${(doc.permission.type==="role")?"":"                       "}~~\
+				\n> **Current:** ${prm}\
+				\n> **Role ID:** \`${doc.permission.value}\` ${(checkRoleExist(msg, doc, "permission")===null)?"*(deleted)*":""}\
+				\n> ~~                                                                                 ${(doc.permission.type==="role")?"":"                       "}~~\
+				\n**Options**\
+				\nThere's two options for permissions:\
+				\n•    Users need *a specific* role to use the commands\
+				\n•    Users need a specific role *or higher* to use the commands\
+				\n\n**Reply with…**\
+				\n•    \`next\` if these settings are fine\
+				\n•    \`no\` if they are not`:
+				`**MODERATORS**\
+				\nYou are now going to set a moderator permission for the bot. This bot does not do guild moderation. This setting is for upcomming features you want only staff to have access to.\
+				\n> ~~                                                                                 ${(doc.moderator.type==="role")?"":"                       "}~~\
+				\n> **Current:** ${md}\
+				\n> **Role ID:** \`${(doc.moderator.value!=="NONE")?doc.moderator.value:"None"}\`\
+				\n> ~~                                                                                 ${(doc.moderator.type==="role")?"":"                       "}~~\
+				\n**Options**\
+				\nThere's two options for permissions:\
+				\n•    Users need *a specific* role to use the commands\
+				\n•    Users need a specific role *or higher* to use the commands\
+				\n\n**Reply with…**\
+				\n•    \`next\` if current settings are fine\
+				\n•    \`no\` if they are not`;
 			meta.step++;
-			cb = permission;
-		} else {
-			response = "<:Stop:588844523832999936> `" + reply + "` is not a valid reply.\
-			\n\n**Reply with…**\
-			\n•    \`next\` if current settings are fine\
-			\n•    \`no\` if they are not";
-			cb = permission;
-		}
-	} else if (meta.step === 5 || meta.step === 11) {
-		response = (meta.step === 5) ?
-			`**PERMISSIONS**\
-			\nAlright, first decide the **mode for the role** you are about to set.\
-			\n**Reply with…**\
-			\n•    \`role\` to make people need a specific role\
-			\n•    \`inherit\` to make people need a specific role or higher\
-			\n•    \`everyone\` to make commands available to everyone`:
-			`**MODERATORS**\
-			\nAlright, first decide the **mode for the role** you are about to set.\
-			\n**Reply with…**\
-			\n•    \`role\` to make people need a specific role\
-			\n•    \`inherit\` to make people need a specific role or higher`;
-		cb = permission;
-		meta.step++;
-	} else if (meta.step === 6 || meta.step === 12) {
-
-		if (reply === "inherit" || reply === "role" || (meta.step === 6 && reply === "everyone")) {
-			let type = (reply === "everyone") ? "inherit" :
-				(reply === "role") ? "role" : "inherit";
-
-			if (reply === "everyone") {
-				let value = await findRole("everyone")
-					.catch(err => {
-						return handleErr(err, msg, doc, meta);
-					});
-				// Perms set for "everyone":
-				doc.permission.type = type;
-				doc.permission.value = value;
-
-				meta.step = 9;
-				response = "<:Yes:588844524177195047> **Everyone** has been granted permission to use the bot.";
+			cb=permission;
+		} else if (meta.step === 4 || meta.step === 10) {
+			if (reply === "next") {
+				cb = (meta.step === 4) ? permission : channels;
+				meta.step = (meta.step === 4) ? 9 : 15;
 				meta.run = true;
-			} else {
-				doc[(meta.step===6)?"permission":"moderator"].type = type;
-				response = `<:Yes:588844524177195047> ${(meta.step === 6)?"Permission":"Moderator"} mode set to **${type}**.`;
+			} else if (reply === "no") {
+				meta.run = true;
 				meta.step++;
-				meta.run = true;
+				cb = permission;
+			} else {
+				response = "<:Stop:588844523832999936> `" + reply + "` is not a valid reply.\
+				\n\n**Reply with…**\
+				\n•    \`next\` if current settings are fine\
+				\n•    \`no\` if they are not";
+				cb = permission;
 			}
-		} else response = `<:Stop:588844523832999936> \`${reply}\` is not a valid reply.\
-			\n**Reply with…**\
-			\n•    \`role\` to make people need a specific role\
-			\n•    \`inherit\` to make people need a specific role or higher\
-			${(meta.step===6)?`\n•    \`everyone\` to make commands available to everyone`:""}`;
-		cb = permission;
-	} else if (meta.step === 7 || meta.step === 13) {
-		response = `… and now which role to apply that mode to?\
-		\n**Reply with…**\
-		\n•    A role ID, role name, or mention the role`;
-		meta.step++;
-		cb = permission;
-	} else if (meta.step === 8 || meta.step === 14) {
-		let role = await findRole(reply, (meta.step!==8))
-			.catch(err => {
-				return handleErr(err, msg, doc, meta);
-			});
-		
-		if(role === false) {
-			response = `<:Stop:588844523832999936> Not allowed to give everyone moderator permission.`;
+		} else if (meta.step === 5 || meta.step === 11) {
+			response = (meta.step === 5) ?
+				`**PERMISSIONS**\
+				\nAlright, first decide the **mode for the role** you are about to set.\
+				\n**Reply with…**\
+				\n•    \`role\` to make people need a specific role\
+				\n•    \`inherit\` to make people need a specific role or higher\
+				\n•    \`everyone\` to make commands available to everyone`:
+				`**MODERATORS**\
+				\nAlright, first decide the **mode for the role** you are about to set.\
+				\n**Reply with…**\
+				\n•    \`role\` to make people need a specific role\
+				\n•    \`inherit\` to make people need a specific role or higher`;
 			cb = permission;
-		}
-		else if (role === null) {
-			response = `<:Stop:588844523832999936> Could not find a role \`${reply}\`.\
+			meta.step++;
+		} else if (meta.step === 6 || meta.step === 12) {
+
+			if (reply === "inherit" || reply === "role" || (meta.step === 6 && reply === "everyone")) {
+				let type = (reply === "everyone") ? "inherit" :
+					(reply === "role") ? "role" : "inherit";
+
+				if (reply === "everyone") {
+					let value = await findRole("everyone")
+						.catch(err => {
+							return handleErr(err, msg, doc, meta);
+						});
+					// Perms set for "everyone":
+					doc.permission.type = type;
+					doc.permission.value = value;
+
+					meta.step = 9;
+					response = "<:Yes:588844524177195047> **Everyone** has been granted permission to use the bot.";
+					meta.run = true;
+				} else {
+					doc[(meta.step===6)?"permission":"moderator"].type = type;
+					response = `<:Yes:588844524177195047> ${(meta.step === 6)?"Permission":"Moderator"} mode set to **${type}**.`;
+					meta.step++;
+					meta.run = true;
+				}
+			} else response = `<:Stop:588844523832999936> \`${reply}\` is not a valid reply.\
+				\n**Reply with…**\
+				\n•    \`role\` to make people need a specific role\
+				\n•    \`inherit\` to make people need a specific role or higher\
+				${(meta.step===6)?`\n•    \`everyone\` to make commands available to everyone`:""}`;
+			cb = permission;
+		} else if (meta.step === 7 || meta.step === 13) {
+			response = `… and now which role to apply that mode to?\
 			\n**Reply with…**\
 			\n•    A role ID, role name, or mention the role`;
-			cb = permission;
-		} else {
-			doc[(meta.step===8)?"permission":"moderator"].value = role;
-			response = `<:Yes:588844524177195047> ${(meta.step===8)?"Permission":"Moderator"} set to **${doc[(meta.step===8)?"permission":"moderator"].type}** for **${roleTag(role)}**.`;
-			cb = (meta.step === 8) ? permission : channels;
-			meta.run = true;
 			meta.step++;
+			cb = permission;
+		} else if (meta.step === 8 || meta.step === 14) {
+			let role = await findRole(reply, (meta.step!==8))
+				.catch(err => {
+					return handleErr(err, msg, doc, meta);
+				});
+			
+			if(role === false) {
+				response = `<:Stop:588844523832999936> Not allowed to give everyone moderator permission.`;
+				cb = permission;
+			}
+			else if (role === null) {
+				response = `<:Stop:588844523832999936> Could not find a role \`${reply}\`.\
+				\n**Reply with…**\
+				\n•    A role ID, role name, or mention the role`;
+				cb = permission;
+			} else {
+				doc[(meta.step===8)?"permission":"moderator"].value = role;
+				response = `<:Yes:588844524177195047> ${(meta.step===8)?"Permission":"Moderator"} set to **${doc[(meta.step===8)?"permission":"moderator"].type}** for **${roleTag(role)}**.`;
+				cb = (meta.step === 8) ? permission : channels;
+				meta.run = true;
+				meta.step++;
+			}
 		}
+		return send(msg, doc, meta, response, cb);
+	} catch(err) {
+		console.error("Error from Init: setup: permissions", err);
+		let response = "Hmm, something went wrong here. Let's try that again.";
+		return send(msg, doc, meta, response, permission);
 	}
-
-	return send(msg, doc, meta, response, cb);
 }
 
 async function channels(msg, doc, meta, reply) {
-	let response,
-		cb;
-	if (meta.step === 15) {
-		response = `**CHANNELS**\
-		\nYou can toggle bot usage in specific channels.\
-		\n•    Checking and enabling channels bypass the fact that the channel is disabled.\
-		\n•    If you do not skip this, all channels will be reset to enabled.\
-		\n\n**Reply with…**\
-		\n•    \`next\` to skip disabling channels\
-		\n•    A space separated list of channel #mentions, names, or ID's to disable`;
-		meta.step++;
-		meta.channelsReset = false;
-		cb=channels;
-	}
-
-	else if (meta.step === 16) {
-		if (reply === "next") {
-			// Skip to disabling commands
-			cb = commands;
-			meta.run = true;
+	try {
+		let response,
+			cb;
+		if (meta.step === 15) {
+			response = `**CHANNELS**\
+			\nYou can toggle bot usage in specific channels.\
+			\n•    Checking and enabling channels bypass the fact that the channel is disabled.\
+			\n•    If you do not skip this, all channels will be reset to enabled.\
+			\n\n**Reply with…**\
+			\n•    \`next\` to skip disabling channels\
+			\n•    A space separated list of channel #mentions, names, or ID's to disable`;
 			meta.step++;
-		} else {
-			if(!meta.channelsReset) {
-				for (let ch in doc.enabledChannels) {
-					doc.enabledChannels[ch]=true;
-				}
-				meta.channelsReset=true;
-			}
-			// Detect channels
-			let chans = reply.replace(/, +| +/g, " ").split(" ");
-			let channelIds = Array();
-
-			chans.forEach(channel => {
-				if (/^\d{16,30}$/.test(channel)) channelIds.push(channel);
-				else if (/^<#\d{16,30}>$/.test(channel)) channelIds.push(channel.replace(/<|#|>/g, ""));
-				else {
-					let _ = msg.guild.channels.find(ch => ch.name === channel.toLowerCase());
-					if (_ !== null) channelIds.push(_.id);
-				}
-			});
-
-			let notAll = (chans.length !== channelIds.length);
-			channelIds = removeDupes(channelIds);
-
-			response = "**Processed**";
-			if (notAll) response += "\nUnfortunately I couldn't find all of the channels you listed, but I've done these:";
-
-			if (channelIds.length === 0) response = "It appears none of the channels you gave were valid.\n\n**Reply with…**\
-					\n•    `next` to wrap up channel disabling and move on\
-					\n•    more channels to disable";
-			else {
-				channelIds.forEach(channel => {
-					response += `\n•    <#${channel}> disabled.`;
-					try {
-						doc.enabledChannels[channel] = false;
-					} catch {
-						notAll = true;
-						channelIds = channelIds.slice(channelIds.indexOf(channel), 1);
-						//! No idea if this will cause error, as it removes from an array it is iterating over.
-					}
-				});
-				response += "\n\n**Reply with…**\
-				\n•    `next` to wrap up channel disabling and move on\
-				\n•    … more channels to disable";
-			}
+			meta.channelsReset = false;
 			cb=channels;
 		}
-	}
 
-	return send(msg, doc, meta, response, cb);
+		else if (meta.step === 16) {
+			if (reply === "next") {
+				// Skip to disabling commands
+				cb = commands;
+				meta.run = true;
+				meta.step++;
+			} else {
+				if(!meta.channelsReset) {
+					for (let ch in doc.enabledChannels) {
+						doc.enabledChannels[ch]=true;
+					}
+					meta.channelsReset=true;
+				}
+				// Detect channels
+				let chans = reply.replace(/, +| +/g, " ").split(" ");
+				let channelIds = Array();
+
+				chans.forEach(channel => {
+					if (/^\d{16,30}$/.test(channel)) channelIds.push(channel);
+					else if (/^<#\d{16,30}>$/.test(channel)) channelIds.push(channel.replace(/<|#|>/g, ""));
+					else {
+						let _ = msg.guild.channels.find(ch => ch.name === channel.toLowerCase());
+						if (_ !== null) channelIds.push(_.id);
+					}
+				});
+
+				let notAll = (chans.length !== channelIds.length);
+				channelIds = removeDupes(channelIds);
+
+				response = "**Processed**";
+				if (notAll) response += "\nUnfortunately I couldn't find all of the channels you listed, but I've done these:";
+
+				if (channelIds.length === 0) response = "It appears none of the channels you gave were valid.\n\n**Reply with…**\
+						\n•    `next` to wrap up channel disabling and move on\
+						\n•    more channels to disable";
+				else {
+					channelIds.forEach(channel => {
+						response += `\n•    <#${channel}> disabled.`;
+						try {
+							doc.enabledChannels[channel] = false;
+						} catch {
+							notAll = true;
+							channelIds = channelIds.slice(channelIds.indexOf(channel), 1);
+							//! No idea if this will cause error, as it removes from an array it is iterating over.
+						}
+					});
+					response += "\n\n**Reply with…**\
+					\n•    `next` to wrap up channel disabling and move on\
+					\n•    … more channels to disable";
+				}
+				cb=channels;
+			}
+		}
+
+		return send(msg, doc, meta, response, cb);
+	} catch(err) {
+		console.error("Error from Init: setup: channels", err);
+		let response = "Hmm, something went wrong here. Let's try that again.";
+		response += "\n\n**Reply with…**\
+					\n•    `next` to wrap up channel disabling and move on\
+					\n•    … more channels to disable";
+		return send(msg, doc, meta, response, channels);
+	}
 }
 
 async function commands(msg, doc, meta, reply) {
 	let response;
-
-	if (meta.step === 17) {
-		response = `**COMMANDS**\
-		\nIf there's certain commands you don't want users to have access to, you can disable them. Disabling a command will make the bot ignore *anyone* who tries to use it.\
-		\n•    You can disable *any* commands…\
-		\n•    … except Moderator commands or higher, e.g. the \`settings\` command.\
-		\n•    If you do not skip this, all commands will be reset to enabled.\
-		\n\n**Reply with…**\
-		\n•    \`done\` to finish up and save\
-		\n•    \`commands\` to see all available commands\
-		\n•    A space separated list of commands to disable`;
-		meta.step++;
-		meta.commandsReset = false;
-	} else if (meta.step === 18) {
-
-		if (reply === "done") {
-			meta.run = true;
+	try {
+		if (meta.step === 17) {
+			response = `**COMMANDS**\
+			\nIf there's certain commands you don't want users to have access to, you can disable them. Disabling a command will make the bot ignore *anyone* who tries to use it.\
+			\n•    You can disable *any* commands…\
+			\n•    … except Moderator commands or higher, e.g. the \`settings\` command.\
+			\n•    If you do not skip this, all commands will be reset to enabled.\
+			\n\n**Reply with…**\
+			\n•    \`done\` to finish up and save\
+			\n•    \`commands\` to see all available commands\
+			\n•    A space separated list of commands to disable`;
 			meta.step++;
-			let saved = await save(msg, doc, meta);
-			if(saved) return summary(msg, doc, meta);
-			else return msg.channel.send("<:Stop:588844523832999936> I had to stop, and could not save the progress.\n");
-		}
+			meta.commandsReset = false;
+		} else if (meta.step === 18) {
 
-		else if (reply === "commands") {
-			//========================================
-			response = "**Commands available for users:**";
-			for (let command in msg.client.commands) {
-				if (msg.client.commands[command].permissionLevel & ACCESS.user) response += `\n• ${command}`;
+			if (reply === "done") {
+				meta.run = true;
+				meta.step++;
+				let saved = await save(msg, doc, meta);
+				if(saved) return summary(msg, doc, meta);
+				else return msg.channel.send("<:Stop:588844523832999936> I had to stop, and could not save the progress.\n");
 			}
-			//=======================================
-		} else {
-			if (!meta.commandsReset) {
-				for (let cmd in doc.enabledCommands) {
-					doc.enabledCommands[cmd] = true;
+
+			else if (reply === "commands") {
+				//========================================
+				response = "**Commands available for users:**";
+				for (let command in msg.client.commands) {
+					if (msg.client.commands[command].permissionLevel & ACCESS.user) response += `\n• ${command}`;
 				}
-				meta.commandsReset = true;
-			}
-			// Disable the commands:
-			response = "**Processed**";
+				//=======================================
+			} else {
+				if (!meta.commandsReset) {
+					for (let cmd in doc.enabledCommands) {
+						doc.enabledCommands[cmd] = true;
+					}
+					meta.commandsReset = true;
+				}
+				// Disable the commands:
+				response = "**Processed**";
 
-			let cmds = removeDupes(reply.replace(/,|, +| +/g, " ").split(" "));
-			let _c = Array();
+				let cmds = removeDupes(reply.replace(/,|, +| +/g, " ").split(" "));
+				let _c = Array();
 
-			await asyncForEach(cmds, async cmd => {
-				let _ = fn.alias(msg.client.commands, cmd);
-				if (_ !== null) _c.push(_);
-			});
-
-			if (_c.includes("settings")) {
-				_c.splice(_c.indexOf("settings"), 1);
-				response += "\n*Note: Skipped `settings` command — it cannot be disabled.*";
-				meta.bool = true;
-			}
-
-			if (_c.length === 0) response = "None of the commands you gave were valid.";
-
-			else {
-				// If a command was removed (neg value) and "settings" wasn't one of them:
-				let i = (meta.bool)?cmds.length-1:cmds.length;
-				if (_c.length - i !== 0) response += "\nUnfortunately I couldn't find all of the commands you listed, but I've done these:";
-
-				_c.forEach(cmd => {
-					response += `\n•    **${cmd}** disabled.`;
-					doc.enabledCommands[cmd] = false;
+				await asyncForEach(cmds, async cmd => {
+					let _ = fn.alias(msg.client.commands, cmd);
+					if (_ !== null) _c.push(_);
 				});
-				meta.bool = false;
-			}
-		}
 
-		// Always end with this anyway
+				if (_c.includes("settings")) {
+					_c.splice(_c.indexOf("settings"), 1);
+					response += "\n*Note: Skipped `settings` command — it cannot be disabled.*";
+					meta.bool = true;
+				}
+
+				if (_c.length === 0) response = "None of the commands you gave were valid.";
+
+				else {
+					// If a command was removed (neg value) and "settings" wasn't one of them:
+					let i = (meta.bool)?cmds.length-1:cmds.length;
+					if (_c.length - i !== 0) response += "\nUnfortunately I couldn't find all of the commands you listed, but I've done these:";
+
+					_c.forEach(cmd => {
+						response += `\n•    **${cmd}** disabled.`;
+						doc.enabledCommands[cmd] = false;
+					});
+					meta.bool = false;
+				}
+			}
+
+			// Always end with this anyway
+			response += "\n\n**Reply with…**\
+			\n•    \`done\` to finish up and save\
+			\n•    \`commands\` to see all available commands\
+			\n•    A space separated list of commands to disable"
+		}
+		return send(msg, doc, meta, response, commands);
+	} catch (err) {
+		console.error("Error from Init: setup: commands", err);
+		let response = "Hmm, something went wrong here. Let's try that again.";
 		response += "\n\n**Reply with…**\
-		\n•    \`done\` to finish up and save\
-		\n•    \`commands\` to see all available commands\
-		\n•    A space separated list of commands to disable"
+			\n•    \`done\` to finish up and save\
+			\n•    \`commands\` to see all available commands\
+			\n•    A space separated list of commands to disable"
+		return send(msg, doc, meta, response, commands);
 	}
-	return send(msg, doc, meta, response, commands);
 }
 
 async function summary(msg, doc, meta) {

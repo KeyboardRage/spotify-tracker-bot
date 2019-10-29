@@ -3,6 +3,7 @@ const config = require("../data/config.json");
 const Discord = require("discord.js");
 const {statisticsModel,serverSettings} = require("./database");
 const Sentry = require("@sentry/node");
+const mustache = require("mustache");
 
 async function _notifyErr(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
 	const embed = new Discord.RichEmbed()
@@ -433,6 +434,44 @@ async function _check_self_perms(/**@type {"msg"}*/msg, /**@type {String}*/cmd, 
 	});
 }
 
+async function _render_variable_text(/**@type {"msg"}*/msg, /**@type {String}*/text) {
+	return new Promise(resolve => {
+		let guild_bots = msg.guild.members.filter(mem => mem.user.bot).size;
+
+		let variables = {
+			username: msg.author.username,
+			avatar: msg.author.avatarURL.split("?").shift(),
+			avatar_hash: msg.author.avatar,
+			joined: msg.member.joinedAt,
+			highest_role: msg.member.highestRole.name,
+			color: msg.member.hexColor,
+			tag: msg.author.tag,
+			uid: msg.author.id,
+			mention: `<@${msg.author.id}>`,
+			guild: msg.guild.name,
+			guild_id: msg.guild.id,
+			bot_avatar: msg.client.user.avatarURL.split("?").shift(),
+			bot_name: msg.client.user.username,
+			bot_mention: `<@${msg.client.user.id}>`,
+			date: new Date(),
+			guild_total: msg.guild.memberCount,
+			guild_members: msg.guild.memberCount - guild_bots,
+			guild_bots: guild_bots,
+			guild_created: msg.guild.createdAt,
+			guild_txt_channel_count: msg.guild.channels.size,
+			guild_roles_count: msg.guild.roles.size
+		};
+
+		try {
+			return resolve(mustache.render(text, variables));
+		} catch (err) {
+			// eslint-disable-next-line no-console
+			console.error("ERROR parsing mustache text: ", err);
+			return resolve(false);
+		}
+	});
+}
+
 // MASTER FUNCTION EXPORT.
 module.exports = {
 	notifyErr: async function(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
@@ -516,5 +555,8 @@ module.exports = {
 	},
 	check_self_perms: async function (/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {String}*/prefix) {
 		return await _check_self_perms(msg, cmd, prefix);
+	},
+	_render_variable_text: async function (/**@type {"msg"}*/msg, /**@type {String}*/text) {
+		return await _render_variable_text(msg, text);
 	}
 };
