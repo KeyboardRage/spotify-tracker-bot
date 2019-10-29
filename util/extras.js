@@ -49,6 +49,7 @@ config.kill_signatures.forEach(signal => {
 					console.info(chalk.black.bgRed("SHUTDOWN UNGRACEFUL → Extras.kill_signals.RedisDB.quit(): "), err);
 					process.exit(1);
 				}
+				RedisDB.removeAllListeners();
 				console.info(chalk.black.bgRed(" SHUTDOWN ") + chalk.black.bgGreen(" GRACEFUL ") + " for Redis")
 				// Close MongoDB
 				maindb.close(err=>{
@@ -56,6 +57,7 @@ config.kill_signatures.forEach(signal => {
 						console.info(chalk.black.bgRed("SHUTDOWN UNGRACEFUL → Extras.kill_signals.Mongoose.close(): "), err);
 						process.exit(1);
 					}
+					maindb.removeAllListeners();
 					console.info(chalk.black.bgRed(" SHUTDOWN ")+chalk.black.bgGreen(" GRACEFUL ")+" for MongoDB");
 					process.exit(0); //*Final.
 				});
