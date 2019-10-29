@@ -309,7 +309,12 @@ async function _parse_message(/**@type {"msg"}*/msg) {
 		let cmd = args.shift();
 		try {
 			doc = doc.toObject();
-		} catch (_) {}
+			doc.original_cmd = cmd;
+		} catch (err) {
+			let _err = new Error("Error converting guild object in Response_functions > _parse_message(), try block.\n"+err.toString());
+			_notifyErr(msg.client, _err);
+			return resolve({cmd:null,args:null,doc:null});
+		}
 		return resolve({cmd:cmd,args:args,doc:doc});
 	});
 }

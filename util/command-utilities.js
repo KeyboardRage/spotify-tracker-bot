@@ -210,7 +210,7 @@ function parser(input, data) {
 	return res;
 }
 module.exports.parser = parser;
-
+	
 /**
  * Gets an user object from a mention.
  * @param {Object} Client Requires the Client (the bot) as first parameter.
