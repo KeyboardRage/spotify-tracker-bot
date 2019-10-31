@@ -97,6 +97,7 @@ class Command {
 						else {
 							// Role is inherit.
 							let role = msg.guild.roles.get(doc[(type===1)?"permission":"moderator"].value);
+							console.log(role);
 							if(!role) userLevel = 0;
 							else if (role.position<=hasRole.position) userLevel= (type===1)?ACCESS.user:ACCESS.user+ACCESS.mod;// User's role position is equal to or higher than required
 							else userLevel = 0; // Position too low

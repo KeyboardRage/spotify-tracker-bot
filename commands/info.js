@@ -15,15 +15,16 @@ module.exports = {
 				.setTimestamp(Date())
 				.setColor(process.env.THEME)
 				.setFooter(msg.author.tag, msg.author.avatarURL)
-				.addField("Creator", "<@164736401051484160>", true)
-				.addField("Support", "[Join server](https://discord.gg/UBuPHFd)", true)
-				.addField("Target audience", "Guilds with designers,\ncreatives, and artists,\nmarket guilds", true)
-				.addField("Prefix", `Current: \`${doc.prefix}\`\nDefault *(and DM)*: \`${process.env.PREFIX}\``, true)
-				.addField("Help", `List commands with \`${doc.prefix}help\`, \nand about the command with \`${doc.prefix}<command> ?\``, true)
-				.addField("Premium", `${(msg.channel.type==="dm")?"Not applicable in DM.":(doc.premium)?"Yes.":"No."} — \`${doc.prefix}info premium\` \nfor more information.`, true)
-				.addField("Configure", `Use \`${doc.prefix}init\` to start helper for \nchanging settings for the current guild.`, true)
-				.addField("Feedback / bugs", `Report bugs or give feedback \nwith \`${doc.prefix}<"bug"|"feedback"> <message>\`.`, true)
-				.addField("Invite", `[Click here](${bot_invite}) to add Grafik to your guild.`);
+				.addField("Creator", "<@164736401051484160> *(VirtusGraphics#0001)*")
+				.addField("Support", "[Join server](https://discord.gg/UBuPHFd)")
+				.addField("Target audience", "Guilds with designers,creatives, and artists,market guilds")
+				.addField("Prefix", `Current: \`${doc.prefix}\`\nDefault *(and DM)*: \`${process.env.PREFIX}\``)
+				.addField("Help", `List commands with \`${doc.prefix}help\`, and about the command with \`${doc.prefix}<command> ?\``)
+				.addField("Premium", `${(msg.channel.type==="dm")?"Not applicable in DM.":(doc.premium)?"Yes.":"No."} — \`${doc.prefix}info premium\` for more information.`)
+				.addField("Configure", `Use \`${doc.prefix}init\` to start helper for changing settings for the current guild.`)
+				.addField("Feedback / bugs", `Report bugs or give feedback with \`${doc.prefix}<"bug"|"feedback"> <message>\`.`)
+				.addField("Survey", "Help me out by answering [a 1–3 minute survey](https://forms.gle/iv9K1JHZAka6XETo7)")
+				.addField("Invite", `To add Grafik to your guild, [click here](${bot_invite}).`);
 			return msg.channel.send(embed);
 		} else {
 			const embed = new Discord.RichEmbed()
