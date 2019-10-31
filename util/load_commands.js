@@ -77,7 +77,7 @@ class Command {
 					console.error(`ERROR → PermissionChecker.FindById: ${msg.author.id} failed: `, err);
 					return resolve({grant:this.permissionLevel & ACCESS.user, userLevel:parseInt(ACCESS.user)});
 				}
-				
+				console.log(msg.content);
 				let userLevel = Number();
 				// Server Settings check:
 				// Guild doc exist, and not DM, and the (command is not user level and permission is everyone 
@@ -97,7 +97,7 @@ class Command {
 						else {
 							// Role is inherit.
 							let role = msg.guild.roles.get(doc[(type===1)?"permission":"moderator"].value);
-							console.log(role);
+							console.log(role.position, msg.content);
 							if(!role) userLevel = 0;
 							else if (role.position<=hasRole.position) userLevel= (type===1)?ACCESS.user:ACCESS.user+ACCESS.mod;// User's role position is equal to or higher than required
 							else userLevel = 0; // Position too low

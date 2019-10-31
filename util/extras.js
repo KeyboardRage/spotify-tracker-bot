@@ -21,12 +21,12 @@ process.on("exit", code => {
 });
 process.on("unhandledRejection", err => {
 	if (process.env.DEBUG === "true") console.error(chalk.black.bgRed(" × ")+chalk.red(" ERROR: "), err);
-	Sentry.captureException(err);
+	else Sentry.captureException(err);
 	return;
 });
 process.on("uncaughtException", err => {
 	if(process.env.DEBUG==="true") console.error(chalk.black.bgRed(" × ")+chalk.red(" ERROR: "), err);
-	Sentry.captureException(err);
+	else Sentry.captureException(err);
 	return;
 });
 
