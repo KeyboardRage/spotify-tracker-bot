@@ -48,6 +48,72 @@
 		"green":"46A024",
 		"theme":"#b78d3b"
 	},
+	"market": {
+		"creator_types": {
+			"1": {
+				"max_tags":5,
+				"name":"Designer",
+				"tags": ["avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "infomatics", "brochoure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
+			},
+			"2": {
+				"max_tags":4,
+				"name":"Artist",
+				"tags": ["concept", "realism", "fiction", "fantasy", "digital", "paint", "physical", "drawing", "direction", "anime", "manga", "figure", "vector", "bitmap", "icon"]
+			},
+			"3": {
+				"max_tags":4,
+				"name":"VFX/Video/Motion Editor",
+				"tags": ["vfx", "motion", "video", "editor", "videographer", "2d", "3d", "realism", "animation", "intro", "outro", "gif"]
+			},
+			"4": {
+				"max_tags":4,
+				"name":"Other creator",
+				"tags": ["photographer", "mucisian", "content writer", "creative writer", "nonfiction writer", "director", "art", "concept"]
+			}
+		},
+		"portfolios": {
+			"1": {
+				"name": "Personal site",
+				"type": "url",
+				"prefix": ""
+			},
+			"2": {
+				"name": "Behance",
+				"type": "username",
+				"prefix": ""
+			},
+			"3": {
+				"name": "Dribbble",
+				"type": "username",
+				"prefix": ""
+			},
+			"4": {
+				"name": "Instagram",
+				"type": "username",
+				"prefix": "@"
+			},
+			"5": {
+				"name": "Twitter",
+				"type": "username",
+				"prefix": "@"
+			},
+			"6": {
+				"name": "ArtStation",
+				"type": "username",
+				"prefix": ""
+			},
+			"7": {
+				"name": "DeviantArt",
+				"type": "username",
+				"prefix": ""
+			},
+			"8": {
+				"name": "Facebook",
+				"type": "url",
+				"prefix": ""
+			}
+		}
+	},
 	"bypassedCommands": ["settings channel", "settings channel enable"],
 	"DACCESS": {
 		"CREATE_INSTANT_INVITE": 1,

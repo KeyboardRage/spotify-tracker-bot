@@ -1,19 +1,19 @@
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
+const fn = require("./profiles/main");
+
 module.exports = {
-	cmd: "test",
-	aliases: ["testing"],
+	cmd: "register",
+	aliases: ["register"],
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner,
 	dm: true,
 	daccess: [""],
-	desc: "Generic testing command. Replies with what you say.",
-	async exec(msg) {
-		console.log(ACCESS);
-		msg.author.send("Hi")
-			.catch(err => {
-				console.error(err);
-			});
+	desc: "Register as a designer / buyer and set up a profile.",
+	async exec(msg, cmd, args, doc) {
+		if(!args.length) {
+			return fn.register(msg, args, doc);
+		}
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);
@@ -29,19 +29,3 @@ module.exports = {
 		msg.channel.send(embed);
 	}
 };
-
-/**
- * Blocked
-{
-	DiscordAPIError: Cannot send messages to this user
-	at item.request.gen.end(d: \FILES\ D O C U M E N T S\ P R O J E C T S\ NodeJS\ Grafik - bot_v2\ node_modules\ discord.js\ src\ client\ rest\ RequestHandlers\ Sequential.js: 85: 15)
-	at then(d: \FILES\ D O C U M E N T S\ P R O J E C T S\ NodeJS\ Grafik - bot_v2\ node_modules\ snekfetch\ src\ index.js: 215: 21)
-	at process._tickCallback(internal / process / next_tick.js: 68: 7)
-	name: 'DiscordAPIError',
-	message: 'Cannot send messages to this user',
-	path: '/api/v7/channels/585187341887602719/messages',
-	code: 50007,
-	method: 'POST'
-}
-
- */

@@ -1,0 +1,13 @@
+{
+	"tooShort": "**Invalid argument:** The response you gave ended up too short. Remove formatting if you used that, and try again.",
+	"tooLong": "**Invalid argument:** The response you gave was too long. Try again, but shorten it first.",
+	"exist":"**Cannot use command:** You're already registered!",
+	"isType": "First I need to know what type of user you are / what to list you as.\n*Reply with the corresponding number.*\n**Creator**\n<:One:588844523329683476> Designer\n<:Two:588844524659540030> Artist\n<:Three:588844524659539972> VFX/Video/Motion Editor\n<:Four:588844515520020598> Other creator\n\n**Customer**\n<:Five:588844516283252736> Normal person\n<:Six:588844524332384276> Company representative\n",
+	"not_valid_num": "**Invalid response:** You must reply with one of the numbers listed *(without prefix)*",
+	"askCompany": "What is the name of the company you represent?\n*Reply with company name, or `no` to instead register as normal person.*",
+	"openForComissions": "Are you currently open for comissions?\n*Reply with `yes` or `no`.*",
+	"yesOrNo": "**Invalid argument:** Invalid response on 'yes' or 'no' question. Try again.",
+	"askTagsAnyway" : "While you may not be open for comissions right now, do you still want to add some tags that describe the type of work you do?\n*Reply with `yes` or `no`.*",
+	"askTags": "Give me a list of tags that describe the type(s) of work you do / are open to comissions for.\n*Reply with the tags, separated by comma.*",
+	"information": "**Registration complete.**\nHere comes information about commands you can use etc."
+}

@@ -405,7 +405,7 @@ module.exports.myPerms = myPerms;
  * @param {Object} options Optional.
  * @returns {Promise} Promise, which resolves to the plaintext of the message
  * @example
- * sendAndAwait(msg.author, "This is a DM!", {maxMatches: 1,time: 120000,errors:["time"]})
+ * dmAndAwait(msg.author, "This is a DM!", {maxMatches: 1,time: 120000,errors:["time"]})
  * .then(reply => {
  *		if(reply === "Hi") console.log("User said Hi!");
  * 		else console.log("User said "+reply);
@@ -435,7 +435,7 @@ module.exports.dmAndAwait = dmAndAwait;
  * @param {Object} options Optional.
  * @returns {Promise} Promise, which resolves to the plaintext of the message
  * @example
- * sendAndAwait(msg, "This is a DM!", {maxMatches: 1,time: 120000,errors:["time"]})
+ * sendAndAwait(msg, "This is a message!", {maxMatches: 1,time: 120000,errors:["time"]})
  * .then(reply => {
  *		if(reply === "Hi") console.log("User said Hi!");
  * 		else console.log("User said "+reply);

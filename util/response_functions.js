@@ -274,6 +274,7 @@ async function _check_ban(/**@type {String}*/guild_id, /**@type {String}*/author
 			return false;
 		}
 		if(res) return true;
+
 		RedisDB.SISMEMBER(`bans:${guild_id}`, author_id, (err,res) => {
 			if (err) {
 				Sentry.captureException(err);
@@ -307,14 +308,16 @@ async function _parse_message(/**@type {"msg"}*/msg) {
 		message = await _sanitize_message(message);
 		let args = message.split(" ");
 		let cmd = args.shift();
+
 		try {
-			doc = doc.toObject();
 			doc.original_cmd = cmd;
+			doc = doc.toObject();
 		} catch (err) {
 			let _err = new Error("Error converting guild object in Response_functions > _parse_message(), try block.\n"+err.toString());
 			_notifyErr(msg.client, _err);
-			return resolve({cmd:null,args:null,doc:null});
+			return resolve({cmd:cmd,args:args,doc:doc});
 		}
+
 		return resolve({cmd:cmd,args:args,doc:doc});
 	});
 }

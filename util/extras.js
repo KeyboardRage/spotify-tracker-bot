@@ -8,7 +8,7 @@ const {RedisDB} = require("./redis");
 //==== SENTRY: Error handling/notification system ====
 const Sentry = require("@sentry/node");
 Sentry.init({dsn:"https://f53bab8e202142dcaed5668003285469@sentry.io/1727006"});
-module.exports = true;
+module.exports = Sentry;
 //================================
 //	PROCESS EVENTS
 //================================
