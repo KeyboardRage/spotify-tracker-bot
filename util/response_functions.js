@@ -310,8 +310,10 @@ async function _parse_message(/**@type {"msg"}*/msg) {
 		let cmd = args.shift();
 
 		try {
+			if(doc.hasOwnProperty("toObject")) {
+				doc = doc.toObject();
+			}
 			doc.original_cmd = cmd;
-			doc = doc.toObject();
 		} catch (err) {
 			let _err = new Error("Error converting guild object in Response_functions > _parse_message(), try block.\n"+err.toString());
 			_notifyErr(msg.client, _err);
