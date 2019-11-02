@@ -11,9 +11,7 @@ module.exports = {
 	daccess: [""],
 	desc: "Register as a designer / buyer and set up a profile.",
 	async exec(msg, cmd, args, doc) {
-		if(!args.length) {
-			return fn.register(msg, args, doc);
-		}
+		return fn.register(msg, doc);
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);
@@ -24,8 +22,9 @@ module.exports = {
 			.addField("Description", this.desc, true)
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
-			.addField("Usage", `\`${doc.prefix}${this.cmd} <text>\``)
-			.addField("Examples", `\`${doc.prefix}${this.cmd} lorem ipsum\``)
+			.addField("Usage", `\`${doc.prefix}${this.cmd}\``)
+			.addField("Examples", `\`${doc.prefix}${this.cmd}\``)
+			.addField("What is it for?", "Profiles allow users to find a user's social media, portfolio, contact info, and availability status without the need of the user to be present. In the future, profiles will have profil cards, track sales/purchases *(which is why 'buyers' can register too)*, disputes, comissions open, and more — across and isolated to guilds.");
 		msg.channel.send(embed);
 	}
 };

@@ -227,8 +227,17 @@ let reviewsScema = new mongoose.Schema({
 // Order template: buyer/seller
 let marketUserSchema = new mongoose.Schema({
 	"_id": String, // User Discord ID
-	"discord": String, // Discord Tag?
-	"title": String,
+	"meta": {
+		"discord": String,
+		"discriminator": String,
+		"available": Boolean,
+		"title": String,
+		"tags": Array,
+		"main_type": Number,
+		"company": String,
+		"company_url": String
+	},
+	"portfolios": mongoose.SchemaTypes.Mixed,
 	"name": String,
 	"purchases": Number,
 	"sales": Number,

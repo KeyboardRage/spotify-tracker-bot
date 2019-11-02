@@ -75,42 +75,58 @@
 			"1": {
 				"name": "Personal site",
 				"type": "url",
-				"prefix": ""
+				"prefix": "",
+				"need_url_prefix": false,
+				"url_prefix":""
 			},
 			"2": {
 				"name": "Behance",
 				"type": "username",
-				"prefix": ""
+				"prefix": "",
+				"need_url_prefix": true,
+				"url_prefix":"https://behance.net/"
 			},
 			"3": {
 				"name": "Dribbble",
 				"type": "username",
-				"prefix": ""
+				"prefix": "",
+				"need_url_prefix": true,
+				"url_prefix":"https://dribbble.com/"
 			},
 			"4": {
 				"name": "Instagram",
 				"type": "username",
-				"prefix": "@"
+				"prefix": "@",
+				"need_url_prefix": true,
+				"url_prefix":"https://www.instagram.com/"
 			},
 			"5": {
 				"name": "Twitter",
 				"type": "username",
-				"prefix": "@"
+				"prefix": "@",
+				"need_url_prefix": true,
+				"url_prefix": "https://twitter.com/"
 			},
 			"6": {
 				"name": "ArtStation",
 				"type": "username",
-				"prefix": ""
+				"prefix": "",
+				"need_url_prefix": true,
+				"url_prefix": "https://www.artstation.com/"
 			},
 			"7": {
 				"name": "DeviantArt",
 				"type": "username",
-				"prefix": ""
+				"prefix": "",
+				"need_url_prefix": true,
+				"url_prefix":"https://www.deviantart.com/"
 			},
 			"8": {
 				"name": "Facebook",
 				"type": "url",
-				"prefix": ""
+				"prefix": "",
+				"need_url_prefix": false,
+				"url_prefix":""
 			}
 		}
 	},

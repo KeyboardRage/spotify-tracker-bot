@@ -6,6 +6,7 @@ const types = require("../../data/config.json").market.creator_types;
 const portfolios = require("../../data/config.json").market.portfolios;
 const marketUsers = require("../../util/database").marketUserModel;
 const Discord = require("discord.js");
+const re = require("../../util/response_functions");
 
 module.exports = {
 	/**
@@ -14,39 +15,97 @@ module.exports = {
 	 * @param {Array} args The command arguments
 	 * @param {Object} doc The guild document
 	 */
-	register: async function (msg, args, doc) {
-		return await _register(msg, args, doc);
+	register: async function (msg, doc, args=[]) {
+		return await _register(msg, doc, args);
 	}
 };
 
-async function _register(msg, args, doc) {
-	// if(msg.channel.type!=="dm") {
-	// 	msg.reply("<:Yes:588844524177195047> Starting registration progress in your DM's.");
-	// }
-	return msg.channel.send("OK");
+async function _register(msg, doc, args) {
+	if(msg.channel.type!=="dm") {
+		msg.reply("<:Yes:588844524177195047> Starting registration progress in your DM's.");
+	}
+
 	getUser(msg.author.id)
 		.then(r => {
-			let meta = {_id:msg.author.id, username:msg.author.username};
-			// if(r) return msg.reply(response.exist+`\nTo manage your profile, see \`${doc.prefix}profile cmds\` for commands.`);
-			//TODO: Incorporate list generated from config.market.creator_types:
+			if(r) return msg.reply(response.exist+`\nTo manage your profile, see \`${doc.prefix}profile cmds\` for commands.`);
+
+			let meta = {
+				_id: msg.author.id,
+				discrim: msg.author.discriminator,
+				username: msg.author.username,
+				tags: [],
+				title: null,
+				portfolios: {},
+				open: true,
+				company: null,
+				companySite: null,
+				type: 5
+			};
+			
+			//TODO: Incorporate list generated from config.market.creator_types at some point
 			return send(msg, doc, response.isType, meta, catch_isType);
 		})
 		.catch(err => {
 			if (msg.channel.type !== "dm" && [50007, 50013].includes(err.code)) {
-				return msg.reply("… actually, seems like I couldn't DM you. No permission.");
+				return msg.reply("… actually, seems like I couldn't DM you. No permission. Check your inbox open status, possibly if blocked specifically from this guild.");
 			} else {
-				console.log(err);
-				// Sentry.captureException(err);
+				re.notifyErr(msg.client, err);
+				Sentry.captureException(err);
 				return msg.reply("… actually, seems like I couldn't initiate registration. An error ocurred. The error has been reported.");
 			}
 		});
 }
 
-async function handleErr(err, msg, reply=null) {
-	console.error(err);
-	Sentry.captureException(err);
+async function handleErr(err, msg, meta, prefix, reply=null) {
 	if(reply) return msg.reply(reply);
-	return msg.reply("An error occurred.");
+	if(err.size===0) {
+		save(meta)
+			.then(()=>{
+				return msg.channel.send("**<:Info:588844523052859392> Time ran out.**\nI saved the information you provided so far.\nTo add/edit data on your profile, see `"+prefix+"profile cmds`.");
+			})
+			.catch(err=>{
+				Sentry.captureException(err);
+				re.notifyErr(msg.client, err);
+				return msg.channel.send("**<:Info:588844523052859392> Time ran out.**\nAdditionally, an error occurred trying to save what you provided so far. Try `"+prefix+"register` again at a later time.");
+			});
+	} else {
+		Sentry.captureException(err);
+		re.notifyErr(msg.client, err);
+		save(meta)
+			.then(() => {
+				return msg.channel.send("**<:Stop:588844523832999936> An error occurred.**\nHowever, I saved the information you provided so far.\nTo add/edit data on your profile, see `" + prefix + "profile cmds`.");
+			})
+			.catch(err => {
+				Sentry.captureException(err);
+				re.notifyErr(msg.client, err);
+				return msg.channel.send("**<:Stop:588844523832999936> An error occurred.**\nAdditionally, an error occurred trying to save what you provided so far. Try `" + prefix + "register` again at a later time.");
+			});
+	}
+}
+
+async function save(meta) {
+	return new Promise((resolve,reject) => {
+		let user = new marketUsers({
+			_id: meta._id,
+			last_updated: Date(),
+			name: meta.username,
+			meta: {
+				title: (meta.company)?meta.company:types[meta.type.toString()].name, // One will have null
+				available: meta.open,
+				discord: meta.username,
+				discriminator: meta.discrim,
+				tags: meta.tags,
+				main_type: meta.type,
+				company: meta.company,
+				company_url: meta.companySite
+			},
+			portfolios: meta.portfolios
+		});
+		user.save(err => {
+			if(err) return reject(err);
+			return resolve(true);
+		});
+	});
 }
 
 /**
@@ -75,7 +134,7 @@ async function send(msg, doc, reply, meta, callback) {
 				return callback(msg, doc, meta, r);
 			})
 			.catch(err=> {
-				return handleErr(err, msg);
+				return handleErr(err, msg, meta, doc.prefix);
 			});
 	} else {
 		// Pass through to the callback directly.
@@ -86,11 +145,13 @@ async function send(msg, doc, reply, meta, callback) {
 function gen_tags_embed(msg, meta) {
 	let col1 = String();
 	let col2 = String();
-	types[meta.type.toString()].forEach((tag, i) => {
-		if (i > Math.ceil(types[meta.type.toString()] / 2)) {
-			col1 += "\n" + tag;
+	let half = Math.ceil(types[meta.type.toString()].tags.length/2);
+	types[meta.type.toString()].tags.forEach((tag, i) => {
+		if (i < half) {
+			if(i===0) col1 +=tag;
+			else col1 += "\n" + tag;
 		} else {
-			col1 += "\n" + tag;
+			col2 += "\n" + tag;
 		}
 	});
 	const embed = new Discord.RichEmbed()
@@ -98,8 +159,8 @@ function gen_tags_embed(msg, meta) {
 		.setColor(process.env.THEME)
 		.setFooter(msg.author.tag, msg.author.avatarURL)
 		.setDescription(`Tags possible for ${types[meta.type.toString()].name}`)
-		.addField("Reply with tags", "Give me a list of tags that describe the type(s) of work you do / are open to comissions for, separated by comma.", true)
-		.addField("Max number tags", `Maximum of **${types[meta.type.toString()].max_tags} tags**`, true)
+		.addField("Reply with tags", "Give me a list of tags that describe the type(s) of work you do / are open to comissions for, separated by comma.")
+		.addField("Max number tags", `Maximum of **${types[meta.type.toString()].max_tags} tags**`)
 		.addField("Tags", col1, true)
 		.addField("\u200B", col2, true);
 	return embed;
@@ -109,20 +170,21 @@ function get_portfolio_list(msg, meta) {
 	let string = String();
 	for (let place in portfolios) {
 		if (meta.portfolios.hasOwnProperty(place)) {
-			string += `~~${place}. ${portfolios[place].name}~~ **Added:** ${meta.portfolios[place]}`;
+			string += `~~${place}. ${portfolios[place].name}~~ **Added:** ${meta.portfolios[place]}\n`;
 		} else {
-			string += `${place}. ${portfolios[place].name}\nReply with: \`${place} <${portfolios[place].type}>\``;
+			string += `${place}. ${portfolios[place].name} — Reply with: \`${place} <${portfolios[place].type}>\`\n`;
 		}
 	}
 	const embed = new Discord.RichEmbed()
 		.setTimestamp(Date())
 		.setColor(process.env.THEME)
 		.setFooter(msg.author.tag, msg.author.avatarURL)
-		.setDescription(`Portfolio's`)
-		.addField("Adding", "One item at a time. Find the portfolio you want to add, and use the 'Reply with' to add a portfolio item. Include the number, and replace `<'url'|'username'>` with the corresponding data.")
-		.addField("Replacing", "Re-enter the portfolio item the same way you did initially to replace it.")
-		.addField("Checking", "Get a list of possible portfolios, up to date with what you have already entered, by saying `list`.")
-		.addField("Add a portfolio", string);
+		.setDescription("Social media and portfolio's")
+		.addField("Adding", "One item at a time. Find the social you want to add, and use the 'Reply with' to add a social item. Include the number, and replace `<'url'|'username'>` with the corresponding data.")
+		.addField("Replacing", "Re-enter the social item the same way you did initially to replace it.")
+		.addField("Checking", "Get a list of possible social's, up to date with what you have already entered, by saying `list`.")
+		.addField("Examples", "`4 VirtusGraphics`\n`1 https://virtusgraphics.com`")
+		.addField("Adding a social connection/portfolio", string);
 	return embed;
 }
 
@@ -153,7 +215,7 @@ function validate_portfolio(r) {
 		else return {pass:true, data:args, type:num};
 	default:
 		// All other is of type username
-		if(!rg.site.test(args)) return {pass:false, data:"**Invalid argument:** This portfolio item accepts only a username, not URL. See the corresponding 'Reply with' from the list by typing `list`, and try again."};
+		if(rg.site.test(args)) return {pass:false, data:"**Invalid argument:** This social item accepts only a username, not URL. See the corresponding 'Reply with' from the list by typing `list`, and try again."};
 		args = args.replace("@","");
 		if(!rg.username.test(args)) return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
 		else return {pass:true, data:args, type:num};
@@ -167,7 +229,7 @@ async function catch_isType(msg, doc, meta, r) {
 	if(isNaN(r)) return send(msg, doc, response.not_valid_num, meta, catch_isType);
 	meta.type = parseInt(r);
 	//TODO: Incorporate list generated from config.market.creator_types
-	if(meta.type>=4) {
+	if(meta.type>=5) {
 		// Is customer type
 		if(meta.type===6) return send(msg, doc, response.askCompany, meta, catch_customerCompany);
 		return give_info(msg, doc, meta, null);
@@ -180,7 +242,10 @@ async function catch_isType(msg, doc, meta, r) {
 async function catch_customerCompany(msg, doc, meta, r) {
 	if (r.toLowerCase() === "no") {
 		meta.company = null;
+		meta.portfolios = null;
+		meta.tags = null;
 		meta.type = 5;
+		meta.companySite = null;
 		return give_info(msg, doc, meta, null);
 	}
 
@@ -190,11 +255,23 @@ async function catch_customerCompany(msg, doc, meta, r) {
 	meta.portfolios = null;
 	meta.tags = null;
 	meta.company = r;
+	return send(msg, doc, response.companySite, meta, catch_companyUrl);
+}
+
+async function catch_companyUrl(msg, doc, meta, r) {
+	if(r.toLowerCase()==="no") {
+		meta.companySite = null;
+		return give_info(msg, doc, meta, null);
+	}
+	let siteReg = new RegExp(/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/, "ig");
+	if(!siteReg.test(r)) return send(msg, doc, response.notValidSite, meta, catch_companyUrl);
+	meta.companySite = r;
 	return give_info(msg, doc, meta, null);
 }
 
 async function catch_comissionsOpen(msg, doc, meta, r) {
 	meta.company = null;
+	meta.companySite = null;
 	// Yes or no
 	if(r.toLowerCase()==="no") {
 		// Nope
@@ -202,7 +279,7 @@ async function catch_comissionsOpen(msg, doc, meta, r) {
 		return send(msg, doc, response.askTagsAnyway, meta, ask_tags);
 	} else if(r.toLowerCase()==="yes") {
 		// Yep
-		meta.open = false;
+		meta.open = true;
 		return send(msg, doc, gen_tags_embed(msg, meta), meta, catch_tags);
 	} else return send(msg, doc, response.yesOrNo, meta, catch_comissionsOpen);
 }
@@ -224,7 +301,7 @@ async function catch_tags(msg, doc, meta, r) {
 	if(r.toLowerCase()!=="next") {
 		// Define list of variables
 		let max = types[meta.type.toString()].max_tags;
-		let tags = r.split(/,|, +/);
+		let tags = r.split(/, |,+/ig);
 		let invalidOnes = tags.filter(t => !types[meta.type.toString()].tags.includes(t.toLowerCase()));
 		let validOnes = tags.filter(t => types[meta.type.toString()].tags.includes(t.toLowerCase()));
 		let response = String();
@@ -240,26 +317,25 @@ async function catch_tags(msg, doc, meta, r) {
 			//* User already have added some tags, adding to max it out.
 			// nLeft is how many the user have left.
 			let nLeft = max - meta.tags.length;
-
 			meta.tags.push(...validOnes.slice(0, nLeft));
 			if(invalidOnes.length) {
 				// Had invalid tags
-				response = "There was some invalid tags in there:\n" + invalidOnes.join(", ");
+				response = "There was some invalid tags in there:\n`"+invalidOnes.join("`, `")+"`";
 
 				if (validOnes.length > nLeft) response += `\nFurthermore, you gave too many valid tags. Max is **${max}**, which means you had **${validOnes.length-nLeft} too many** *(excluding the invalid ones)*.  Replying with a new list will entirely replace the current.`;
-				else if (validOnes.length===nLeft) response += "\nDisregarding the invalid ones, you have now exactly maxed out your tags list.\nReplying with a new list will entirely replace this one.";
-				else response += `As a result, you still have **${nLeft-validOnes.length} tags left**. Reply with more tags to fill out the list.`;
+				else if (meta.tags.length===max) response += "\nDisregarding the invalid ones, you have now exactly maxed out your tags list.\nReplying with a new list will entirely replace this one.";
+				else response += `\nAs a result, you still have **${max-meta.tags.length} tags left**. Reply with more tags to fill out the list.`;
 				
-				response += `\nHere's you current list of tags:\n${validOnes.join(", ")}`;
-				response += "**To move on, write `next`.**";
+				response += `\nHere's you current list of tags:\n\`${meta.tags.join("`, `")}\``;
+				response += "\n**To move on, write `next`.**";
 			} else {
 				// Had no invalid tags
 				if (validOnes.length > nLeft) response = `You gave too many tags. Max is **${max}**, which means you had **${validOnes.length-nLeft} too many**. Replying with a new list will entirely replace the current.`;
-				else if (validOnes.length === nLeft) response = `Great, you've used all your tags slots. Tags can be changed later too, using the \`${doc.prefix}profile tags\` command. Replying with a new list will entirely replace the current.`;
-				else response = `You have **${max-validOnes.length} tags left** you can use. Reply with more if you want to use more.`;
+				else if (meta.tags.length === max) response = `Great, you've used all your tags slots. Tags can be changed later too, using the \`${doc.prefix}profile tags\` command. Replying with a new list will entirely replace the current.`;
+				else response = `You have **${max-meta.tags.length} tags left** you can use. Reply with more if you want to use more.`;
 				
-				response += `\nHere's you current list of tags:\n${validOnes.join(", ")}`;
-				response += "**To move on, write `next`.**";
+				response += `\nHere's you current list of tags:\n\`${meta.tags.join("`, `")}\``;
+				response += "\n**To move on, write `next`.**";
 			}
 		} else {
 			//* User is first now coming to this part, or is replacing entire list.
@@ -267,20 +343,20 @@ async function catch_tags(msg, doc, meta, r) {
 
 			if (invalidOnes.length) {
 				// Had invalid tags:
-				response = "There was some invalid tags in there:\n"+invalidOnes.join(", ");
+				response = "There was some invalid tags in there:\n`"+invalidOnes.join("`, `")+"`";
 				
 				if(validOnes.length>max) response += `\nFurthermore, you gave too many valid tags. Max is **${max}**, which means you had **${validOnes.length-max} too many** *(excluding the invalid ones)*.`;
 				else if(validOnes.length===max) response += "\nDisregarding the invalid ones, you have now exactly maxed out your tags list.\nReplying with a new list will entirely replace this one.";
 				else response += `\nAs a result, you still have **${max-validOnes.length} tags left**. Reply with more tags to fill out the list.`;
 
-				response += `\nHere's you current list of tags:\n${validOnes.join(", ")}`;
-				response += "**To move on, write `next`.**";
+				response += `\nHere's you current list of tags:\n\`${meta.tags.join("`, `")}\``;
+				response += "\n**To move on, write `next`.**";
 			} else {
 				// Had no invalid tags:
 				if (validOnes.length>max) response = `You gave too many tags. Max is **${max}**, which means you had **${validOnes.length-max} too many**. Replying with a new list will entirely replace the current.`;
 				else if (validOnes.length === max) response = `Great, you've used all your tags slots. Tags can be changed later too, using the \`${doc.prefix}profile tags\` command. Replying with a new list will entirely replace the current.`;
 				else response = `You have **${max-validOnes.length} tags left** you can use. Reply with more if you want to use more.`;
-				response += `\nHere's you current list of tags:\n${validOnes.join(", ")}`;
+				response += `\nHere's you current list of tags:\n\`${meta.tags.join("`, `")}\``;
 				response += "\nIf not, **reply with `next` to move on**.";
 			}
 		}
@@ -301,12 +377,42 @@ async function catch_portfolio(msg, doc, meta, r) {
 
 	if(!data.pass) return send(msg, doc, data.data, meta, catch_portfolio);
 	meta.portfolios = {...meta.portfolios, [data.type.toString()]:data.data};
-	return send(msg, doc, `Portfolio item **${portfolios[data.type.toString()].name}** added as: ${data.data}.\n**Reply with…**\n•    a new/existing portfolio item to add/change\n•    \`list\` to view possible ones and up to date list of added\n•    \`done\` to finish registration.`);
+	return send(msg, doc, `Social item **${portfolios[data.type.toString()].name}** added as: ${data.data}.\n**Reply with…**\n•    a new/existing social item to add/change\n•    \`list\` to view possible ones and up to date list of added\n•    \`done\` to finish registration.`, meta, catch_portfolio);
 }
 
 async function give_info(msg, doc, meta) {
 	// End of registration. Give general info.
-	//TODO: Add saving of 'meta' somewhere.
+	save(meta)
+		.then(()=>{
+			let title = String();
+			if(meta.type===6) {
+				title = (meta.companySite) ? `Works at [${meta.company}](${meta.companySite})` : "Works at "+meta.company;
+			} else if(meta.type===5) title = "Private person";
+			else title = types[meta.type.toString()].name;
+
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(msg.author.tag, msg.author.avatarURL)
+				.setDescription("Summary of registration")
+				.addField("About you", `**Name:** ${meta.username}\n**Discord:** ${meta.username}#${meta.discrim}`, true)
+				.addField("\u200B", `**Title:** ${title}`, true);
+			if(meta.type<=4) {
+				let socials = String();
+				for(let elm in meta.portfolios) {
+					if (elm == "1") socials += `[Personal site →](${meta.portfolios[elm]}) \n`;
+					else if(elm=="8") socials += `[Facebook page →]($${meta.portfolios[elm]})\n`;
+					else if (portfolios[elm].need_url_prefix) socials += `**${portfolios[elm].name}**: [${portfolios[elm].prefix}${meta.portfolios[elm]}](${portfolios[elm].url_prefix}${meta.portfolios[elm]})\n`;
+					else socials += `**${portfolios[elm].name}**: ${portfolios[elm].prefix}${meta.portfolios[elm]}\n`;
+				}
+				embed.addField("Status", `**Availability:** ${(meta.open)?"open for comissions.":"not open for comissions."}\n${(meta.tags)?"**User works with:**\n"+meta.tags.join(", "):""}`)
+					.addField("Portfolio and social media", socials);
+			}
+			embed.addField("Editing profile", "You can at any time change any of the fields, or even add more information, through the `"+doc.prefix+"profile`. Use  `"+doc.prefix+"profile cmds` to see all possible actions.");
+			return msg.author.send("**Registration complete!**", {embed});
+		})
+		.catch(err=>{
+			return handleErr(err, msg, meta, doc.prefix);
+		});
 	// Recap:
-	return msg.author.send("**Registration complete!**\n"+JSON.stringify(meta));
 }

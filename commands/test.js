@@ -8,12 +8,16 @@ module.exports = {
 	dm: true,
 	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
-	async exec(msg) {
-		console.log(ACCESS);
-		msg.author.send("Hi")
-			.catch(err => {
-				console.error(err);
-			});
+	async exec(msg, cmd, args) {
+		const embed = new Discord.RichEmbed()
+			.setTimestamp(Date())
+			.setColor(process.env.THEME)
+			.setFooter(msg.author.tag, msg.author.avatarURL)
+			.addField("Description", this.desc, true);
+		if(args[0]==="ye") {
+			embed.addField("Something", "here");
+		}
+		return msg.channel.send(embed);
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);

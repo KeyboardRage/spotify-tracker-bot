@@ -12,8 +12,10 @@ async function _notifyErr(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
 		.addField("Error:", err);
 	try {
 		Client.channels.get(config.notifyErrorsChannel).send(embed);
+		if (process.env.DEBUG!="true") Sentry.captureException(err);
 	} catch(err) {
-		throw err;
+		Sentry.captureException(err);
+		return;
 	}
 }
 

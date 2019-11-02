@@ -106,18 +106,18 @@ async function sendAndAwait(msg, text, collected=false, deleteSelf=false, dm=fal
 	return new Promise((resolve,reject) => {
 		let sentMessage;
 		msg[(dm)?"author":"channel"].send(text)
-		.then(message => {
-			sentMessage = message;
-			return message.channel.awaitMessages(sender=>(sender.author.id === msg.author.id), {maxMatches: 1,time: 100000, errors:["time"]});
-		})
-		.then(collected => {
-			if (collected) return resolve(collected.first().content);
-			else return resolve(collected);
-		})
-		.catch(err => {
-			if (err.size===0) return reject({timeError:true, message:"<:Stop:588844523832999936> Time ran out.", msg:sentMessage}); // is either 0 or undefined
-			else return reject(err);
-		});
+			.then(message => {
+				sentMessage = message;
+				return message.channel.awaitMessages(sender=>(sender.author.id === msg.author.id), {maxMatches: 1,time: 100000, errors:["time"]});
+			})
+			.then(collected => {
+				if (collected) return resolve(collected.first().content);
+				else return resolve(collected);
+			})
+			.catch(err => {
+				if (err.size===0) return reject({timeError:true, message:"<:Stop:588844523832999936> Time ran out.", msg:sentMessage}); // is either 0 or undefined
+				else return reject(err);
+			});
 	});
 }
 

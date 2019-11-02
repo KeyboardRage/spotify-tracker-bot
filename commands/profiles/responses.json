@@ -9,5 +9,6 @@
 	"yesOrNo": "**Invalid argument:** Invalid response on 'yes' or 'no' question. Try again.",
 	"askTagsAnyway" : "While you may not be open for comissions right now, do you still want to add some tags that describe the type of work you do?\n*Reply with `yes` or `no`.*",
 	"askTags": "Give me a list of tags that describe the type(s) of work you do / are open to comissions for.\n*Reply with the tags, separated by comma.*",
-	"information": "**Registration complete.**\nHere comes information about commands you can use etc."
+	"notValidSite": "**Invalid argument:** The URL you gave did not have a valid URL scheme. Double check it and try again.",
+	"companySite": "Does your company have a website we can link to as well?\n*Reply with the URL, or `no`.*"
 }
