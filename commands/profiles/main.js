@@ -202,7 +202,7 @@ function validate_portfolio(r) {
 	let rg = {
 		site: new RegExp(/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/, "ig"),
 		fb: new RegExp(/^(https?:\/\/)?(www\.)?facebook\.com(\/\S*)?$/, "ig"),
-		username: new RegExp(/[a-zA-Z0-9-_.]/, "ig")
+		username: new RegExp(/^[a-zA-Z0-9-_.]+$/, "ig")
 	};
 	switch (parseInt(num)) {
 	case 1:
@@ -218,15 +218,18 @@ function validate_portfolio(r) {
 	default:
 		// All other is of type username
 		args = args.replace("@", "");
-
+		console.log(args);
 		// Test matching URL, meaning the latter reg determine if URL or username
 		if(rg.username.test(args)) return {pass:true, data:args, type:num};
-		if(rg.site.test(args) && rg.site.test(/\//g)) {
+		
+		console.log("Trying URL");
+		if (rg.site.test(args) && /\//g.test(args)) {
 			let usr = args.split("/");
 			usr = usr[usr.length-1];
-			if(rg.username.test(usr)) {
+			console.log(usr, (usr.length && rg.username.test(usr)), (usr.length), (rg.username.test(usr)));
+			if(usr.length && rg.username.test(usr)) {
 				return {pass:true, data:usr, type:num};
-			}
+			} else return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
 		} else return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
 	}
 
