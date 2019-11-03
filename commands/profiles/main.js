@@ -146,7 +146,8 @@ function gen_tags_embed(msg, meta) {
 	let col1 = String();
 	let col2 = String();
 	let half = Math.ceil(types[meta.type.toString()].tags.length/2);
-	types[meta.type.toString()].tags.forEach((tag, i) => {
+	let sorted_tags = types[meta.type.toString()].tags.sort();
+	sorted_tags.forEach((tag, i) => {
 		if (i < half) {
 			if(i===0) col1 +=tag;
 			else col1 += "\n" + tag;
