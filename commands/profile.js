@@ -7,7 +7,7 @@ const fn = require("../util/response_functions");
 
 module.exports = {
 	cmd: "profile",
-	aliases: ["profile"],
+	aliases: ["user","users"],
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
@@ -158,14 +158,14 @@ async function tags(msg, args) {
 				console.log(err);
 				return msg.channel.send("An error occurred searching for users.");
 			}
-			console.log(docs);
 			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
-			marketUserModel.find({"_id":{$all:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
+			marketUserModel.find({"_id":{$all:docs}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
 				if (err) {
 					console.log(err);
 					return msg.channel.send("An error occurred fetching users.");
 				}
 				if (!users) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
+				console.log(users);
 				
 				let string = "**Results:**\n";
 				for(let i=0;i<users.length;i++) {
@@ -177,18 +177,18 @@ async function tags(msg, args) {
 
 				let taken = Date.now()-time;
 				if(string.length) {
-					return msg.channel.send("`[Time taken: "+taken+"ms]` "+string);
+					return msg.channel.send(string+"\n`[Time taken: "+taken+"ms]`");
 				} else {
 					console.log(string);
 					let taken = time-Date.now();
-					return msg.channel.send("`[Time taken: "+taken+"ms]` "+"Searched, but string was empty. Check logs");
+					return msg.channel.send("Searched, but string was empty. Check logs"+"\n`[Time taken: "+taken+"ms]`");
 				}
 			});
 		});
 	} catch(err) {
 		console.log(err);
 		let taken = time - Date.now();
-		return msg.channel.send("`[Time taken: "+taken+"ms]` "+"Some error: "+err.toString());
+		return msg.channel.send("Some error: "+err.toString()+"\n`[Time taken: "+taken+"ms]`");
 	}
 }
 /**
