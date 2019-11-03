@@ -53,7 +53,7 @@
 			"1": {
 				"max_tags":6,
 				"name":"Designer",
-				"tags": ["webdesign", "illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "infomatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
+				"tags": ["webdesign", "illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "informatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
 			},
 			"2": {
 				"max_tags":4,
@@ -68,7 +68,7 @@
 			"4": {
 				"max_tags":4,
 				"name":"Other creator",
-				"tags": ["other", "photographer", "mucisian", "content writer", "creative writer", "nonfiction writer", "director", "art", "concept"]
+				"tags": ["other", "photographer", "musician", "content writer", "creative writer", "nonfiction writer", "director", "art", "concept"]
 			}
 		},
 		"portfolios": {

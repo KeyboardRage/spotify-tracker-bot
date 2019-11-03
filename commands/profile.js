@@ -4,6 +4,7 @@ const {marketUserModel,userTags} = require("../util/database");
 const types = require("../data/config.json").market.creator_types;
 const portfolios = require("../data/config.json").market.portfolios;
 const fn = require("../util/response_functions");
+const fe = require("../util/command-utilities");
 
 module.exports = {
 	cmd: "profile",
@@ -14,6 +15,7 @@ module.exports = {
 	daccess: [""],
 	desc: "Show a user's Grafik profile",
 	async exec(msg, cmd, args, doc) {
+		//TODO: Disable sub-commands that cannot be used in DM
 		if(!args.length) return find(msg, args, doc);
 		switch(args[0]) {
 		case "cmds":
@@ -22,12 +24,18 @@ module.exports = {
 			return cmds(msg, args, doc);
 		case "edit":
 			return edit(msg, args, doc);
+		case "tags":
+		case "types":
+			if (doc.level.userLevel & ACCESS.owner) {
+				args.shit();
+				return show_types(msg, args, doc);
+			} else return msg.channel.send("Sub-command only for owner while it's being made.");
 		case "search":
 		case "find":
 			return find(msg, args, doc, true);
 		case "does":
-		case "tags":
 			if(doc.level.userLevel & ACCESS.owner) {
+				if(msg.channel.type==="dm") return msg.channel.send("**Cannot use command:** This sub-command is only available in guilds, as it searches for users in the guild that does one of the types of work.");
 				return tags(msg, args, doc);
 			} else return msg.channel.send("Sub-command only for owner while it's being made.");
 		case "register":
@@ -133,6 +141,8 @@ async function cmds(msg, args, doc) {
 	let string = `•    \`${doc.prefix}profile\` get your own profile, if you've registered.\
 	\n•    \`${doc.prefix}profile cmds\` lists available commands *(this very message)*.\
 	\n•    \`${doc.prefix}profile edit\` initialize profile editor in DM.\
+	\n•    \`${doc.prefix}profile types\` list all types of work *(tags)* you can search for.\
+	\n•    \`${doc.prefix}profile does <type of work>\` finds users in current guild that does one of the things *(tags/types)* specified.\
 	\n•    \`${doc.prefix}profile <id|mention|username|tag>\` search for user in this guild by ID, mention, username, or tag. Use ID for global search outside guild.\
 	\n•    \`${doc.prefix}profile search <id|mention|username|tag>\` same as above, except for cases where name would be same as a sub-command.\
 	\n•    \`${doc.prefix}profile register\` alias of the command \`${doc.prefix}register\`.`;
@@ -148,30 +158,28 @@ async function edit(msg, args, doc) {
 	return msg.channel.send("Sub-command not yet completed.");
 }
 
-async function tags(msg, args) {
+async function tags(msg, args, doc) {
 	let time = Date.now();
 	args.shift();
 	try {
 		if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
 		userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}}, ["_id"], (err,docs) => {
 			if(err) {
-				console.log(err);
 				return msg.channel.send("An error occurred searching for users.");
 			}
 			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
 
 			marketUserModel.find({"_id":{$in:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
 				if (err) {
-					console.log(err);
 					return msg.channel.send("An error occurred fetching users.");
 				}
 				if (!users.length) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
-				console.log(users);
 				
-				let string = "**Results:**\n";
+				let string = "**Results:**\nI found "+users.length+" users in this guild that does one of these things: "+args.joine(", ");
 				for(let i=0;i<users.length;i++) {
-					string += `${users[i].meta.discord}#${users[i].meta.discriminator} (\`${users[i]._id}\`)\n`;
+					string += `Tag: ${users[i].meta.discord}#${users[i].meta.discriminator} — ID: \`${users[i]._id}\`\n`;
 				}
+				string += "\nTo inspect of theirs profile, use `"+doc.prefix+"profile <username|tag|id>`.";
 				// users.forEach(user => {
 				// 	string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)\n`;
 				// });
@@ -191,6 +199,76 @@ async function tags(msg, args) {
 		let taken = time - Date.now();
 		return msg.channel.send("Some error: "+err.toString()+"\n`[Time taken: "+taken+"ms]`");
 	}
+}
+
+async function send(msg, doc, args, response, callback) {
+	fe.sendAndAwait(msg, response)
+		.then(r => {
+			return callback(msg, args, doc, r);
+		})
+		.catch(err => {
+			return handleErr(err, msg);
+		});
+}
+
+async function show_types(msg, args, doc, r) {
+	if(args.length===0) {
+		let response = "Give me a creative field you want to see tags for.\n*Reply with the corresponding number:*";
+		return send(msg, doc, args, response, show_types);
+	} else {
+		let type = 0;
+		switch(r.toLowerCase()) {
+		case "design":
+		case "designer":
+			type = 1;break;
+		case "artist":
+		case "artists":
+		case "art":
+			type = 2;break;
+		case "vfx":
+		case "video":
+		case "motion":
+		case "editor":
+		case "vfx/video/motion":
+		case "vfx/video/motion editor":
+			type = 3;break;
+		case "other":
+		case "other creator":
+		case "other creative":
+		case "creator":
+			type = 4;break;
+		}
+		if(!type) return send(msg, doc, args, "**Invalid response:** You must reply with one of the numbers listed *(without prefix)*", show_types);
+		else {
+			let embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(msg.author.tag, msg.author.avatarURL)
+				.setDescription("All tags for "+types[type.toString()].name);
+			embed = gen_tags_embed(embed, type);
+			embed.addDield("Using the tags", "You can search for a user in this guild that does one of the tags. You can search **up to three tags** at a time, and it will return users that have at least one of them.\n**Command:** `"+doc.prefix+"profile does <tag(s)>`.");
+	
+			return msg.channel.send(embed);
+		}
+	}
+}
+
+function gen_tags_embed(embed, type) {
+	let col1 = String();
+	let col2 = String();
+	let half = Math.ceil(types[type.toString()].tags.length/2);
+	let sorted_tags = types[type.toString()].tags.sort();
+	sorted_tags.forEach((tag, i) => {
+		if (i < half) {
+			if(i===0) col1 +=tag;
+			else col1 += "\n" + tag;
+		} else {
+			col2 += "\n" + tag;
+		}
+	});
+	embed.addField("Tags", col1, true)
+		.addField("\u200B", col2, true);
+	return embed;
 }
 /**
  * OLD SHIT.
