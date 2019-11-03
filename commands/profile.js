@@ -160,12 +160,12 @@ async function tags(msg, args) {
 			}
 			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
 
-			marketUserModel.find({"_id":{$in:[docs.map(u=>u._id)]}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
+			marketUserModel.find({"_id":{$in:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
 				if (err) {
 					console.log(err);
 					return msg.channel.send("An error occurred fetching users.");
 				}
-				if (!users) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
+				if (!users.length) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
 				console.log(users);
 				
 				let string = "**Results:**\n";
