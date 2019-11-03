@@ -27,7 +27,7 @@ module.exports = {
 		case "tags":
 		case "types":
 			if (doc.level.userLevel & ACCESS.owner) {
-				args.shit();
+				args.shift();
 				return show_types(msg, args, doc);
 			} else return msg.channel.send("Sub-command only for owner while it's being made.");
 		case "search":
