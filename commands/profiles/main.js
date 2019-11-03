@@ -21,13 +21,12 @@ module.exports = {
 };
 
 async function _register(msg, doc, args) {
-	if(msg.channel.type!=="dm") {
-		msg.reply("<:Yes:588844524177195047> Starting registration progress in your DM's.");
-	}
-
 	getUser(msg.author.id)
 		.then(r => {
 			if(r) return msg.reply(response.exist+`\nTo manage your profile, see \`${doc.prefix}profile cmds\` for commands.`);
+			if(msg.channel.type!=="dm") {
+				msg.reply("<:Yes:588844524177195047> Starting registration progress in your DM's.");
+			}
 
 			let meta = {
 				_id: msg.author.id,
@@ -61,24 +60,24 @@ async function handleErr(err, msg, meta, prefix, reply=null) {
 	if(err.size===0) {
 		save(meta)
 			.then(()=>{
-				return msg.channel.send("**<:Info:588844523052859392> Time ran out.**\nI saved the information you provided so far.\nTo add/edit data on your profile, see `"+prefix+"profile cmds`.");
+				return msg.author.send("**<:Info:588844523052859392> Time ran out.**\nI saved the information you provided so far.\nTo add/edit data on your profile, see `"+prefix+"profile cmds`.");
 			})
 			.catch(err=>{
 				Sentry.captureException(err);
 				re.notifyErr(msg.client, err);
-				return msg.channel.send("**<:Info:588844523052859392> Time ran out.**\nAdditionally, an error occurred trying to save what you provided so far. Try `"+prefix+"register` again at a later time.");
+				return msg.author.send("**<:Info:588844523052859392> Time ran out.**\nAdditionally, an error occurred trying to save what you provided so far. Try `"+prefix+"register` again at a later time.");
 			});
 	} else {
 		Sentry.captureException(err);
 		re.notifyErr(msg.client, err);
 		save(meta)
 			.then(() => {
-				return msg.channel.send("**<:Stop:588844523832999936> An error occurred.**\nHowever, I saved the information you provided so far.\nTo add/edit data on your profile, see `" + prefix + "profile cmds`.");
+				return msg.author.send("**<:Stop:588844523832999936> An error occurred.**\nHowever, I saved the information you provided so far.\nTo add/edit data on your profile, see `" + prefix + "profile cmds`.");
 			})
 			.catch(err => {
 				Sentry.captureException(err);
 				re.notifyErr(msg.client, err);
-				return msg.channel.send("**<:Stop:588844523832999936> An error occurred.**\nAdditionally, an error occurred trying to save what you provided so far. Try `" + prefix + "register` again at a later time.");
+				return msg.author.send("**<:Stop:588844523832999936> An error occurred.**\nAdditionally, an error occurred trying to save what you provided so far. Try `" + prefix + "register` again at a later time.");
 			});
 	}
 }
