@@ -250,9 +250,6 @@ let marketUserSchema = new mongoose.Schema({
 let marketUserModel = maindb.model("marketUserModel", marketUserSchema);
 module.exports.marketUserModel = marketUserModel;
 
-
-
-
 let userTagsSchema = new mongoose.Schema({
 	"_id": String,
 	"tags": Array,

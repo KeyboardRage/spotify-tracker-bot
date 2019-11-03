@@ -1,5 +1,10 @@
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
+const {
+	marketUserModel,
+	userTags
+} = require("../util/database");
+
 module.exports = {
 	cmd: "test",
 	aliases: ["testing"],
@@ -9,15 +14,24 @@ module.exports = {
 	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg, cmd, args) {
-		const embed = new Discord.RichEmbed()
-			.setTimestamp(Date())
-			.setColor(process.env.THEME)
-			.setFooter(msg.author.tag, msg.author.avatarURL)
-			.addField("Description", this.desc, true);
-		if(args[0]==="ye") {
-			embed.addField("Something", "here");
+		try {
+			marketUserModel.find({}, (err, docs) => {
+				if (err) throw err;
+				docs.forEach(doc => {
+					let tags = new userTags({
+						"_id": doc._id,
+						"tags": doc.meta.tags,
+						"guilds": find_users_guilds(msg.client, doc._id)
+					});
+					tags.save(err => {
+						if (err) throw err;
+					});
+				});
+			});
+		} catch(err) {
+			console.error(err);
+			return;
 		}
-		return msg.channel.send(embed);
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);
@@ -33,6 +47,9 @@ module.exports = {
 		msg.channel.send(embed);
 	}
 };
+function find_users_guilds(client, userId) {
+	return client.guilds.filter(g => g.members.has(userId)).keyArray();
+}
 
 /**
  * Blocked
