@@ -53,7 +53,7 @@
 			"1": {
 				"max_tags":6,
 				"name":"Designer",
-				"tags": ["illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "infomatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
+				"tags": ["webdesign", "illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "infomatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
 			},
 			"2": {
 				"max_tags":4,

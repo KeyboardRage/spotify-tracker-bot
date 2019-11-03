@@ -217,10 +217,17 @@ function validate_portfolio(r) {
 		else return {pass:true, data:args, type:num};
 	default:
 		// All other is of type username
-		if(rg.site.test(args)) return {pass:false, data:"**Invalid argument:** This social item accepts only a username, not URL. See the corresponding 'Reply with' from the list by typing `list`, and try again."};
-		args = args.replace("@","");
-		if(!rg.username.test(args)) return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
-		else return {pass:true, data:args, type:num};
+		args = args.replace("@", "");
+
+		// Test matching URL, meaning the latter reg determine if URL or username
+		if(rg.username.test(args)) return {pass:true, data:args, type:num};
+		if(rg.site.test(args) && rg.site.test(/\//g)) {
+			let usr = args.split("/");
+			usr = usr[usr.length-1];
+			if(rg.username.test(usr)) {
+				return {pass:true, data:usr, type:num};
+			}
+		} else return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
 	}
 
 }
