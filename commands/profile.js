@@ -159,7 +159,9 @@ async function tags(msg, args) {
 				return msg.channel.send("An error occurred searching for users.");
 			}
 			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
-			marketUserModel.find({"_id":{$all:docs}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
+			let ids = docs.map(u=>u._id);
+			console.log(ids);
+			marketUserModel.find({"_id":{$all:ids}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
 				if (err) {
 					console.log(err);
 					return msg.channel.send("An error occurred fetching users.");
