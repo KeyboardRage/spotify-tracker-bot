@@ -51,24 +51,24 @@
 	"market": {
 		"creator_types": {
 			"1": {
-				"max_tags":5,
+				"max_tags":6,
 				"name":"Designer",
-				"tags": ["avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "infomatics", "brochoure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
+				"tags": ["illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "infomatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
 			},
 			"2": {
 				"max_tags":4,
 				"name":"Artist",
-				"tags": ["concept", "realism", "fiction", "fantasy", "digital", "paint", "physical", "drawing", "direction", "anime", "manga", "figure", "vector", "bitmap", "icon"]
+				"tags": ["illustration", "other", "concept", "realism", "fiction", "fantasy", "digital", "paint", "physical", "drawing", "direction", "anime", "manga", "figure", "vector", "bitmap", "icon"]
 			},
 			"3": {
 				"max_tags":4,
 				"name":"VFX/Video/Motion Editor",
-				"tags": ["vfx", "motion", "video", "editor", "videographer", "2d", "3d", "realism", "animation", "intro", "outro", "gif"]
+				"tags": ["other", "vfx", "motion", "video", "editor", "videographer", "2d", "3d", "realism", "animation", "intro", "outro", "gif"]
 			},
 			"4": {
 				"max_tags":4,
 				"name":"Other creator",
-				"tags": ["photographer", "mucisian", "content writer", "creative writer", "nonfiction writer", "director", "art", "concept"]
+				"tags": ["other", "photographer", "mucisian", "content writer", "creative writer", "nonfiction writer", "director", "art", "concept"]
 			}
 		},
 		"portfolios": {
