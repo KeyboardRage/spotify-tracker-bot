@@ -166,23 +166,26 @@ async function tags(msg, args) {
 					return msg.channel.send("An error occurred fetching users.");
 				}
 				if (!users) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
-				let string = String();
+				
+				let string = "**Results:**\n";
 				users.forEach(user => {
-					string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)`;
+					string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)\n`;
 				});
-				let taken = time-Date.now();
-				if(string.length) {return msg.channel.send("[Time taken: "+taken+"]"+string);}
-				else {
+
+				let taken = Date.now()-time;
+				if(string.length) {
+					return msg.channel.send("`[Time taken: "+taken+"ms]` "+string);
+				} else {
 					console.log(string);
 					let taken = time-Date.now();
-					return msg.channel.send("[Time taken: "+taken+"]"+"Searched, but string was empty. Check logs");
+					return msg.channel.send("`[Time taken: "+taken+"ms]` "+"Searched, but string was empty. Check logs");
 				}
 			});
 		});
 	} catch(err) {
 		console.log(err);
 		let taken = time - Date.now();
-		return msg.channel.send("[Time taken: "+taken+"]"+"Some error: "+err.toString());
+		return msg.channel.send("`[Time taken: "+taken+"ms]` "+"Some error: "+err.toString());
 	}
 }
 /**
