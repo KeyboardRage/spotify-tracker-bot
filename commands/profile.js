@@ -1,6 +1,6 @@
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
-const {marketUserModel} = require("../util/database");
+const {marketUserModel,userTags} = require("../util/database");
 const types = require("../data/config.json").market.creator_types;
 const portfolios = require("../data/config.json").market.portfolios;
 const fn = require("../util/response_functions");
@@ -25,6 +25,11 @@ module.exports = {
 		case "search":
 		case "find":
 			return find(msg, args, doc, true);
+		case "does":
+		case "tags":
+			if(doc.level.userLevel & ACCESS.owner) {
+				return tags(msg, args, doc);
+			} else return msg.channel.send("Sub-command only for owner while it's being made.");
 		case "register":
 			return msg.client.commands.register.exec(msg, cmd, args, doc);
 		default:
@@ -143,6 +148,30 @@ async function edit(msg, args, doc) {
 	return msg.channel.send("Sub-command not yet completed.");
 }
 
+async function tags(msg, args, doc) {
+	args.shift();
+	if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
+	userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}}, ["_id"], (err,docs) => {
+		if(err) {
+			console.log(err);
+			return msg.channel.send("An error occurred searching for users.");
+		}
+		console.log(docs);
+		if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
+		marketUserModel.find({"_id":{$all:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
+			if (err) {
+				console.log(err);
+				return msg.channel.send("An error occurred fetching users.");
+			}
+			if (!users) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
+			let string = String();
+			users.forEach(user => {
+				string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)`;
+			});
+			return msg.channel.send(string);
+		});
+	});
+}
 /**
  * OLD SHIT.
  * 

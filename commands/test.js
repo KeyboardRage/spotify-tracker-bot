@@ -14,12 +14,7 @@ module.exports = {
 	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg, cmd, args) {
-		try {
-			marketUserModel.updateMany({}, {$unset:{"meta.tags":""}});
-		} catch(err) {
-			console.error(err);
-			return;
-		}
+		return msg.channel.send(args.join(" "));
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);
