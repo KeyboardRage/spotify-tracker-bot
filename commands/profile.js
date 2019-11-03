@@ -168,9 +168,12 @@ async function tags(msg, args) {
 				if (!users) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
 				
 				let string = "**Results:**\n";
-				users.forEach(user => {
-					string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)\n`;
-				});
+				for(let i=0;i<users.length;i++) {
+					string += `${users[i].meta.discord}#${users[i].meta.discriminator} (\`${users[i]._id}\`)\n`;
+				}
+				// users.forEach(user => {
+				// 	string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)\n`;
+				// });
 
 				let taken = Date.now()-time;
 				if(string.length) {
