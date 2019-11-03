@@ -26,18 +26,14 @@ module.exports = {
 			return edit(msg, args, doc);
 		case "tags":
 		case "types":
-			if (doc.level.userLevel & ACCESS.owner) {
-				args.shift();
-				return show_types(msg, args, doc);
-			} else return msg.channel.send("Sub-command only for owner while it's being made.");
+			args.shift();
+			return show_types(msg, args, doc);
 		case "search":
 		case "find":
 			return find(msg, args, doc, true);
 		case "does":
-			if(doc.level.userLevel & ACCESS.owner) {
-				if(msg.channel.type==="dm") return msg.channel.send("**Cannot use command:** This sub-command is only available in guilds, as it searches for users in the guild that does one of the types of work.");
-				return tags(msg, args, doc);
-			} else return msg.channel.send("Sub-command only for owner while it's being made.");
+			if(msg.channel.type==="dm") return msg.channel.send("**Cannot use command:** This sub-command is only available in guilds, as it searches for users in the guild that does one of the types of work.");
+			return tags(msg, args, doc);
 		case "register":
 			return msg.client.commands.register.exec(msg, cmd, args, doc);
 		default:
@@ -163,13 +159,13 @@ async function tags(msg, args, doc) {
 	args.shift();
 	try {
 		if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
-		userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}}, ["_id"], (err,docs) => {
+		userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}}, ["_id"], {limit:20}, (err,docs) => {
 			if(err) {
 				return msg.channel.send("An error occurred searching for users.");
 			}
 			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
 
-			marketUserModel.find({"_id":{$in:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
+			marketUserModel.find({"_id":{$in:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], {limit:20}, (err,users) => {
 				if (err) {
 					return msg.channel.send("An error occurred fetching users.");
 				}
@@ -201,30 +197,40 @@ async function tags(msg, args, doc) {
 	}
 }
 
-async function send(msg, doc, args, response, callback) {
-	fe.sendAndAwait(msg, response)
+async function send(msg, doc, response, callback) {
+	fe.sendAndAwait(msg, response, {time:20000,errors:["time"],maxMatches:1})
 		.then(r => {
-			return callback(msg, args, doc, r);
+			return callback(msg, r, doc);
 		})
 		.catch(err => {
-			return handleErr(err, msg);
+			if(err.size===0) {
+				msg.reply("**Time ran out:** Aborted.");
+			} else {
+				return handleErr(err, msg);
+			}
 		});
 }
 
-async function show_types(msg, args, doc, r) {
+async function show_types(msg, args, doc) {
 	if(args.length===0) {
-		let response = "Give me a creative field you want to see tags for.\n*Reply with the corresponding number:*";
-		return send(msg, doc, args, response, show_types);
+		let response = "Give me a creative field you want to see tags for.\n*Reply with the corresponding number:*\n**Creator**\n<:One:588844523329683476> Designer\n<:Two:588844524659540030> Artist\n<:Three:588844524659539972> VFX/Video/Motion Editor\n<:Four:588844515520020598> Other creator";
+		return send(msg, doc, response, show_types);
 	} else {
 		let type = 0;
-		switch(r.toLowerCase()) {
+		switch(args[0].toLowerCase()) {
+		case "one":
+		case "1":
 		case "design":
 		case "designer":
 			type = 1;break;
+		case "two":
+		case "2":
 		case "artist":
 		case "artists":
 		case "art":
 			type = 2;break;
+		case "three":
+		case "3":
 		case "vfx":
 		case "video":
 		case "motion":
@@ -232,13 +238,15 @@ async function show_types(msg, args, doc, r) {
 		case "vfx/video/motion":
 		case "vfx/video/motion editor":
 			type = 3;break;
+		case "four":
+		case "4":
 		case "other":
 		case "other creator":
 		case "other creative":
 		case "creator":
 			type = 4;break;
 		}
-		if(!type) return send(msg, doc, args, "**Invalid response:** You must reply with one of the numbers listed *(without prefix)*", show_types);
+		if(!type) return send(msg, doc, "**Invalid response:** You must use one of the numbers or name of the creative field.", show_types);
 		else {
 			let embed = new Discord.RichEmbed()
 				.setTimestamp(Date())
@@ -246,7 +254,7 @@ async function show_types(msg, args, doc, r) {
 				.setFooter(msg.author.tag, msg.author.avatarURL)
 				.setDescription("All tags for "+types[type.toString()].name);
 			embed = gen_tags_embed(embed, type);
-			embed.addDield("Using the tags", "You can search for a user in this guild that does one of the tags. You can search **up to three tags** at a time, and it will return users that have at least one of them.\n**Command:** `"+doc.prefix+"profile does <tag(s)>`.");
+			embed.addField("Using the tags", "You can search for a user in this guild that does one of the tags. You can search **up to three tags** at a time, and it will return users that have at least one of them.\n**Command:** `"+doc.prefix+"profile does <tag(s)>`.");
 	
 			return msg.channel.send(embed);
 		}
