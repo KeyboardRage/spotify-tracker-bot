@@ -4,7 +4,7 @@ const Sentry = require("../../util/extras");
 const response = require("./responses.json");
 const types = require("../../data/config.json").market.creator_types;
 const portfolios = require("../../data/config.json").market.portfolios;
-const marketUsers = require("../../util/database").marketUserModel;
+const {marketUserModel,userTags} = require("../../util/database");
 const Discord = require("discord.js");
 const re = require("../../util/response_functions");
 
@@ -58,7 +58,7 @@ async function _register(msg, doc, args) {
 async function handleErr(err, msg, meta, prefix, reply=null) {
 	if(reply) return msg.reply(reply);
 	if(err.size===0) {
-		save(meta)
+		save(meta, msg.client)
 			.then(()=>{
 				return msg.author.send("**<:Info:588844523052859392> Time ran out.**\nI saved the information you provided so far.\nTo add/edit data on your profile, see `"+prefix+"profile cmds`.");
 			})
@@ -70,7 +70,7 @@ async function handleErr(err, msg, meta, prefix, reply=null) {
 	} else {
 		Sentry.captureException(err);
 		re.notifyErr(msg.client, err);
-		save(meta)
+		save(meta, msg.client)
 			.then(() => {
 				return msg.author.send("**<:Stop:588844523832999936> An error occurred.**\nHowever, I saved the information you provided so far.\nTo add/edit data on your profile, see `" + prefix + "profile cmds`.");
 			})
@@ -82,9 +82,9 @@ async function handleErr(err, msg, meta, prefix, reply=null) {
 	}
 }
 
-async function save(meta) {
+async function save(meta, client) {
 	return new Promise((resolve,reject) => {
-		let user = new marketUsers({
+		let user = new marketUserModel({
 			_id: meta._id,
 			last_updated: Date(),
 			name: meta.username,
@@ -93,18 +93,29 @@ async function save(meta) {
 				available: meta.open,
 				discord: meta.username,
 				discriminator: meta.discrim,
-				tags: meta.tags,
 				main_type: meta.type,
 				company: meta.company,
 				company_url: meta.companySite
 			},
 			portfolios: meta.portfolios
 		});
+		let userTagElm = new userTags({
+			_id: meta._id,
+			tags: meta.tags,
+			guilds: find_users_guilds(client, meta._id)
+		});
 		user.save(err => {
 			if(err) return reject(err);
-			return resolve(true);
+			userTagElm.save(err => {
+				if(err) return reject(err);
+				return resolve(true);
+			});
 		});
 	});
+}
+
+function find_users_guilds(client, userId) {
+	return client.guilds.filter(g => g.members.has(userId)).keyArray();
 }
 
 /**
@@ -118,7 +129,7 @@ function noFormatting(r) {
 
 async function getUser(userId) {
 	return new Promise((resolve,reject) => {
-		marketUsers.findOne({_id:userId}, (err,doc) => {
+		marketUserModel.findOne({_id:userId}, (err,doc) => {
 			if(err) return reject(err);
 			return resolve(doc);
 		});
@@ -218,15 +229,12 @@ function validate_portfolio(r) {
 	default:
 		// All other is of type username
 		args = args.replace("@", "");
-		console.log(args);
 		// Test matching URL, meaning the latter reg determine if URL or username
 		if(rg.username.test(args)) return {pass:true, data:args, type:num};
 		
-		console.log("Trying URL");
 		if (rg.site.test(args) && /\//g.test(args)) {
 			let usr = args.split("/");
 			usr = usr[usr.length-1];
-			console.log(usr, (usr.length && rg.username.test(usr)), (usr.length), (rg.username.test(usr)));
 			if(usr.length && rg.username.test(usr)) {
 				return {pass:true, data:usr, type:num};
 			} else return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
@@ -394,7 +402,7 @@ async function catch_portfolio(msg, doc, meta, r) {
 
 async function give_info(msg, doc, meta) {
 	// End of registration. Give general info.
-	save(meta)
+	save(meta, msg.client)
 		.then(()=>{
 			let title = String();
 			if(meta.type===6) {
