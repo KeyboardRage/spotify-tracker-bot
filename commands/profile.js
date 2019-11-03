@@ -148,29 +148,38 @@ async function edit(msg, args, doc) {
 	return msg.channel.send("Sub-command not yet completed.");
 }
 
-async function tags(msg, args, doc) {
+async function tags(msg, args) {
 	args.shift();
-	if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
-	userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}}, ["_id"], (err,docs) => {
-		if(err) {
-			console.log(err);
-			return msg.channel.send("An error occurred searching for users.");
-		}
-		console.log(docs);
-		if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
-		marketUserModel.find({"_id":{$all:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
-			if (err) {
+	try {
+		if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
+		userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}}, ["_id"], (err,docs) => {
+			if(err) {
 				console.log(err);
-				return msg.channel.send("An error occurred fetching users.");
+				return msg.channel.send("An error occurred searching for users.");
 			}
-			if (!users) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
-			let string = String();
-			users.forEach(user => {
-				string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)`;
+			console.log(docs);
+			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
+			marketUserModel.find({"_id":{$all:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], (err,users) => {
+				if (err) {
+					console.log(err);
+					return msg.channel.send("An error occurred fetching users.");
+				}
+				if (!users) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
+				let string = String();
+				users.forEach(user => {
+					string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)`;
+				});
+				if(string.length) {return msg.channel.send(string);}
+				else {
+					console.log(string);
+					return msg.channel.send("Searched, but string was empty. Check logs");
+				}
 			});
-			return msg.channel.send(string);
 		});
-	});
+	} catch(err) {
+		console.log(err);
+		return msg.channel.send("Some error: "+err.toString());
+	}
 }
 /**
  * OLD SHIT.
