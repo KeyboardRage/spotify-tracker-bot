@@ -1,4 +1,6 @@
 const ACCESS = require("../data/permissions.json");
+const db = require("../util/database");
+const Discord = require("discord.js");
 
 module.exports = {
 	cmd: "eval",

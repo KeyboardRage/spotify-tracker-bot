@@ -15,19 +15,7 @@ module.exports = {
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg, cmd, args) {
 		try {
-			marketUserModel.find({}, (err, docs) => {
-				if (err) throw err;
-				docs.forEach(doc => {
-					let tags = new userTags({
-						"_id": doc._id,
-						"tags": doc.meta.tags,
-						"guilds": find_users_guilds(msg.client, doc._id)
-					});
-					tags.save(err => {
-						if (err) throw err;
-					});
-				});
-			});
+			marketUserModel.updateMany({}, {$unset:{"meta.tags":""}});
 		} catch(err) {
 			console.error(err);
 			return;
