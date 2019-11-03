@@ -171,7 +171,7 @@ async function tags(msg, args, doc) {
 				}
 				if (!users.length) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
 				
-				let string = "**Results:**\nI found "+users.length+" users in this guild that does one of these things: "+args.joine(", ");
+				let string = "**Results:**\nI found "+users.length+" users in this guild that does one of these things: "+args.join(", ");
 				for(let i=0;i<users.length;i++) {
 					string += `Tag: ${users[i].meta.discord}#${users[i].meta.discriminator} — ID: \`${users[i]._id}\`\n`;
 				}
