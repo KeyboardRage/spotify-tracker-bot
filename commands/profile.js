@@ -149,6 +149,7 @@ async function edit(msg, args, doc) {
 }
 
 async function tags(msg, args) {
+	let time = Date.now();
 	args.shift();
 	try {
 		if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
@@ -169,16 +170,19 @@ async function tags(msg, args) {
 				users.forEach(user => {
 					string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)`;
 				});
-				if(string.length) {return msg.channel.send(string);}
+				let taken = time-Date.now();
+				if(string.length) {return msg.channel.send("[Time taken: "+taken+"]"+string);}
 				else {
 					console.log(string);
-					return msg.channel.send("Searched, but string was empty. Check logs");
+					let taken = time-Date.now();
+					return msg.channel.send("[Time taken: "+taken+"]"+"Searched, but string was empty. Check logs");
 				}
 			});
 		});
 	} catch(err) {
 		console.log(err);
-		return msg.channel.send("Some error: "+err.toString());
+		let taken = time - Date.now();
+		return msg.channel.send("[Time taken: "+taken+"]"+"Some error: "+err.toString());
 	}
 }
 /**
