@@ -9,7 +9,7 @@ module.exports = {
 	cmd: "profile",
 	aliases: ["profile"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.user,
 	dm: true,
 	daccess: [""],
 	desc: "Show a user's Grafik profile",

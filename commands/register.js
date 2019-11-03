@@ -6,7 +6,7 @@ module.exports = {
 	cmd: "register",
 	aliases: ["register"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.user,
 	dm: true,
 	daccess: [""],
 	desc: "Register as a designer / buyer and set up a profile.",
