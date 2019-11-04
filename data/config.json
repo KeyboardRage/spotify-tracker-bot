@@ -53,27 +53,32 @@
 			"1": {
 				"max_tags":6,
 				"name":"Designer",
+				"synonyms": ["design","designer"],
 				"tags": ["webdesign", "illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "informatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
 			},
 			"2": {
 				"max_tags":4,
 				"name":"Artist",
+				"synonyms": ["art","arts","artist"],
 				"tags": ["illustration", "other", "concept", "realism", "fiction", "fantasy", "digital", "paint", "physical", "drawing", "direction", "anime", "manga", "figure", "vector", "bitmap", "icon"]
 			},
 			"3": {
 				"max_tags":4,
 				"name":"VFX/Video/Motion Editor",
+				"synonyms": ["vfx","video","motion","editor","vfx/video/motion", "vfx/video/motion editor"],
 				"tags": ["other", "vfx", "motion", "video", "editor", "videographer", "2d", "3d", "realism", "animation", "intro", "outro", "gif"]
 			},
 			"4": {
 				"max_tags":4,
 				"name":"Other creator",
+				"synonyms": ["other","creator","creative"],
 				"tags": ["other", "photographer", "musician", "content writer", "creative writer", "nonfiction writer", "director", "art", "concept"]
 			}
 		},
 		"portfolios": {
 			"1": {
 				"name": "Personal site",
+				"synonyms":["personal site","site","personal"],
 				"type": "url",
 				"prefix": "",
 				"need_url_prefix": false,
@@ -81,6 +86,7 @@
 			},
 			"2": {
 				"name": "Behance",
+				"synonyms":["behance"],
 				"type": "username",
 				"prefix": "",
 				"need_url_prefix": true,
@@ -88,6 +94,7 @@
 			},
 			"3": {
 				"name": "Dribbble",
+				"synonyms":["dribbble","dribble","drible","dribbbble"],
 				"type": "username",
 				"prefix": "",
 				"need_url_prefix": true,
@@ -95,6 +102,7 @@
 			},
 			"4": {
 				"name": "Instagram",
+				"synonyms":["instagram","insta"],
 				"type": "username",
 				"prefix": "@",
 				"need_url_prefix": true,
@@ -102,6 +110,7 @@
 			},
 			"5": {
 				"name": "Twitter",
+				"synonyms":["twitter"],
 				"type": "username",
 				"prefix": "@",
 				"need_url_prefix": true,
@@ -109,6 +118,7 @@
 			},
 			"6": {
 				"name": "ArtStation",
+				"synonyms":["artstation"],
 				"type": "username",
 				"prefix": "",
 				"need_url_prefix": true,
@@ -116,6 +126,7 @@
 			},
 			"7": {
 				"name": "DeviantArt",
+				"synonyms":["deviantart"],
 				"type": "username",
 				"prefix": "",
 				"need_url_prefix": true,
@@ -123,6 +134,7 @@
 			},
 			"8": {
 				"name": "Facebook",
+				"synonyms":["facebook","fb"],
 				"type": "url",
 				"prefix": "",
 				"need_url_prefix": false,

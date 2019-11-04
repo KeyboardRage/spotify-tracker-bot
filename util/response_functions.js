@@ -11,7 +11,8 @@ async function _notifyErr(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
 		.setTimestamp(Date())
 		.addField("Error:", err);
 	try {
-		Client.channels.get(config.notifyErrorsChannel).send(embed);
+		if(Client.user.id==="232224611847241729") Client.channels.get(config.notifyErrorsChannel).send(embed);
+		else console.log(err.toString());
 		if (process.env.DEBUG!="true") Sentry.captureException(err);
 	} catch(err) {
 		Sentry.captureException(err);

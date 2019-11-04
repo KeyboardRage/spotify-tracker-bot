@@ -234,8 +234,10 @@ let marketUserSchema = new mongoose.Schema({
 		"title": String,
 		"tags": Array,
 		"main_type": Number,
+		"email": String,
 		"company": String,
-		"company_url": String
+		"company_url": String,
+		"min_budget": Number
 	},
 	"portfolios": mongoose.SchemaTypes.Mixed,
 	"name": String,
@@ -243,7 +245,6 @@ let marketUserSchema = new mongoose.Schema({
 	"sales": Number,
 	"reviews": [reviewsScema],
 	"open": Array,
-	"email": String,
 	"flags": Number, // Random boolean info?
 	"last_updated": Date
 }, {collection: "marketUsers"});
