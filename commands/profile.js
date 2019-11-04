@@ -37,15 +37,19 @@ module.exports = {
 			} else return msg.channel.send("Sub-command disabled while it's being worked on.");
 			break;
 		case "unset":
-			if (args[0].toLowerCase() === "unset" || args[0].toLowerCase() === "remove" || args[0].toLowerCase() === "delete"||args[0].toLowerCase() === "-") {
-				args.shift();
-				return edit_unset(msg, args, doc);
-			} else return msg.channel.send("asd");
+			if (doc.level.userLevel & ACCESS.owner) {
+				if (args[0].toLowerCase() === "unset" || args[0].toLowerCase() === "remove" || args[0].toLowerCase() === "delete"||args[0].toLowerCase() === "-") {
+					args.shift();
+					return edit_unset(msg, args, doc);
+				} else return msg.channel.send("asd");
+			} else return msg.channel.send("Sub-command disabled while it's being worked on.");
 		case "set":
-			if (args[0].toLowerCase() === "set" || args[0].toLowerCase() === "add" || args[0].toLowerCase() === "+") {
-				args.shift();
-				return edit_set(msg, args, doc);
-			} else return msg.channel.send("asd");
+			if (doc.level.userLevel & ACCESS.owner) {
+				if (args[0].toLowerCase() === "set" || args[0].toLowerCase() === "add" || args[0].toLowerCase() === "+") {
+					args.shift();
+					return edit_set(msg, args, doc);
+				} else return msg.channel.send("asd");
+			} else return msg.channel.send("Sub-command disabled while it's being worked on.");
 		case "tags":
 		case "types":
 			args.shift();
