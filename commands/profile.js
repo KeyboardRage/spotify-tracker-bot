@@ -89,34 +89,38 @@ async function handleErr(err, msg) {
 }
 
 async function create_embed(msg, user, self=false) {
-	return new Promise(resolve => {
-		let title = String();
-		if (user.meta.main_type === 6) {
-			title = (user.meta.company_url) ? `Works at [${user.meta.company}](${user.meta.company_url})` : "Works at " + user.meta.company;
-		} else if (user.meta.main_type === 5) title = "Private person";
-		else title = types[user.meta.main_type.toString()].name;
-
-		const embed = new Discord.RichEmbed()
-			.setTimestamp(Date())
-			.setColor(process.env.THEME)
-			.setFooter(msg.author.tag, msg.author.avatarURL)
-			.setDescription((self)?"Your own profile":"Profile of <@"+user._id+">")
-			.addField((self)?"About you":"About "+user.name, `**Name:** ${user.name}\n**Discord:** ${user.meta.discord}#${user.meta.discriminator}\n**Discord ID:** ${user._id}`, true)
-			.addField("\u200B", `**Title:** ${title}`, true);
-		if (user.meta.main_type <= 4) {
-			let socials = String();
-			embed.addField("Status", `**Availability:** ${(user.meta.available)?"open for comissions.":"not open for comissions."}\n${(user.meta.tags && user.meta.tags.length)?"**User works with:**\n"+user.meta.tags.join(", "):""}`)
-			if(user.portfolios) {
-				for (let elm in user.portfolios) {
-					if (elm == "1") socials += `[Personal site →](${user.portfolios[elm]}) \n`;
-					else if (elm == "8") socials += `[Facebook page →]($${user.portfolios[elm]})\n`;
-					else if (portfolios[elm].need_url_prefix) socials += `**${portfolios[elm].name}**: [${portfolios[elm].prefix}${user.portfolios[elm]}](${portfolios[elm].url_prefix}${user.portfolios[elm]})\n`;
-					else socials += `**${portfolios[elm].name}**: ${portfolios[elm].prefix}${user.portfolios[elm]}\n`;
+	return new Promise((resolve,reject) => {
+		try {
+			let title = String();
+			if (user.meta.main_type === 6) {
+				title = (user.meta.company_url) ? `Works at [${user.meta.company}](${user.meta.company_url})` : "Works at " + user.meta.company;
+			} else if (user.meta.main_type === 5) title = "Private person";
+			else title = types[user.meta.main_type.toString()].name;
+	
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(msg.author.tag, msg.author.avatarURL)
+				.setDescription((self)?"Your own profile":"Profile of <@"+user._id+">")
+				.addField((self)?"About you":"About "+user.name, `**Name:** ${user.name}\n**Discord:** ${user.meta.discord}#${user.meta.discriminator}\n**Discord ID:** ${user._id}`, true)
+				.addField("\u200B", `**Title:** ${title}`, true);
+			if (user.meta.main_type <= 4) {
+				let socials = String();
+				embed.addField("Status", `**Availability:** ${(user.meta.available)?"open for comissions.":"not open for comissions."}\n${(user.meta.tags && user.meta.tags.length)?"**User works with:**\n"+user.meta.tags.join(", "):""}`)
+				if(user.portfolios) {
+					for (let elm in user.portfolios) {
+						if (elm == "1") socials += `[Personal site →](${user.portfolios[elm]}) \n`;
+						else if (elm == "8") socials += `[Facebook page →]($${user.portfolios[elm]})\n`;
+						else if (portfolios[elm].need_url_prefix) socials += `**${portfolios[elm].name}**: [${portfolios[elm].prefix}${user.portfolios[elm]}](${portfolios[elm].url_prefix}${user.portfolios[elm]})\n`;
+						else socials += `**${portfolios[elm].name}**: ${portfolios[elm].prefix}${user.portfolios[elm]}\n`;
+					}
+					embed.addField("Portfolio and social media", socials);
 				}
-				embed.addField("Portfolio and social media", socials);
 			}
+			return resolve(embed);
+		} catch(err) {
+			return reject(err);
 		}
-		return resolve(embed);
 	});
 }
 
@@ -127,7 +131,7 @@ async function find(msg, args, doc, search=false) {
 			if (err) return handleErr(err, msg);
 			if (!user) return msg.channel.send("You don't have a profile. Register with `" + doc.prefix + "register`.");
 			if (user) {
-				let embed = await create_embed(msg, user.toObject(), true);
+				let embed = await create_embed(msg, user.toObject(), true).catch(err=>{return handleErr(err, msg);});
 				return msg.channel.send(embed);
 			}
 		});

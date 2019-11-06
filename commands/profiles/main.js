@@ -68,8 +68,9 @@ async function handleErr(err, msg, meta, prefix, reply=null) {
 				return msg.author.send("**<:Info:588844523052859392> Time ran out.**\nAdditionally, an error occurred trying to save what you provided so far. Try `"+prefix+"register` again at a later time.");
 			});
 	} else {
+		if(meta) console.log(meta);
 		Sentry.captureException(err);
-		re.notifyErr(msg.client, err);
+		re.notifyErr(msg.client, `${err.toString()}\n**Meta:** ${JSON.stringify(meta)}`);
 		save(meta, msg.client)
 			.then(() => {
 				return msg.author.send("**<:Stop:588844523832999936> An error occurred.**\nHowever, I saved the information you provided so far.\nTo add/edit data on your profile, see `" + prefix + "profile cmds`.");
@@ -84,12 +85,19 @@ async function handleErr(err, msg, meta, prefix, reply=null) {
 
 async function save(meta, client) {
 	return new Promise((resolve,reject) => {
+		
+		let title = String();
+		try {
+			title = (meta.company) ? meta.company: types[meta.type.toString()].name; // One will have null
+		} catch(err) {
+			title = null;
+		}
 		let user = new marketUserModel({
 			_id: meta._id,
 			last_updated: Date(),
 			name: meta.username,
 			meta: {
-				title: (meta.company)?meta.company:types[meta.type.toString()].name, // One will have null
+				title: title,
 				available: meta.open,
 				discord: meta.username,
 				discriminator: meta.discrim,
