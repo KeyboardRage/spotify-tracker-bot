@@ -156,6 +156,7 @@ async function find(msg, args, doc, search=false) {
 		}
 		marketUserModel.findById(user, async (err, user) => {
 			if (err) return handleErr(err, msg);
+			if (!user && user===msg.author.id) return msg.channel.send("You can use `"+doc.prefix+"profile` to view your own profile — but you need to register first with `"+doc.prefix+"register`.");
 			if (!user) return msg.channel.send(`Could not find user ${(not_guild_member)?"in this guild nor globally.":"in this guild. You could try the Discord ID to search globally."}`);
 			let embed = await create_embed(msg, user.toObject());
 			return msg.channel.send(embed);
@@ -198,30 +199,34 @@ async function tags(msg, args, doc) {
 					return msg.channel.send("An error occurred fetching users.");
 				}
 				if (!users.length) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
-				
-				let string = "**Results:**\nI found "+users.length+" users in this guild that does one of these things: "+args.join(", ")+"\n";
+
+				let string = String();
 				for(let i=0;i<users.length;i++) {
-					string += `${users[i].meta.discord}#${users[i].meta.discriminator} — ID: \`${users[i]._id}\`\n`;
+					string += `<@${users[i]._id}> — \`${users[i]._id}\`\n`;
 				}
-				string += "\nTo inspect of theirs profile, use `"+doc.prefix+"profile <username|tag|id>`.";
-				// users.forEach(user => {
-				// 	string += `${user.meta.discord}#${user.meta.discriminator} (\`${user._id}\`)\n`;
-				// });
+
+				const embed = new Discord.RichEmbed()
+					.setTimestamp(Date())
+					.setColor(process.env.THEME)
+					.setFooter(msg.author.tag, msg.author.avatarURL)
+					.setDescription("Tag search results")
+					.addField("Tags", `Users found that has one of these tags: **${args.join("**, **")}**.`)
+					.addField("Inspect profile", `Check out a specific user's profile with \`${doc.prefix}${this.cmd} <id|mention|username>\``)
+					.addField("Users", string);
 
 				let taken = Date.now()-time;
-				if(string.length) {
-					return msg.channel.send(string+"\n`[Time taken: "+taken+"ms]`");
-				} else {
-					console.log(string);
-					let taken = time-Date.now();
-					return msg.channel.send("Searched, but string was empty. Check logs"+"\n`[Time taken: "+taken+"ms]`");
+				if(taken>100) {
+					fn.notifyErr(msg.client, new Error("Took "+taken+"ms for "+msg.author.id+" user profile search on tags: "+args.join(", ")));
 				}
+				return msg.channel.send(embed);
 			});
 		});
 	} catch(err) {
-		console.log(err);
+		console.error(err);
 		let taken = time - Date.now();
-		return msg.channel.send("Some error: "+err.toString()+"\n`[Time taken: "+taken+"ms]`");
+		fn.notifyErr(msg.client, new Error("Took " + taken + "ms for " + msg.author.id + " user profile search on tags: " + args.join(", ")));
+		Sentry.captureException(err);
+		return msg.channel.send("**Could not complete command:** An error occurred. Error has been reported.");
 	}
 }
 

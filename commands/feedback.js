@@ -33,6 +33,8 @@ module.exports = {
 					msg.channel.send("An error occurred trying to submit bug report. Please try again at a later point in time.");
 					throw err;
 				} else {
+					let chan = (msg.channel.type==="dm")?"**DM's**":`${msg.guild.name} \`${msg.guild.id}\``;
+					message += `\n**From:** ${msg.user.tag} \`${msg.author.id}\` **in** ${chan}.`;
 					fn.notify(msg.client, message, config.colors.green);
 					return msg.channel.send(`\`ID: ${feedback._id}\` → Feedback submission successful.`);
 				}
