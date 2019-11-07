@@ -211,7 +211,7 @@ async function tags(msg, args, doc) {
 					.setFooter(msg.author.tag, msg.author.avatarURL)
 					.setDescription("Tag search results")
 					.addField("Tags", `Users found that has one of these tags: **${args.join("**, **")}**.`)
-					.addField("Inspect profile", `Check out a specific user's profile with \`${doc.prefix}${this.cmd} <id|mention|username>\``)
+					.addField("Inspect profile", `Check out a specific user's profile with \`${doc.prefix}profile <id|mention|username>\``)
 					.addField("Users", string);
 
 				let taken = Date.now()-time;

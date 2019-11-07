@@ -436,7 +436,7 @@ async function give_info(msg, doc, meta) {
 				embed.addField("Status", `**Availability:** ${(meta.open)?"open for comissions.":"not open for comissions."}\n${(meta.tags)?"**User works with:**\n"+meta.tags.join(", "):""}`)
 					.addField("Portfolio and social media", socials);
 			}
-			embed.addField("Editing profile", "You can at any time change any of the fields, or even add more information, through the `"+doc.prefix+"profile`. Use  `"+doc.prefix+"profile cmds` to see all possible actions.");
+			embed.addField("Editing profile", "You can at any time change any of the fields, or even add more information, through `"+doc.prefix+"profile edit`. Use  `"+doc.prefix+"profile cmds` to see all possible actions.");
 			return msg.author.send("**Registration complete!**", {embed});
 		})
 		.catch(err=>{
