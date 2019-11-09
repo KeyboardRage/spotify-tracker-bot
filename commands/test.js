@@ -18,7 +18,7 @@ module.exports = {
 
 		restartWhenReady(msg.client, () => {
 			console.log("asd");
-			process.exit(1);
+			process.emit("SIGINT");
 		});
 
 	},

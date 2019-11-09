@@ -388,6 +388,8 @@ async function create_embed(msg, doc) {
 			if(doc.meta.company) {
 				string = (doc.meta.company_url)?`[${doc.meta.company}](${doc.meta.company_url})`:doc.meta.company;
 				embed.addField("**Company information:**", `Works at ${string}`);
+			} else if (doc.meta.company_url) {
+				embed.addField("**Company information:**", `Works at ${doc.meta.company_url}`);
 			}
 
 			// Creative type / title
