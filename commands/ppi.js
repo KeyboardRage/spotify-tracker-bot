@@ -56,7 +56,7 @@ module.exports = {
 
 		msg.channel.startTyping();
 		let query = `valueA=${values.value0}&unitA=${values.unit0}&valueB=${values.value1}&unitB=${values.unit1}`;
-		request.get(`https://app.grafik-bot.net/v1/ppi?${query}`, (err, res, body) => {
+		request.get(`${process.env.NEW_API}/v1/ppi?${query}`, (err, res, body) => {
 			if (err) {
 				msg.channel.stopTyping();
 				msg.channel.send("Could not complete the command.");

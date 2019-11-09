@@ -7,15 +7,18 @@ const {restartWhenReady} = require("../util/session");
 const request = require("request");
 
 module.exports = {
-	cmd: "test",
-	aliases: ["testing"],
+	cmd: "logo",
+	aliases: ["logos"],
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner,
 	dm: true,
 	daccess: [""],
-	desc: "Generic testing command. Replies with what you say.",
+	desc: "Search for company, service, item logos.",
 	async exec(msg, cmd, args) {
-		return msg.channel.send(args.join(" "));
+		let url = (process.env.DEBUG==="true")?"https://localhost:5000/v1/logo":process.env.NEW_API+"/v1/logo";
+
+		// TODO: Only search.
+		if(args.length<2) return msg.channel.send("**Missing arguments:** You must give the logo a name and some tags.");
 
 	},
 	help(msg, cmd, args, doc) {
@@ -32,20 +35,3 @@ module.exports = {
 		msg.channel.send(embed);
 	}
 };
-
-
-/**
- * Blocked
-{
-	DiscordAPIError: Cannot send messages to this user
-	at item.request.gen.end(d: \FILES\ D O C U M E N T S\ P R O J E C T S\ NodeJS\ Grafik - bot_v2\ node_modules\ discord.js\ src\ client\ rest\ RequestHandlers\ Sequential.js: 85: 15)
-	at then(d: \FILES\ D O C U M E N T S\ P R O J E C T S\ NodeJS\ Grafik - bot_v2\ node_modules\ snekfetch\ src\ index.js: 215: 21)
-	at process._tickCallback(internal / process / next_tick.js: 68: 7)
-	name: 'DiscordAPIError',
-	message: 'Cannot send messages to this user',
-	path: '/api/v7/channels/585187341887602719/messages',
-	code: 50007,
-	method: 'POST'
-}
-
- */

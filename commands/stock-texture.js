@@ -284,7 +284,7 @@ function tryCache_v2(keyword) {
 }
 function tryApi(args) {
 	return new Promise((resolve, reject) => {
-		request.get("https://app.grafik-bot.net/v1/stock-texture?keyword=" + args.join(" "), (err, res) => {
+		request.get(process.env.NEW_API+"/v1/stock-texture?keyword=" + args.join(" "), (err, res) => {
 			if (err) return reject(err);
 			try {
 				if (res.statusCode === 200) return resolve(JSON.parse(res.body).data);

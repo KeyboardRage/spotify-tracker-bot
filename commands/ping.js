@@ -32,20 +32,20 @@ module.exports = {
 			});
 		}
  
-		// Get ping of API
-		let api = () => new Promise(resolve => {
-			let time = {start:Date.now(),end:Number()};
-			request.get(process.env.API+"/ping", (err,res) => {
-				if(err || res.statusCode !== 200) console.error(err);
-				time.end = Date.now(); // Do time anyway.
-				return resolve(time);
-			});
-		});
+		// // Get ping of API
+		// let api = () => new Promise(resolve => {
+		// 	let time = {start:Date.now(),end:Number()};
+		// 	request.get(process.env.API+"/ping", (err,res) => {
+		// 		if(err || res.statusCode !== 200) console.error(err);
+		// 		time.end = Date.now(); // Do time anyway.
+		// 		return resolve(time);
+		// 	});
+		// });
 
-		// Secondary API (app @ NetVPX)
+		// New API, Google
 		let app = () => new Promise(resolve => {
 			let time = {start:Date.now(),end:Number()};
-			request.get("https://app.grafik-bot.net/v1/ping", (err,res) => {
+			request.get(process.env.NEW_API+"/v1/ping", (err,res) => {
 				if(err || res.statusCode !== 200) console.error(err);
 				time.end = Date.now(); // Do time anyway.
 				return resolve(time);
@@ -81,13 +81,12 @@ module.exports = {
 					.setColor(process.env.THEME)
 					.setFooter(msg.author.tag, msg.author.avatarURL)
 					.addField("Client:", `Avg. ping: \`${Math.round(grafik)} ms\``, true)
-					.addField("API:", `API roundtrip: \`${results[0].end - results[0].start} ms\`\nNew API roundtrip: \`${results[1].end - results[1].start} ms\``, true)
+					.addField("API:", `API roundtrip: \`${results[1].end - results[1].start} ms\``, true)
 					.addField("Database:", `DB Roundtrip: \`${results[2].end - results[2].start} ms\`\n Cache: \`${results[3].end - results[3].start} ms\``, true);
 				msg.channel.stopTyping();
 				msg.channel.send(embed);
 				return {
 					api: results[0].end - results[0].start,
-					app: results[1].end - results[1].start,
 					db: results[2].end - results[2].start,
 					redis: results[3].end - results[3].start,
 					client: grafik

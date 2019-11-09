@@ -154,7 +154,7 @@ async function newEntry(msg, args) {
 		headers: {
 			"Content-Type":"application/json" //TODO: Might require HTTPS, x-encoded, n shit later.
 		},
-		uri: "https://app.grafik-bot.net/v1/template?action=new",
+		uri: process.env.NEW_API+"/v1/template?action=new",
 		form: data,
 	}, (err,res,body) => {
 		if (err) return handleErr(err, msg);
@@ -220,7 +220,7 @@ async function addAnotheFile(msg, r, doc) {
 			headers: {
 				"Content-Type":"application/json"
 			},
-			uri: "https://app.grafik-bot.net/v1/template?action=append", //TODO: Change to grafik
+			uri: process.env.NEW_API+"/v1/template?action=append", //TODO: Change to grafik
 			form: doc
 		}, (err,res,body) => {
 			if (err) return handleErr(err, msg);
