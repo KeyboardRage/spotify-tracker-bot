@@ -205,48 +205,49 @@ function get_portfolio_list(msg, meta) {
 	return embed;
 }
 
-function validate_portfolio(r) {
-	let nums = Object.keys(portfolios);
-	let args = r.split(" ");
-	if(!args.length) return {pass:false, data:"**Missing argument:** There was no input. Try again."};
-	if(args.length < 1) return {pass:false, data:"**Missing argument(s):** The input must start with the number, followed by space and then the input. Try again."};
-	if(isNaN(args[0])) return {pass:false, data:"**Invalid argument:** The input must start with the number, followed by space and then the input. Try again."};
-	if(!nums.includes(args[0])) return {pass:false, data:"**Invalid argument:** The input number at the start must be in the list. Try again, or write `list` to see all possible ones."};
-	
-	let num = args.shift();
-	args = args.join(" ");
-
-	let rg = {
-		site: new RegExp(/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/, "ig"),
-		fb: new RegExp(/^(https?:\/\/)?(www\.)?facebook\.com(\/\S*)?$/, "ig"),
-		username: new RegExp(/^[a-zA-Z0-9-_.]+$/, "ig")
-	};
-	switch (parseInt(num)) {
-	case 1:
-		// Type: site
-		if(!/https?:\/\//i.test(args)) args = "https://"+args;
-		if(!rg.site.test(args)) return {pass:false, data:"**Invalid argument:** The input after the number did not match that of a valid website URL. Try again."};
-		else return {pass:true, data:args, type:num};
-	case 8:
-		// Type: facebook
-		if(!/https?:\/\//i.test(args)) args = "https://"+args;
-		if(!rg.fb.test(args)) return {pass:false, data:"**Invalid argument:** The input after the number did not match that of a valid Facebook URL. Try again."};
-		else return {pass:true, data:args, type:num};
-	default:
-		// All other is of type username
-		args = args.replace("@", "");
-		// Test matching URL, meaning the latter reg determine if URL or username
-		if(rg.username.test(args)) return {pass:true, data:args, type:num};
+async function validate_portfolio(r) {
+	return new Promise(resolve => {
+		let nums = Object.keys(portfolios);
+		let args = r.split(" ");
+		if(!args.length) return {pass:false, data:"**Missing argument:** There was no input. Try again."};
+		if(args.length < 1) return {pass:false, data:"**Missing argument(s):** The input must start with the number, followed by space and then the input. Try again."};
+		if(isNaN(args[0])) return {pass:false, data:"**Invalid argument:** The input must start with the number, followed by space and then the input. Try again."};
+		if(!nums.includes(args[0])) return {pass:false, data:"**Invalid argument:** The input number at the start must be in the list. Try again, or write `list` to see all possible ones."};
 		
-		if (rg.site.test(args) && /\//g.test(args)) {
-			let usr = args.split("/");
-			usr = usr[usr.length-1];
-			if(usr.length && rg.username.test(usr)) {
-				return {pass:true, data:usr, type:num};
-			} else return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
-		} else return {pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."};
-	}
-
+		let num = args.shift();
+		args = args.join(" ");
+		
+		let rg = {
+			site: new RegExp(/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/, "ig"),
+			fb: new RegExp(/^(https?:\/\/)?(www\.)?facebook\.com(\/\S*)?$/, "ig"),
+			username: new RegExp(/^[a-zA-Z0-9-_.]+$/, "ig")
+		};
+		switch (parseInt(num)) {
+		case 1:
+			// Type: site
+			if(!/https?:\/\//i.test(args)) args = "https://"+args;
+			if(!rg.site.test(args)) return {pass:false, data:"**Invalid argument:** The input after the number did not match that of a valid website URL. Try again."};
+			else return resolve({pass:true, data:args, type:num});
+		case 8:
+			// Type: facebook
+			if(!/https?:\/\//i.test(args)) args = "https://"+args;
+			if(!rg.fb.test(args)) return {pass:false, data:"**Invalid argument:** The input after the number did not match that of a valid Facebook URL. Try again."};
+			else return resolve({pass:true, data:args, type:num});
+		default:
+			// All other is of type username
+			args = args.replace("@", "");
+			// Test matching URL, meaning the latter reg determine if URL or username
+			if(rg.username.test(args)) return resolve({pass:true, data:args, type:num});
+		
+			if (rg.site.test(args) && /\//g.test(args)) {
+				let usr = args.split("/");
+				usr = usr[usr.length-1];
+				if(usr.length && rg.username.test(usr)) {
+					return resolve({pass:true, data:usr, type:num});
+				} else return resolve({pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."});
+			} else return resolve({pass:false, data:"**Invalid argument:** The username includes invalid characters. Remove invalid symbols and try again."});
+		}
+	});
 }
 /****************************************
  *	CATCH X BLOCKS
@@ -399,7 +400,7 @@ async function catch_portfolio(msg, doc, meta, r) {
 	if(r.toLowerCase()==="list") return send(msg, doc, get_portfolio_list(msg, meta), meta, catch_portfolio);
 	else if(r.toLowerCase()==="done") return send(msg, doc, null, meta, give_info);
 
-	let data = validate_portfolio(r);
+	let data = await validate_portfolio(r);
 
 	if(!data.pass) return send(msg, doc, data.data, meta, catch_portfolio);
 	meta.portfolios = {...meta.portfolios, [data.type.toString()]:data.data};
