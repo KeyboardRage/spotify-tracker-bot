@@ -19,6 +19,7 @@ masterCacheLoader()
 //	CLIENT EVENTS
 //================================
 Client.on("ready", () => {
+	Client.block_all = false;
 	console.info(chalk.black.bgGreen(" ✓ ") + chalk.green(` Logged in as ${Client.user.tag}`));
 });
 Client.on("message", async msg => {
@@ -33,6 +34,8 @@ Client.on("message", async msg => {
 	if(msg.channel.type!=="dm" && await fn.disabled(msg.channel.id, cmd, args, doc)) return;
 	fn.catch_new(msg, cmd, doc);
 	// if(msg.channel.type!=="dm" && await fn.check_self_perms(msg, cmd, doc.prefix)) return;
+
+	if(Client.block_all) return fn.blocked_for_restart(msg);
 
 	doc.level = await Client.commands[cmd].permission(msg, doc);
 	if(process.env.DEBUG==="true") console.log(doc.level);

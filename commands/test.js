@@ -1,9 +1,9 @@
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
-const {
-	marketUserModel,
-	userTags
-} = require("../util/database");
+const retry = require("retry");
+const {marketUserModel,userTags} = require("../util/database");
+const {RedisDB} = require("../util/redis");
+const {restartWhenReady} = require("../util/session");
 
 module.exports = {
 	cmd: "test",
@@ -14,7 +14,13 @@ module.exports = {
 	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg, cmd, args) {
-		return msg.channel.send(args.join(" "));
+		// return msg.channel.send(args.join(" "));
+
+		restartWhenReady(msg.client, () => {
+			console.log("asd");
+			process.exit(1);
+		});
+
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);
@@ -26,7 +32,7 @@ module.exports = {
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd} <text>\``)
-			.addField("Examples", `\`${doc.prefix}${this.cmd} lorem ipsum\``)
+			.addField("Examples", `\`${doc.prefix}${this.cmd} lorem ipsum\``);
 		msg.channel.send(embed);
 	}
 };

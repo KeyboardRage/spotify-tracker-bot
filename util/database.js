@@ -237,7 +237,8 @@ let marketUserSchema = new mongoose.Schema({
 		"email": String,
 		"company": String,
 		"company_url": String,
-		"min_budget": Number
+		"min_budget": Number,
+		"color":Number
 	},
 	"portfolios": mongoose.SchemaTypes.Mixed,
 	"name": String,
@@ -254,6 +255,7 @@ module.exports.marketUserModel = marketUserModel;
 let userTagsSchema = new mongoose.Schema({
 	"_id": String,
 	"tags": Array,
+	"available": Boolean,
 	"guilds": Array
 }, {collection:"userTags"});
 let userTags = maindb.model("userTags", userTagsSchema);

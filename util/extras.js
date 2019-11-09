@@ -50,7 +50,7 @@ config.kill_signatures.forEach(signal => {
 					process.exit(1);
 				}
 				RedisDB.removeAllListeners();
-				console.info(chalk.black.bgRed(" SHUTDOWN ") + chalk.black.bgGreen(" GRACEFUL ") + " for Redis")
+				console.info(chalk.black.bgRed(" SHUTDOWN ") + chalk.black.bgGreen(" GRACEFUL ") + " for Redis");
 				// Close MongoDB
 				maindb.close(err=>{
 					if (err) {

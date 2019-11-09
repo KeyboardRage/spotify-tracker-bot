@@ -485,6 +485,10 @@ async function _render_variable_text(/**@type {"msg"}*/msg, /**@type {String}*/t
 	});
 }
 
+function _blocked_for_restart(msg) {
+	return msg.channel.send("**Aborted command:** Command execution aborted due to bot being queued for restart. Commands will be available once restarted in ~a minute.");
+}
+
 // MASTER FUNCTION EXPORT.
 module.exports = {
 	notifyErr: async function(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
@@ -569,7 +573,10 @@ module.exports = {
 	check_self_perms: async function (/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {String}*/prefix) {
 		return await _check_self_perms(msg, cmd, prefix);
 	},
-	_render_variable_text: async function (/**@type {"msg"}*/msg, /**@type {String}*/text) {
+	render_variable_text: async function (/**@type {"msg"}*/msg, /**@type {String}*/text) {
 		return await _render_variable_text(msg, text);
+	},
+	blocked_for_restart: function(/**@type {"msg"}*/msg) {
+		return _blocked_for_restart(msg);
 	}
 };

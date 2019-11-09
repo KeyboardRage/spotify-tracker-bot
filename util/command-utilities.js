@@ -520,24 +520,57 @@ class Role {
 }
 module.exports.Role = Role;
 
+/**
+ * Searches for user, globall (by ID), or in guild by name, mention, ID, username, or tag.
+ * @param {"Client"} Client The bot itself
+ * @param {String} input The input to search for user on
+ * @param {Object} [options={onlyId:false<Boolean>, inGuild:false<String>, msg:false<Object>}] Options. OnlyId is the only boolean, rest require the string/object.
+ * @returns {Promise} Resolves to desired result or null.
+ * @example
+ * let userId_inMention = await findUser(msg.client, "name", {onlyId:true, inGuild:"123123123123", msg:msg});
+ */
+async function findUser(Client, input, options={onlyId:false,inGuild:false,msg:false}) {
+	return new Promise(resolve => {
+		let user;
+		if(options.inGuild) {
+			let guild = Client.guilds.get(options.inGuild);
+			if(!guild) return resolve(null);
 
-async function findUser(msg, input, sameGuild=true) {
-	// By ID
-	if (/^(\d+)$/.test(input)) {
-		let u = (sameGuild) ? msg.guild.members.get(input) : msg.client.fetchUser(input);
-		if (u) return u;
-	}
+			user = guild.members.find(u => u.user.id == input);
+			if(user) return resolve((options.onlyId)?user.id:user);
 
-	// By mention
-	if (/^<@&(\d+)>$/.test(input)) {
-		let u = (sameGuild) ? msg.guild.members.get(input) : msg.client.fetchUser(input);
-		if (u) return u;
-	}
+			if(options.msg) {
+				user = options.msg.mentions.members.first();
+				if(user)return resolve((options.onlyId)?user.id:user);
+			}
 
-	// By name
-	let u = (sameGuild) ? msg.guild.members.find(u => u.user.username.toLowerCase() === input.toLowerCase()) : msg.client.find(u => u.username.toLowerCase() === input.toLowerCase());
-	if (u) return u;
-	return null;
+			user = guild.members.find(u => u.user.tag.toLowerCase() == input.toLowerCase()) || guild.members.find(u => u.user.username.toLowerCase() == input.toLowerCase());
+			if(user) return resolve((options.onlyId)?user.id:user);
+			return resolve(null);
+		}
+
+		// Only search outside if it's an ID.
+		if(/^[0-9]{16,32}$/.test(input)) { 
+			user = getUser(input).catch(()=>{return resolve(null);});
+			return resolve((options.onlyId)?user.id:user);
+		} else return resolve(null);
+	});
+
+	//! Deprecated:
+	// // By ID
+	// if (/^(\d+)$/.test(input)) {
+	// 	let u = (sameGuild) ? msg.guild.members.get(input) : msg.client.fetchUser(input);
+	// 	if (u) return u;
+	// }
+	// // By mention
+	// if (/^<@&(\d+)>$/.test(input)) {
+	// 	let u = (sameGuild) ? msg.guild.members.get(input) : msg.client.fetchUser(input);
+	// 	if (u) return u;
+	// }
+	// // By name
+	// let u = (sameGuild) ? msg.guild.members.find(u => u.user.username.toLowerCase() === input.toLowerCase()) : msg.client.find(u => u.username.toLowerCase() === input.toLowerCase());
+	// if (u) return u;
+	// return null;
 }
 module.exports.findUser = findUser;
 
@@ -571,3 +604,22 @@ async function editAndAwait(/**@type {"msg"}*/msg, /**@type {String}*/await_send
 			});
 	});
 }
+
+
+/**
+ * Fetches a User instance based on UID.
+ * @param {"Client"} Client The bot itself
+ * @param {String} userId The user ID to fetch
+ * @returns {Promise} Returns user or null, rejects any errors
+ */
+async function getUser(Client, userId) {
+	return new Promise((resolve,reject) => {
+		Client.fetchUser(userId)
+			.then(u => {return resolve(u);})
+			.catch(err => {
+				if (err.code===10013) return resolve(null);
+				return reject(err);
+			});
+	});
+}
+module.exports.getUser = getUser;
