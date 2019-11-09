@@ -28,7 +28,7 @@ module.exports = {
 
 			feedback.save(err => {
 				if (err) {
-					console.error(`[${Date()}] bug → Error adding new bugreport from user ${msg.author.id}:`, err);
+					console.error(`[${Date()}] bug → Error adding new bugreport from user ${msg.author.id} ${msg.author.tag}:`, err);
 					fn.notifyErr(msg.client, err);
 					msg.channel.send("An error occurred trying to submit bug report. Please try again at a later point in time.");
 					throw err;
