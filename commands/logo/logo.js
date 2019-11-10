@@ -7,7 +7,7 @@ const Discord = require("discord.js");
 
 module.exports = main;
 async function main(msg, data, doc) {
-	logoModel.findOne({name:data.name}, ["_id","tags"], (err,res) => {
+	logoModel.findOne({name:data.name}, (err,res) => {
 		if(err) return handleErr(err, msg, "**Error:** Something went wrong trying to check for existing identical entires. Aborted, and incident logged.");
 		console.log(res);
 		// TODO: This shit is going to cause it to fail like a miserable little shit. Fix it.
