@@ -10,6 +10,7 @@ async function main(msg, data, doc) {
 	logoModel.findOne({name:data.name}, ["_id","tags"], (err,res) => {
 		if(err) return handleErr(err, msg, "**Error:** Something went wrong trying to check for existing identical entires. Aborted, and incident logged.");
 		console.log(res);
+		// TODO: This shit is going to cause it to fail like a miserable little shit. Fix it.
 		if(res) return send(msg, data, doc, ":warning: **Note:** An entry with the name **"+data.name+"** already exist — ID: `"+res._id+"`\nTags: "+res.tags.join(", ")+".\nThe file will not be overwritten, but if an entry already exist, it's unnecessary to create a duplicate.\n**Do you want to proceed? Reply with `yes` or `no`.**", execute);
 		return execute(msg, data);
 	});
@@ -49,8 +50,11 @@ async function execute(msg, data) {
 				_body = JSON.parse(body);
 				console.log(_body);
 			} catch(err) {
+				console.log(body);
 				return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
 			}
+			if(!_body.success) return msg.channel.send("**Could not complete command:** "+_body.message);
+			//TODO: This fucker is asking for some shit that does not exist, yet it works anyway without it
 			// if(!Object.keys(_body.message).every(e=>fields.includes(e))) {
 			// 	return msg.channel.send("**Could not complete command:** The backend didn't respond with all the necessary fields. Incident has been logged.");
 			// }
@@ -62,7 +66,7 @@ async function execute(msg, data) {
 				.addField("**Information:**", `**Name:** ${_body.message.name}\n**ID:** ${_body.message._id}\n**Version:** ${_body.message.version}\n**Last updated:** ${_body.message.last_updated}\n**Available:** ${(_body.message.available)?"Yes.":"No."}`, true)
 				.addField("**Tags:**", `${_body.message.tags.join(", ")}`, true)
 				.addField("**Contributors:**", `<@${_body.message.contributors.join(">, <@")}>`, true)
-				.addField("**Downloads:**", `[SVG – Vector](${_body.message.download.svg}) | [PNG – Bitmap](${_body.message.download.png})`, true);
+				.addField("**Downloads:**", `[SVG – Vector](https://grafik-bot.net/assets/${_body.message.download.svg}) | [PNG – Bitmap](https://grafik-bot.net/assets/${_body.message.download.png})`, true);
 			if(_body.message.notes) embed.addField("**Notes:**", `- ${_body.message.notes.join("\n- ")}`);
 	
 			return msg.channel.send(embed);
