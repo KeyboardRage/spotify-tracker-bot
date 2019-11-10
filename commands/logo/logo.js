@@ -42,17 +42,20 @@ async function execute(msg, data) {
 		let url = (process.env.DEBUG === "true") ? "http://localhost:5000/v1/submit/logo" : process.env.NEW_API + "/v1/submit/logo";
 		request.post(url, {form:data}, (err,res,body) => {
 			if(err) return handleErr(err, msg, "**Could not complete command:** Error contacting backend. Incident has been logged.");
-			if(res.statusCode!==200) return handleErr(err, msg, "**Could not complete command:** Backend responded with the wrong status. Incident has been logged.");
+			let _body;
+			if(res.statusCode!==200) {
+				try {
+					_body = JSON.parse(body);
+					console.log(_body);
+					return handleErr(err, msg, "**Could not complete command:** "+_body.message);
+				} catch(err) {
+					console.log(body);
+					return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
+				}
+			}
 			// return;
 			let fields = ["tags", "download", "version","_id", "name", "last_updated", "available", "contributors"];
-			let _body;
-			try {
-				_body = JSON.parse(body);
-				console.log(_body);
-			} catch(err) {
-				console.log(body);
-				return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
-			}
+
 			if(!_body.success) return msg.channel.send("**Could not complete command:** "+_body.message);
 			//TODO: This fucker is asking for some shit that does not exist, yet it works anyway without it
 			// if(!Object.keys(_body.message).every(e=>fields.includes(e))) {
