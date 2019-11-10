@@ -37,32 +37,38 @@ async function handleErr(err, msg, reply) {
 }
 
 async function execute(msg, data) {
-	let url = (process.env.DEBUG === "true") ? "http://localhost:5000/v1/submit/logo" : process.env.NEW_API + "/v1/submit/logo";
-	request.post(url, {form:data}, (err,res,body) => {
-		if(err) return handleErr(err, msg, "**Could not complete command:** Error contacting backend. Incident has been logged.");
-		if(res.statusCode!==200) return handleErr(err, msg, "**Could not complete command:** Backend responded with the wrong status. Incident has been logged.");
-		// return;
-		let fields = ["tags", "download", "version","_id", "name", "last_updated", "available", "contributors"];
-		let _body;
-		try {
-			_body = JSON.parse(body);
-		} catch(err) {
-			return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
-		}
-		// if(!Object.keys(_body).every(e=>fields.includes(e))) {
-		// 	return msg.channel.send("**Could not complete command:** The backend didn't respond with all the necessary fields. Incident has been logged.");
-		// }
-		const embed = new Discord.RichEmbed()
-			.setTimestamp(Date())
-			.setColor(process.env.THEME)
-			.setFooter(msg.author.tag, msg.author.avatarURL)
-			.setDescription("Logo submission summary")
-			.addField("**Information:**", `**Name:** ${_body.name}\n**ID:** ${_body._id}\n**Version:** ${_body.version}\n**Last updated:** ${_body.last_updated}\n**Available:** ${(_body.available)?"Yes.":"No."}`, true)
-			.addField("**Tags:**", `${_body.tags.join(", ")}`, true)
-			.addField("**Contributors:**", `<@${_body.contributors.join(">, <@")}>`, true)
-			.addField("**Downloads:**", `[SVG – Vector](${_body.download.svg}) | [PNG – Bitmap](${_body.download.png})`, true);
-		if(_body.notes) embed.addField("**Notes:**", `- ${_body.notes.join("\n- ")}`);
-
-		return msg.channel.send(embed);
-	});
+	try {
+		let url = (process.env.DEBUG === "true") ? "http://localhost:5000/v1/submit/logo" : process.env.NEW_API + "/v1/submit/logo";
+		request.post(url, {form:data}, (err,res,body) => {
+			if(err) return handleErr(err, msg, "**Could not complete command:** Error contacting backend. Incident has been logged.");
+			if(res.statusCode!==200) return handleErr(err, msg, "**Could not complete command:** Backend responded with the wrong status. Incident has been logged.");
+			// return;
+			let fields = ["tags", "download", "version","_id", "name", "last_updated", "available", "contributors"];
+			let _body;
+			try {
+				_body = JSON.parse(body);
+			} catch(err) {
+				return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
+			}
+			// if(!Object.keys(_body).every(e=>fields.includes(e))) {
+			// 	return msg.channel.send("**Could not complete command:** The backend didn't respond with all the necessary fields. Incident has been logged.");
+			// }
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(msg.author.tag, msg.author.avatarURL)
+				.setDescription("Logo submission summary")
+				.addField("**Information:**", `**Name:** ${_body.name}\n**ID:** ${_body._id}\n**Version:** ${_body.version}\n**Last updated:** ${_body.last_updated}\n**Available:** ${(_body.available)?"Yes.":"No."}`, true)
+				.addField("**Tags:**", `${_body.tags.join(", ")}`, true)
+				.addField("**Contributors:**", `<@${_body.contributors.join(">, <@")}>`, true)
+				.addField("**Downloads:**", `[SVG – Vector](${_body.download.svg}) | [PNG – Bitmap](${_body.download.png})`, true);
+			if(_body.notes) embed.addField("**Notes:**", `- ${_body.notes.join("\n- ")}`);
+	
+			return msg.channel.send(embed);
+		});
+	} catch(err) {
+		console.error(err);
+		fn.notifyErr(msg.client, err);
+		return msg.channel.send("**Could not complete command:** Something went wrong. Incident logged.");
+	}
 }
