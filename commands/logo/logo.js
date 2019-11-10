@@ -7,8 +7,9 @@ const Discord = require("discord.js");
 
 module.exports = main;
 async function main(msg, data, doc) {
-	logoModel.findOne({name:data.name}, ["id","tags"], (err,res) => {
+	logoModel.findOne({name:data.name}, ["_id","tags"], (err,res) => {
 		if(err) return handleErr(err, msg, "**Error:** Something went wrong trying to check for existing identical entires. Aborted, and incident logged.");
+		console.log(res);
 		if(res) return send(msg, data, doc, ":warning: **Note:** An entry with the name **"+data.name+"** already exist — ID: `"+res._id+"`\nTags: "+res.tags.join(", ")+".\nThe file will not be overwritten, but if an entry already exist, it's unnecessary to create a duplicate.\n**Do you want to proceed? Reply with `yes` or `no`.**", execute);
 		return execute(msg, data);
 	});
