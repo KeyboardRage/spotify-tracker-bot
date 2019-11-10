@@ -153,9 +153,9 @@ async function awaitNumberMessage(reuseData, message, Discord) {
 	const filter = msg => msg.author.id === reuseData.author.id;
 	let question = Object();
 	message.channel.send("Which image number do you want to go to?")
-	.then(msg => {
-		question = msg;
-	});
+		.then(msg => {
+			question = msg;
+		});
 
 	message.channel.awaitMessages(filter, {max:1, time:15000, errors:["time"]})
 		.then(collected =>{
@@ -165,7 +165,7 @@ async function awaitNumberMessage(reuseData, message, Discord) {
 			try {
 				imageNumber = parseInt(imageNumber);
 				imageNumber--; // Taking 0-index in to account.
-			} catch {
+			} catch (e) {
 				return question.edit("That's not a valid number.");
 			}
 
@@ -183,10 +183,14 @@ async function awaitNumberMessage(reuseData, message, Discord) {
 		})
 		.catch(e => {
 			// Time ran out. Idk what to do here.
-			question.delete();
-			message.clearReactions();
-			console.error(e);
-			return;
+			if(e.size===0) {
+				question.delete();
+				message.clearReactions();
+				return;
+			} else {
+				console.error(e);
+				return;
+			}
 		});
 }
 

@@ -31,21 +31,11 @@ module.exports = {
 				return msg.channel.send(`Recieved "pong" in \`${Date.now()-timeStart} ms\`.`);
 			});
 		}
- 
-		// // Get ping of API
-		// let api = () => new Promise(resolve => {
-		// 	let time = {start:Date.now(),end:Number()};
-		// 	request.get(process.env.API+"/ping", (err,res) => {
-		// 		if(err || res.statusCode !== 200) console.error(err);
-		// 		time.end = Date.now(); // Do time anyway.
-		// 		return resolve(time);
-		// 	});
-		// });
 
 		// New API, Google
 		let app = () => new Promise(resolve => {
 			let time = {start:Date.now(),end:Number()};
-			request.get(process.env.NEW_API+"/v1/ping", (err,res) => {
+			request.get(process.env.NEW_API+"/v1/ping", {timeout:5000}, (err,res) => {
 				if(err || res.statusCode !== 200) console.error(err);
 				time.end = Date.now(); // Do time anyway.
 				return resolve(time);
@@ -74,7 +64,7 @@ module.exports = {
 
 		// Get ping of client
 		let grafik = msg.client.ping;
-		Promise.all([api(), app(), db(), redis()])
+		Promise.all([app(), db(), redis()])
 			.then(results => {
 				const embed = new Discord.RichEmbed()
 					.setTimestamp(Date())
@@ -95,8 +85,7 @@ module.exports = {
 			.then(ping => {
 				if(ping.grafik > 500) fn.notifyErr(msg.client, new Error(`${msg.author.tag} used \`ping\` and got a result of **client ping** of \`${ping.grafik} ms\`!`));
 				if (ping.db > 30 || ping.redis > 10) fn.notifyErr(msg.client, new Error(`${msg.author.tag} used \`ping\`, **DB/Cache** results are DB: \`${ping.db} ms\`, Cache: \`${ping.redis} ms\`!`));
-				if (ping.api > 1000) fn.notifyErr(msg.client, new Error(`${msg.author.tag} used \`ping\` and got **API** ping of \`${ping.api} ms\`!`));
-				if (ping.app > 1000) fn.notifyErr(msg.client, new Error(`${msg.author.tag} used \`ping\` and got **New API** ping of \`${ping.app} ms\`!`));
+				if (ping.app > 1000) fn.notifyErr(msg.client, new Error(`${msg.author.tag} used \`ping\` and got **API** ping of \`${ping.app} ms\`!`));
 				return;
 			})
 			.catch(err => {
