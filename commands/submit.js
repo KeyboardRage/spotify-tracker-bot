@@ -25,7 +25,7 @@ module.exports = {
 			name: args.slice(0, tagsStart).join(" "),
 			allTags: args.slice(tagsStart, sourceStart<0?undefined:sourceStart).join(" ").split("-").filter(Boolean).map(e=>e.trim()),
 			source: sourceStart>0?args.slice(sourceStart+1).join(" "):null,
-			url: msg.attachments.first().proxyURL,
+			url: msg.attachments.first().url,
 			user: msg.author.id
 		};
 
