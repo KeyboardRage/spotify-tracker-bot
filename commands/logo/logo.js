@@ -50,9 +50,9 @@ async function execute(msg, data) {
 			} catch(err) {
 				return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
 			}
-			// if(!Object.keys(_body).every(e=>fields.includes(e))) {
-			// 	return msg.channel.send("**Could not complete command:** The backend didn't respond with all the necessary fields. Incident has been logged.");
-			// }
+			if(!Object.keys(_body.message).every(e=>fields.includes(e))) {
+				return msg.channel.send("**Could not complete command:** The backend didn't respond with all the necessary fields. Incident has been logged.");
+			}
 			const embed = new Discord.RichEmbed()
 				.setTimestamp(Date())
 				.setColor(process.env.THEME)
