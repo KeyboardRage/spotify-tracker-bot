@@ -56,7 +56,7 @@ async function execute(msg, data) {
 			.setColor(process.env.THEME)
 			.setFooter(msg.author.tag, msg.author.avatarURL)
 			.setDescription("Logo submission summary")
-			.addField("**Information:**", `**Name:** ${_body.name}\n**ID:** ${_body.id}\n**Version:** ${_body.version}\n**Last updated:** ${_body.last_updated}\n**Available:** ${(_body.available)?"Yes.":"No."}`, true)
+			.addField("**Information:**", `**Name:** ${_body.name}\n**ID:** ${_body._id}\n**Version:** ${_body.version}\n**Last updated:** ${_body.last_updated}\n**Available:** ${(_body.available)?"Yes.":"No."}`, true)
 			.addField("**Tags:**", `${_body.tags.join(", ")}`, true)
 			.addField("**Contributors:**", `<@${_body.contributors.join(">, <@")}>`, true)
 			.addField("**Downloads:**", `[SVG – Vector](${_body.download.svg}) | [PNG – Bitmap](${_body.download.png})`, true);
