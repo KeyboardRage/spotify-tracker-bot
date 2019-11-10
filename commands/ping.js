@@ -35,7 +35,7 @@ module.exports = {
 		// New API, Google
 		let app = () => new Promise(resolve => {
 			let time = {start:Date.now(),end:Number()};
-			request.get(process.env.NEW_API+"/v1/ping", {timeout:5000}, (err,res) => {
+			request.get(`${process.env.NEW_API}${process.env.API_VERSION}/ping`, {timeout:5000}, (err,res) => {
 				if(err || res.statusCode !== 200) console.error(err);
 				time.end = Date.now(); // Do time anyway.
 				return resolve(time);
