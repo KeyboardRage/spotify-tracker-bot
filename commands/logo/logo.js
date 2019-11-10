@@ -58,11 +58,11 @@ async function execute(msg, data) {
 				.setColor(process.env.THEME)
 				.setFooter(msg.author.tag, msg.author.avatarURL)
 				.setDescription("Logo submission summary")
-				.addField("**Information:**", `**Name:** ${_body.name}\n**ID:** ${_body._id}\n**Version:** ${_body.version}\n**Last updated:** ${_body.last_updated}\n**Available:** ${(_body.available)?"Yes.":"No."}`, true)
-				.addField("**Tags:**", `${_body.tags.join(", ")}`, true)
-				.addField("**Contributors:**", `<@${_body.contributors.join(">, <@")}>`, true)
-				.addField("**Downloads:**", `[SVG – Vector](${_body.download.svg}) | [PNG – Bitmap](${_body.download.png})`, true);
-			if(_body.notes) embed.addField("**Notes:**", `- ${_body.notes.join("\n- ")}`);
+				.addField("**Information:**", `**Name:** ${_body.message.name}\n**ID:** ${_body.message._id}\n**Version:** ${_body.message.version}\n**Last updated:** ${_body.message.last_updated}\n**Available:** ${(_body.message.available)?"Yes.":"No."}`, true)
+				.addField("**Tags:**", `${_body.message.tags.join(", ")}`, true)
+				.addField("**Contributors:**", `<@${_body.message.contributors.join(">, <@")}>`, true)
+				.addField("**Downloads:**", `[SVG – Vector](${_body.message.download.svg}) | [PNG – Bitmap](${_body.message.download.png})`, true);
+			if(_body.message.notes) embed.addField("**Notes:**", `- ${_body.message.notes.join("\n- ")}`);
 	
 			return msg.channel.send(embed);
 		});
