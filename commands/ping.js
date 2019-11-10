@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const request = require("request"),
 	fn = require("../util/response_functions"),
 	{serverSettings} = require("../util/database"),

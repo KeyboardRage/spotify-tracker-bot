@@ -14,6 +14,10 @@ masterCacheLoader()
 	})
 	.then(()=>{
 		return masterLoadCommands(Client);
+	})
+	.then(()=>{
+		// let x = require("./commands/export/export");
+		// x(Client);
 	}).catch(err=>{throw err;});
 //================================
 //	CLIENT EVENTS

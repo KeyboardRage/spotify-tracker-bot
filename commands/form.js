@@ -12,7 +12,7 @@ module.exports = {
 	cmd: "form",
 	aliases: ["forms"],
 	cooldown: {min: 1},
-	permissionLevel: ACCESS.mod+ACCESS.admin,
+	permissionLevel: ACCESS.mod|ACCESS.admin,
 	dm: false,
 	daccess: [""],
 	desc: "[<:Grafik:588847763341705263> Premium] Create / use a customizeable form.",

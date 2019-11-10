@@ -7,7 +7,7 @@ module.exports = {
 	cmd: "globalunban",
 	aliases: ["gunban", "globunban"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.dev+ACCESS.owner,
+	permissionLevel: ACCESS.dev|ACCESS.owner,
 	dm:true,
 	daccess: [""],
 	desc: "Lifts a potential global UID ban.",

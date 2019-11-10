@@ -2,6 +2,8 @@ const request = require("request"),
 	sharp = require("sharp");
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
+const fn = require("../util/response_functions");
+const Sentry = require("../util/extras");
 
 module.exports = {
 	cmd: "colour",
@@ -31,7 +33,13 @@ module.exports = {
 					return msg.channel.send("**Error:** My API gave the wrong status code. Incident has been reported.");
 				}
 
-				try {body = JSON.parse(body);} catch {}
+				try {body = JSON.parse(body);} catch (err) {
+					// eslint-disable-next-line no-console
+					console.error(err);
+					fn.notifyErr(msg.client, err);
+					Sentry.captureException(err);
+					return msg.channel.send("**Could not complete command:** The backend replied with a malformatted response. Incidentl logged.");
+				}
 
 				if(body.err) {
 					msg.channel.stopTyping();					
@@ -43,17 +51,17 @@ module.exports = {
 	\n***NOTE:***  Other than 24-bit (8-BPC) RGB/HEX/Decimal, these values are not 100% accurate due to colour spaces and rounding.`;
 				//////////////////////////////////
 				const colorImg = await sharp({
-						create: {
-							width: 100,
-							height: 100,
-							channels: 3,
-							background: {
-								r: body.data.rgb[0],
-								g: body.data.rgb[1],
-								b: body.data.rgb[2]
-							}
+					create: {
+						width: 100,
+						height: 100,
+						channels: 3,
+						background: {
+							r: body.data.rgb[0],
+							g: body.data.rgb[1],
+							b: body.data.rgb[2]
 						}
-					})
+					}
+				})
 					.png()
 					.toBuffer();
 				//////////////////////////////////
@@ -85,7 +93,7 @@ module.exports = {
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd} <color>\``)
 			.addField("Valid arguments", "`cmyk(#,#,#,#)`\n`rgb(#,#,#)`\n`hsb(#,#,#)`\n`hsv(#,#,#)`\n`hsl(#,#,#)`\n`\"#\"###`\n`\"#\"######`\n`0x###[###]`\n`lab(#,#,#)`")
-			.addField("Examples", `\`${doc.prefix}${this.cmd} ab7000\`\n\`${doc.prefix}${this.cmd} cmyk(10,100,42,0)\`\n\`${doc.prefix}${this.cmd} #fff\``)
+			.addField("Examples", `\`${doc.prefix}${this.cmd} ab7000\`\n\`${doc.prefix}${this.cmd} cmyk(10,100,42,0)\`\n\`${doc.prefix}${this.cmd} #fff\``);
 		msg.channel.send(embed);
 	}
-}
+};

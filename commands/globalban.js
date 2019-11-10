@@ -10,7 +10,7 @@ module.exports = {
 	cmd: "globalban",
 	aliases: ["gban", "globban"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.dev+ACCESS.owner,
+	permissionLevel: ACCESS.dev|ACCESS.owner,
 	dm:true,
 	daccess: [""],
 	desc: "Globally bans a server or user, permanently or until a set date, with or without a reason. Available only to bot devs.",
