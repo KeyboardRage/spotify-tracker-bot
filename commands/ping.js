@@ -72,13 +72,13 @@ module.exports = {
 					.setFooter(msg.author.tag, msg.author.avatarURL)
 					.addField("Client:", `Avg. ping: \`${Math.round(grafik)} ms\``, true)
 					.addField("API:", `API roundtrip: \`${results[1].end - results[1].start} ms\``, true)
-					.addField("Database:", `DB Roundtrip: \`${results[2].end - results[2].start} ms\`\n Cache: \`${results[3].end - results[3].start} ms\``, true);
+					.addField("Database:", `DB Roundtrip: \`${results[1].end - results[1].start} ms\`\n Cache: \`${results[2].end - results[2].start} ms\``, true);
 				msg.channel.stopTyping();
 				msg.channel.send(embed);
 				return {
 					api: results[0].end - results[0].start,
-					db: results[2].end - results[2].start,
-					redis: results[3].end - results[3].start,
+					db: results[1].end - results[1].start,
+					redis: results[2].end - results[2].start,
 					client: grafik
 				};
 			})
