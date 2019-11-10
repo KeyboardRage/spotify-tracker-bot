@@ -41,7 +41,7 @@ async function execute(msg, data) {
 		if(err) return handleErr(err, msg, "**Could not complete command:** Error contacting backend. Incident has been logged.");
 		if(res.statusCode!==200) return handleErr(err, msg, "**Could not complete command:** Backend responded with the wrong status. Incident has been logged.");
 		// return;
-		let fields = ["tags", "download", "version","id", "name", "last_updated", "available", "contributors"];
+		let fields = ["tags", "download", "version","_id", "name", "last_updated", "available", "contributors"];
 		let _body;
 		try {
 			_body = JSON.parse(body);
