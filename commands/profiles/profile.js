@@ -484,8 +484,8 @@ async function _list(msg) {
 			.setColor(process.env.THEME)
 			.setFooter(msg.author.tag, msg.author.avatarURL)
 			.setDescription("People with a profile in this guild")
-			.addField(`**Users: ** (${docs.length}${docs.length>page_max?" - "+page_max+" shown":""})`, col1)
-			.addField("\u200B", col2);
+			.addField(`**Users: ** (${docs.length}${docs.length>page_max?" - "+page_max+" shown":""})`, col1, true)
+			.addField("\u200B", col2, true);
 		return msg.channel.send(embed);
 	});
 }
