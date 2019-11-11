@@ -467,10 +467,16 @@ async function _list(msg) {
 	userTags.find({guilds:{$in:[msg.guild.id]}}, (err,docs) => {
 		if(err) return _handleErr(err, msg);
 		if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that has a profile.");
-		let page_max = 20,
-			string = String();
+		let page_max = 50,
+			col1 = String(),
+			col2 = String();
+
 		for(let i=0;i<docs.length;i++) {
-			string += `<@${docs[i]._id}>\n`;
+			if(i>Math.ceil(docs.length/2)) {
+				col2 += `<@${docs[i]._id}>\n`;
+			} else {
+				col1 += `<@${docs[i]._id}>\n`;
+			}
 			if(i>page_max-1) break;
 		}
 		const embed = new Discord.RichEmbed()
@@ -478,7 +484,8 @@ async function _list(msg) {
 			.setColor(process.env.THEME)
 			.setFooter(msg.author.tag, msg.author.avatarURL)
 			.setDescription("People with a profile in this guild")
-			.addField(`**Users: ** (${docs.length})`, string);
+			.addField(`**Users: ** (${docs.length}${docs.length>page_max?" - "+page_max+" shown":""})`, col1)
+			.addField("\u200B", col2);
 		return msg.channel.send(embed);
 	});
 }
