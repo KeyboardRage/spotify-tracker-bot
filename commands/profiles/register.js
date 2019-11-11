@@ -35,8 +35,6 @@ async function _register(msg, doc) {
 			return send(msg, doc, response.isType, meta, catch_isType);
 		})
 		.catch(err => {
-			console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAH:");
-			console.log(err);
 			if ([50007, 50013].includes(err.code)) {
 				return msg.reply("… actually, seems like I couldn't DM you. No permission. Check your inbox open status, possibly if blocked specifically from this guild.");
 			} else {
@@ -209,10 +207,12 @@ async function validate_portfolio(r) {
 	return new Promise(resolve => {
 		let nums = Object.keys(portfolios);
 		let args = r.split(" ");
-		if(!args.length) return {pass:false, data:"**Missing argument:** There was no input. Try again."};
-		if(args.length < 1) return {pass:false, data:"**Missing argument(s):** The input must start with the number, followed by space and then the input. Try again."};
-		if(isNaN(args[0])) return {pass:false, data:"**Invalid argument:** The input must start with the number, followed by space and then the input. Try again."};
-		if(!nums.includes(args[0])) return {pass:false, data:"**Invalid argument:** The input number at the start must be in the list. Try again, or write `list` to see all possible ones."};
+		console.log(r);
+		console.log(args);
+		if(!args.length) return resolve({pass:false, data:"**Missing argument:** There was no input. Example: `1 www.virtusgraphics.com` Try again."});
+		if(args.length < 1) return resolve({pass:false, data:"**Missing argument(s):** The input must start with the number, followed by space and then the input. Example: `1 www.virtusgraphics.com`. Try again."});
+		if(isNaN(args[0])) return resolve({pass:false, data:"**Invalid argument:** The input must start with the number, followed by space and then the input. Example: `1 www.virtusgraphics.com`. Try again."});
+		if(!nums.includes(args[0])) return resolve({pass:false, data:"**Invalid argument:** The input number at the start must be in the list. Try again, or write `list` to see all possible ones. Example: `1 www.virtusgraphics.com`. Try again."});
 		
 		let num = args.shift();
 		args = args.join(" ");
@@ -401,7 +401,7 @@ async function catch_portfolio(msg, doc, meta, r) {
 	else if(r.toLowerCase()==="done") return send(msg, doc, null, meta, give_info);
 
 	let data = await validate_portfolio(r);
-
+	console.log(data);
 	if(!data.pass) return send(msg, doc, data.data, meta, catch_portfolio);
 	meta.portfolios = {...meta.portfolios, [data.type.toString()]:data.data};
 	return send(msg, doc, `Social item **${portfolios[data.type.toString()].name}** added as: ${data.data}.\n**Reply with…**\n•    a new/existing social item to add/change\n•    \`list\` to view possible ones and up to date list of added\n•    \`done\` to finish registration.`, meta, catch_portfolio);
