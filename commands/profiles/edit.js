@@ -31,7 +31,7 @@ async function _edit(msg, args, doc) {
 \n•    \`${doc.prefix}profile set title <type> [tags]\` sets the creative field type, which determine possible tags.\
 \n		Optionally change tags right away too. If not given, current tags will be cleared.`;
 
-	let remove = `Use \`unset\` instead of \`set\`. The last argument in \`set\`, except socials, is not needed.\
+	let remove = `Use \`unset\` instead of \`set\`.\
 \n*Examples:*\
 \n•    \`${doc.prefix}profile unset email\`\
 \n•    \`${doc.prefix}profile unset company-site\`\
