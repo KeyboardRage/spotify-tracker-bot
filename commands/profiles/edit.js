@@ -23,12 +23,12 @@ async function _edit(msg, args, doc) {
 \n•    \`${doc.prefix}profile set social <number|name> <value>\` sets a social item. \
 \n		See \`${doc.prefix}profile socials\` for list of number/names.\
 \n•    \`${doc.prefix}profile set name <name>\` change the preferred name. Defaults to Discord username.\
-\n•    \`${doc.prefix}profile set tags <tags>\` replaces current tags with given list.\
+\n•    \`${doc.prefix}profile set tags <tags>\` replaces current tags with given list. **Comma separated.**\
 \n•    \`${doc.prefix}profile set available <true|yes|false|no>\` sets your commissions availability status.\
 \n•    \`${doc.prefix}profile set company <name>\` sets a company you work for.\
 \n•    \`${doc.prefix}profile set company-site <url>\` sets the website of the company.\
 \n•    \`${doc.prefix}profile set minimum <number>\` sets minimum budgets you work with, in USD\
-\n•    \`${doc.prefix}profile set title <type> [tags]\` sets the creative field type, which determine possible tags.\
+\n•    \`${doc.prefix}profile set title <type> [tags]\` sets the creative field type, which determine possible tags. **Comma separated.**\
 \n		Optionally change tags right away too. If not given, current tags will be cleared.`;
 
 	let remove = `Use \`unset\` instead of \`set\`.\

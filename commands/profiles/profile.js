@@ -30,6 +30,9 @@ module.exports = {
 	},
 	creative_fields: function(msg, doc) {
 		return _creative_fields(msg, doc);
+	},
+	list: async function(msg) {
+		return _list(msg);
 	}
 };
 
@@ -452,17 +455,30 @@ async function _creative_fields(msg, doc) {
 
 
 /**
-
 fn.notifyErr(msg.client, );
-
-
-
-
 // \u200B
-
 const embed = new Discord.RichEmbed()
 	.setTimestamp(Date())
 	.setColor(process.env.THEME)
 	.setThumbnail(`https://cdn.discordapp.com/avatars/${target_user.id}/${target_user.avatar}.png?size=1024`)
-
  */
+
+async function _list(msg) {
+	userTags.find({guilds:{$in:[msg.guild.id]}}, (err,docs) => {
+		if(err) return _handleErr(err, msg);
+		if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that has a profile.");
+		let page_max = 20,
+			string = String();
+		for(let i=0;i<docs.length;i++) {
+			string += `<@${docs[i]._id}>\n`;
+			if(i>page_max-1) break;
+		}
+		const embed = new Discord.RichEmbed()
+			.setTimestamp(Date())
+			.setColor(process.env.THEME)
+			.setFooter(msg.author.tag, msg.author.avatarURL)
+			.setDescription("People with a profile in this guild")
+			.addField(`**Users: ** (${docs.length})`, string);
+		return msg.channel.send(embed);
+	});
+}

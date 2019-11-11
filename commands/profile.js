@@ -17,6 +17,13 @@ module.exports = {
 	async exec(msg, cmd, args, doc) {
 		if(!args.length) return fn.profile.find(msg, args, doc);
 		switch(args[0]) {
+		case "demo":
+		case "yt":
+		case "video":
+			return msg.channel.send("**Profile demonstration:**\nhttps://www.youtube.com/watch?v=lV1E67XF4X8");
+		case "list":
+		case "users":
+			return fn.profile.list(msg);
 		case "cmds":
 		case "commands":
 		case "cmd":
