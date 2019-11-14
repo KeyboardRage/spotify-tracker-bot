@@ -9,9 +9,11 @@ module.exports = main;
 async function main(msg, data, doc) {
 	logoModel.findOne({name:data.name}, (err,res) => {
 		if(err) return handleErr(err, msg, "**Error:** Something went wrong trying to check for existing identical entires. Aborted, and incident logged.");
-		console.log(res);
-		// TODO: This shit is going to cause it to fail like a miserable little shit. Fix it.
-		if(res) return send(msg, data, doc, ":warning: **Note:** An entry with the name **"+data.name+"** already exist — ID: `"+res._id+"`\nTags: "+res.tags.join(", ")+".\nThe file will not be overwritten, but if an entry already exist, it's unnecessary to create a duplicate.\n**Do you want to proceed? Reply with `yes` or `no`.**", execute);
+		if(res) {
+			let _id = res._id;
+			res=res.toObject();
+			return send(msg, data, doc, ":warning: **Note:** An entry with the name **" + data.name + "** already exist — ID: `" + _id + "`\nTags: " + res.tags.join(", ") + ".\nThe file will not be overwritten, but if an entry already exist, it's unnecessary to create a duplicate.\n**Do you want to proceed? Reply with `yes` or `no`.**", execute);
+		}
 		return execute(msg, data);
 	});
 }
@@ -43,19 +45,21 @@ async function execute(msg, data) {
 		request.post(url, {form:data}, (err,res,body) => {
 			if(err) return handleErr(err, msg, "**Could not complete command:** Error contacting backend. Incident has been logged.");
 			let _body;
-			if(res.statusCode!==200) {
-				try {
-					_body = JSON.parse(body);
-					console.log(_body);
+			try {
+				_body = JSON.parse(body);
+				console.log(_body);
+				if (res.statusCode !== 200) {
 					return handleErr(err, msg, "**Could not complete command:** "+_body.message);
-				} catch(err) {
-					console.log(body);
-					return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
 				}
+			} catch(err) {
+				console.log(body);
+				return msg.channel.send("**Could not complete command:** The backend responded with malformatted response. Incident has been logged.");
 			}
+			
 			// return;
 			let fields = ["tags", "download", "version","_id", "name", "last_updated", "available", "contributors"];
 
+			console.log(_body);
 			if(!_body.success) return msg.channel.send("**Could not complete command:** "+_body.message);
 			//TODO: This fucker is asking for some shit that does not exist, yet it works anyway without it
 			// if(!Object.keys(_body.message).every(e=>fields.includes(e))) {

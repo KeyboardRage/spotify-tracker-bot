@@ -122,6 +122,15 @@ class isoTime {
 }
 module.exports.isoTime = isoTime;
 
+function formatTime(time, clock=false) {
+	time = new Date(time);
+	let months=["Jan.","Feb.","Mar.","Apr.","May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+	let days=["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	if (clock) return `${days[time.getDay()]} ${months[time.getMonth()]} ${time.gettime()}, ${time.getFullYear()} @ ${time.getHours()}:${time.getMinutes()}`;
+	return `${days[time.getDay()]} ${months[time.getMonth()]} ${time.gettime()}, ${time.getFullYear()}`;
+}
+module.exports.formatTime = formatTime;
+
 /**
  * Like string.indexOf, except it uses regEx to find the position
  * @param {String} string String to work with
@@ -270,7 +279,7 @@ module.exports.alias = alias;
  * @returns {Object} Guild object that contains the main emotes.
  */
 function emoteGuild(Client) {
-	return emojiGuild = Client.guilds.find(guild => guild.id === "439536193907064842");
+	return Client.guilds.find(guild => guild.id === "439536193907064842");
 }
 module.exports.emoteGuild = emoteGuild;
 
@@ -575,15 +584,11 @@ async function findUser(Client, input, options={onlyId:false,inGuild:false,msg:f
 module.exports.findUser = findUser;
 
 
-async function counter_number(sequenceName, msg) {
-	return new Promise(resolve => {
+async function counter_number(sequenceName) {
+	return new Promise((resolve,reject) => {
 		counterModel.findOneAndUpdate({_id: sequenceName}, {$inc:{sequenceValue:1}}, {"new":true}, (err,doc) => {
-			if(err) {
-				// eslint-disable-next-line no-console
-				console.error(err);
-				fn.notifyErr(msg.client, err);
-				throw err;
-			} else return resolve(doc.sequenceValue);
+			if (err) return reject(err);
+			else return resolve(doc.sequenceValue);
 		});
 	});
 }

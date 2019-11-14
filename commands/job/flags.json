@@ -1,0 +1,9 @@
+{
+	"job": {
+		"accepted":1,
+		"declined":2,
+		"completed":4,
+		"requestAbort":8,
+		"aborted":16
+	}
+}

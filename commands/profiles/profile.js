@@ -472,7 +472,7 @@ async function _list(msg) {
 			col2 = String();
 
 		for(let i=0;i<docs.length;i++) {
-			if(i>Math.ceil(docs.length/2)) {
+			if(i>=Math.ceil(docs.length/2)) {
 				col2 += `<@${docs[i]._id}>\n`;
 			} else {
 				col1 += `<@${docs[i]._id}>\n`;

@@ -175,54 +175,89 @@ let templateModel = maindb.model("templateModel", templateSchema);
 module.exports.templateModel = templateModel;
 
 // Logo library
+//! NOT eprecated
 let logoSchema = new mongoose.Schema({
+	"_id": Number,
 	"name": String,
-	"keywords": Array,
-	"version": String,
-	"updateToken": String,
+	"tags": Array,
+	"version": Number,
+	"last_updated": Date,
 	"downloads": Number,
-	"files": {
+	"source": String,
+	"available": Boolean,
+	"contributors": [{
+		ref: "marketUserModel",
+		type: String
+	}],
+	"download": {
 		"png": String,
-		"ai": String,
-		"svg": String,
-		"eps": String
+		"svg": String
 	}
-}, {collection: "logos"});
+}, {
+	collection: "logos"
+});
 let logoModel = maindb.model("logoModel", logoSchema);
 module.exports.logoModel = logoModel;
 
 // Order tempalte: files sub-schema
-let filesSubSchema = new mongoose.Schema({
-	"label": String,
-	"url": String,
-	"date": Date,
-	"size": String,
-	"meta": Number
-});
+//! Deprecated
+// let filesSubSchema = new mongoose.Schema({
+// 	"label": String,
+// 	"url": String,
+// 	"date": Date,
+// 	"size": String,
+// 	"meta": Number
+// });
 
 // Order template: master
-let orderSchema = new mongoose.Schema({
-	"seller": String,
-	"buyer": String,
-	"sum": Number,
-	"status": Number,
-	"brief": String,
-	"guild": String,
-	"files": [filesSubSchema], // Array of Sub-schemas
-	"timestamps": Array // Mixed fornow. Logs particulr events for "timeline".
-}, {collection: "orders"});
-let orderModel = maindb.model("orderModel", orderSchema);
-module.exports.orderModel = orderModel;
+//! Deprecarted
+// let orderSchema = new mongoose.Schema({
+// 	"seller": String,
+// 	"buyer": String,
+// 	"sum": Number,
+// 	"status": Number,
+// 	"brief": String,
+// 	"guild": String,
+// 	"files": [filesSubSchema], // Array of Sub-schemas
+// 	"timestamps": Array // Mixed fornow. Logs particulr events for "timeline".
+// }, {collection: "orders"});
+// let orderModel = maindb.model("orderModel", orderSchema);
+// module.exports.orderModel = orderModel;
 
 // Order template: buyer/seller Reports sub-schema
 let reviewsScema = new mongoose.Schema({
-	"source": String,
-	"target": String,
+	"_id": Number,
+	"user": String,
 	"guild": String,
 	"message":String,
 	"rating": Number,
-	"date": Date
+	"created": Date,
+	"job": {
+		ref: "marketJobs",
+		type: Number
+	}
+}, {collection:"marketReviews"});
+let marketReviews = maindb.model("marketReviews", reviewsScema);
+module.exports.marketReviews = marketReviews;
+
+let reportsScema = new mongoose.Schema({
+	"_id": Number,
+	"user": String,
+	"target": String,
+	"guild": String,
+	"message": String,
+	"resolved": Boolean,
+	"resolved_date": String,
+	"created": Date,
+	"job": {
+		ref: "marketJobs",
+		type: Number
+	}
+}, {
+	collection: "marketReports"
 });
+let marketReports = maindb.model("marketReports", reportsScema);
+module.exports.marketReports = marketReports;
 
 // Order template: buyer/seller
 let marketUserSchema = new mongoose.Schema({
@@ -232,7 +267,6 @@ let marketUserSchema = new mongoose.Schema({
 		"discriminator": String,
 		"available": Boolean,
 		"title": String,
-		"tags": Array,
 		"main_type": Number,
 		"email": String,
 		"company": String,
@@ -244,10 +278,24 @@ let marketUserSchema = new mongoose.Schema({
 	"name": String,
 	"purchases": Number,
 	"sales": Number,
-	"reviews": [reviewsScema],
-	"open": Array,
-	"flags": Number, // Random boolean info?
-	"last_updated": Date
+	"reviews": [{
+		ref: "marketReviews",
+		type: Number
+	}],
+	"reports": [{
+		ref: "marketReports",
+		type: Number
+	}],
+	"open": [{
+		ref:"marketJobs", // Related to
+		type: Number
+	}],
+	"flags": Number,
+	"last_updated": Date,
+	"jobs": [{
+		ref: "marketJobs", //Initiator of
+		type: Number
+	}]
 }, {collection: "marketUsers"});
 let marketUserModel = maindb.model("marketUserModel", marketUserSchema);
 module.exports.marketUserModel = marketUserModel;
@@ -260,3 +308,80 @@ let userTagsSchema = new mongoose.Schema({
 }, {collection:"userTags"});
 let userTags = maindb.model("userTags", userTagsSchema);
 module.exports.userTags = userTags;
+
+// MARKET STUFF
+// An event, tied to a job
+let eventsSchema = new mongoose.Schema({
+	"_id": mongoose.Schema.Types.ObjectId,
+	"job": {
+		ref: "jobsModel",
+		type: Number
+	},
+	"user": {
+		ref: "marketUserModel",
+		type: String
+	},
+	"hidden": Boolean,
+	"content": String,
+	"created": Date,
+	"guild": {
+		ref: "marketGuilds",
+		type: String,
+	},
+	"files": [{
+		"name": String,
+		"url": String,
+		"downloaded": Boolean,
+		"download_date": Date,
+		"ip_access": Array
+	}]
+}, {collection: "marketEvents"});
+let marketEvents = maindb.model("marketEvents", eventsSchema);
+module.exports.marketEvents = marketEvents;
+
+// An individual job
+let jobsSchema = new mongoose.Schema({
+	"_id":Number,
+	"target": {
+		ref: "marketUsers",
+		type: String,
+	},
+	"user": {
+		ref: "marketUsers",
+		type: String,
+	},
+	"meta": {
+		"deadline": String,
+		"payment": String,
+		"brief": String
+	},
+	"flags": Number,
+	"created": Date,
+	"finished": Date,
+	"guild": {
+		ref: "marketGuilds",
+		type: String,
+	},
+	"last_updated": Date,
+	"events": [{
+		ref: "marketEvents",
+		type: mongoose.Schema.Types.ObjectId
+	}],
+	"notification": String // Guild notification msg ID
+}, {collection: "marketJobs"});
+let jobsModel = maindb.model("jobsModel", jobsSchema);
+module.exports.jobsModel = jobsModel;
+
+// A guild with jobs
+let guildJobsSchema = new mongoose.Schema({
+	"_id": String,
+	"total_jobs_created": Number,
+	"last_job_date": Date,
+	"jobs_open": Number,
+	"jobs_completed": Number,
+	"jobs_aborted": Number,
+	"jobs_reported": Number,
+	"notify": String
+}, {collection: "marketGuilds"});
+let guildJobs = maindb.model("guildJobs", guildJobsSchema);
+module.exports.guildJobs = guildJobs;
