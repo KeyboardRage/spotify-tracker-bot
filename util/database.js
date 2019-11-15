@@ -5,7 +5,8 @@
 //TODO: Look in to using different replicas for read and write. Write to main, read to secondary, analytics on third.
 
 const mongoose = require("mongoose"),
-	Secrets = require("../hidden/secrets.json");	
+	Secrets = require("../hidden/secrets.json"),
+	Int32 = require("mongoose-int32");
 const chalk = require("chalk");
 /**
  * Create main DB instance
@@ -290,7 +291,7 @@ let marketUserSchema = new mongoose.Schema({
 		ref:"marketJobs", // Related to
 		type: Number
 	}],
-	"flags": Number,
+	"flags": Int32,
 	"last_updated": Date,
 	"jobs": [{
 		ref: "marketJobs", //Initiator of
@@ -355,9 +356,10 @@ let jobsSchema = new mongoose.Schema({
 		"payment": String,
 		"brief": String
 	},
-	"flags": Number,
+	"flags": Int32,
 	"created": Date,
 	"finished": Date,
+	"temp": String,
 	"guild": {
 		ref: "marketGuilds",
 		type: String,

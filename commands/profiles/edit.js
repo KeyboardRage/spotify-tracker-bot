@@ -364,7 +364,7 @@ async function _edit_set(msg, args, doc) {
 					console.error(err);
 					// return handleErr(err, msg);
 				});
-		} else return msg.channel.send("**Invalid input:** The creative field `"+args[1]+"` is not one I consider valid. See `"+doc.prefix+"profile SOMETHING HERE` for a list of creative fields numbers/names.");
+		} else return msg.channel.send("**Invalid input:** The creative field `"+args[1]+"` is not one I consider valid. See `"+doc.prefix+"profile fields` for a list of creative fields numbers/names.");
 		//TODO: Some command to see valid Creative field names/numbers
 		break;
 	case 9:

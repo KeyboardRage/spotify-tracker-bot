@@ -1,4 +1,4 @@
-const {dmAndAwait,findUser,counter_number} = require("../../util/command-utilities");
+const {dmAndAwait,findUser,counter_number,formatTime} = require("../../util/command-utilities");
 const fn = require("../../util/response_functions");
 const invite = "https://discord.gg/SEssczu";
 const Discord = require("discord.js");
@@ -6,12 +6,12 @@ const Sentry = require("../../util/extras");
 const {guildJobs,jobsModel,marketEvents,marketUserModel} = require("../../util/database");
 const mongoose = require("mongoose");
 const {event,makeNewUser} = require("./minors");
+const flags = require("./flags.json");
 
 module.exports = init;
 
 async function init(msg, args, doc) {
 	// new <user>
-	//TODO: Query the buyer and inform the seller.
 	//TODO: Insert new counters to coutners model: marketReviews, marketReports, marketJobs, marketEvents
 
 	let meta = {
@@ -29,18 +29,42 @@ async function init(msg, args, doc) {
 			if(!r) return msg.channel.send("**Could not initiate:** I could not find the user you specified.");
 			if(r===msg.author.id) return msg.channel.send("**Aborted:** You cannot create a job with yourself as the buyer.");
 			meta.target = r;
-			let string = "<:Grafik:588847763341705263> **New job with <@"+r+">**\
-\n*Say `abort` at any point through this process to abort.*\
-\n*Everything you input can be changed later, but require mutual agreement.*\
-\n*After 2 minutes of no response, process will be aborted.*\
-\n\
-\n**Payment** Do you have an agreed upon payment for the job?\
+
+			return checkIfExist(msg.author.id, meta.target);
+		})
+		.then(r => {
+			if(!r.pass) {
+				return msg.channel.send("**Denied:** You already have a job with this user, created at "+formatTime(r.data.created)+". You may only have one concurrent job case per user at once.\nIf you need to make changes to the job, use `"+doc.prefix+"job edit "+r.data._id+"`.\nAbort or finish job case with `"+doc.prefix+"job abort "+r.data._id+"` or `"+doc.prefix+"job done "+r.data._id+"` if it's a new un-related job.");
+			}
+			return marketUserModel.findOne({_id:meta.target});
+		})
+		.then(r => {
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(`New job case with ${meta.target}`, msg.author.avatarURL)
+				.addField("<:Grafik:588847763341705263> **New job**", `New job with <@${meta.target}> ${r && r.name?"("+r.name+") ":""}as the buyer.\n*Say \`abort\` at any point through this process to abort. \
+Everything you input can be changed later, but require mutual agreement. After 2 minutes of no response, process will be aborted.*`, true);
+			if(r) {
+				embed.addField("**Buyer details:**", `Additionally, here are some details about the buyer I already had:\n**Deals open:** ${r.open?r.open.length:0}\n**Reports:** ${r.reports?r.reports.length:0}\n**Reviews:** ${r.reviews?r.reviews.length:0}\n**Completed sales:** ${r.sales?r.sales:0}\n**Completed purchases:** ${r.purchases?r.purchases:0}\nTo view the user's profile in detail, \`abort\` and then use \`+profile ${meta.target}\` — or check later.`, true);
+				let warning = "";
+				if (r.reports && r.reports.length >= 2) {
+					warning += "\n:warning: Buyer has multiple reports on them. To inspect, say `abort` then use `+profile reports " + meta.target + "`.";
+				}
+				if (r.open && r.open.length >= 2) {
+					warning += "\n:warning: Buyer already has multiple deals open at this moment. To inspect, say `abort` then use `+profile open " + meta.target + "`.";
+				}
+				if (warning.length) {
+					embed.addField("**Warnings:**", warning);
+				}
+				embed.addField("**Payment:**", "Is there an agreed payment for this job?\
 \n**Reply with…**\
 \n• `no` No payment agreed upon.\
-\n• `<amount>` The amount in USD.\
-\n• `<message>` Arbitrary payment";
-
-			return send(msg, args, doc, string, catch_sum, meta);
+\n• `<message>` An amount or arbitrary payment");
+				return send(msg, args, doc, embed, catch_sum, meta);
+			} else {
+				return send(msg, args, doc, embed, catch_sum, meta);
+			}
 		})
 		.catch(err=>{
 			return handleErr(err, msg, meta, "**Error:** Could not look for user. Incident logged. Make a `+bug <message>` report if problem persists, or join support guild: " + invite);
@@ -69,7 +93,7 @@ async function send(msg, args, doc, response, callback, meta) {
 			return callback(msg, r.trim().split(" "), doc, meta);
 		})
 		.catch(err=>{
-			if (err.size === 0) return msg.author.send("**Aborted:** Two minutes has passed. Timed out waiting for a response. Job creation was aborted.");
+			if (err.size === 0) return msg.author.send("**Aborted:** Two minutes have passed. Timed out waiting for a response. Job creation was aborted.");
 			else return handleErr(err, msg, meta);
 		});
 }
@@ -83,7 +107,7 @@ async function catch_sum(msg, args, doc, meta) {
 	meta.step=1;
 	meta.data.payment = args[0].toLowerCase()==="no"?null:isNaN(args[0])?args.join(" "):parseInt(args[0]);
 	
-	let string = `<:Grafik:588847763341705263> **New job with <@${meta.target}>**\
+	let string = `<:Grafik:588847763341705263> **New job — Buyer: <@${meta.target}>**\
 	\n**Brief:** reply with the complete brief for the job.`;
 
 	return send(msg, args, doc, string, catch_brief, meta);
@@ -93,11 +117,11 @@ async function catch_brief(msg, args, doc, meta) {
 	meta.step=2;
 	meta.data.brief = args.join(" ");
 
-	let string = `<:Grafik:588847763341705263> **New job with <@${meta.target}>**\
+	let string = `<:Grafik:588847763341705263> **New job — Buyer: <@${meta.target}>**\
 	\n**Deadline:** Is there an agreed upon deadline?\
 	\n**Reply with…**\
 	\n• \`no\` No deadline has been set.\
-	\n• \`<text>\` The deadline if any.`;
+	\n• \`<message>\` The deadline if any.`;
 
 	return send(msg, args, doc, string, catch_deadline, meta);
 }
@@ -121,7 +145,7 @@ async function catch_deadline(msg, args, doc, meta) {
 		job: meta.job,
 		user: meta.id,
 		hidden: false,
-		content: meta.id+" created a new job "+meta.job+" with "+meta.target,
+		content: meta.target+" hired "+meta.target+" for a new job "+meta.job,
 		created: date,
 		files: null
 	});
@@ -137,9 +161,9 @@ async function catch_deadline(msg, args, doc, meta) {
 		created: date,
 		finished: null,
 		meta: {
-			deadline: meta.deadline,
-			payment: meta.payment,
-			brief: meta.brief
+			deadline: meta.data.deadline,
+			payment: meta.data.payment,
+			brief: meta.data.brief
 		},
 		events: [market_event_id]
 	});
@@ -211,7 +235,15 @@ async function catch_deadline(msg, args, doc, meta) {
 				string = "The seller is new to me so I have no data on previous sales and whatnot. They were not registered, so I created the profile automatically.";
 				string += `\nAlthough it's not much, you can view the user's profile in detail with \`+profile ${meta.id}\``;
 			} else {
-				string = `**Deals open:** ${_seller.open?_seller.open.length:0}\n**Reports:** ${_seller.reports?_seller.reports.length:0}\n**Reviews:** ${_seller.reviews?_seller.reviews.length:0}\n**Completed sales:** ${_seller.sales?_seller.sales:0}\n**Completed purchases:** ${_seller.purchases?_seller.purchases:0}`;
+				let warning = "";
+				if (_seller.reports.length >= 2) {
+					warning += ":warning: Seller has multiple reports on them. To inspect, say `abort` then use `+profile reports " + _seller._id + "`.\n";
+				}
+				if (_seller.open.length >= 2) {
+					warning += ":warning: Seller already has multiple deals open at this moment. To inspect, say `abort` then use `+profile open " + _seller._id + "`.\n";
+				}
+
+				string = `${warning}**Deals open:** ${_seller.open?_seller.open.length:0}\n**Reports:** ${_seller.reports?_seller.reports.length:0}\n**Reviews:** ${_seller.reviews?_seller.reviews.length:0}\n**Completed sales:** ${_seller.sales?_seller.sales:0}\n**Completed purchases:** ${_seller.purchases?_seller.purchases:0}`;
 				string+=`\nTo view the user's profile in detail, use \`+profile ${meta.id}\``;
 				if(_seller.jobs.length>1) {
 					string += `\nTo view details on on any of the fields above, use \`+profile ${meta.id} <field>\` where \`field\` is an item above.`;
@@ -227,18 +259,21 @@ async function catch_deadline(msg, args, doc, meta) {
 				.addField("**What's next for you?**", "I will try to notify the seller with your response. After that all there is to do is wait on the seller. Meanwhile though, you could familiarize yourself with commands specific to a job: `+job cmds case`")
 				.addField("**Seller details:**", string, true)
 				.addField("**Brief details:**", `**Agreed payment:** ${meta.data.payment}\n**Deadline:** ${meta.data.deadline?meta.data.deadline:"None set"}\n**Brief:** ${meta.data.brief}`);
-			return user.send(`<:Add:588844511489425408> **New job with <@${meta.id}>**:`, {embed});
+			return user.send(`<:Add:588844511489425408> **New job — Buyer: <@${meta.id}>**:`, {embed});
 		})
 		.then(()=>{
 			meta.step = 11;
-			let string = `Thank you. A new job with the **id \`${meta.job}\`** has been created.\
-				\n**What do you need to do next?**\
-				\nThe job will be open for accepting for 24 hours. After that it is aborted.\
-				\nI successdully DM'd the buyer to accept the job. They will have to do \`${doc.prefix}job accept ${meta.job}\`${process.env.PREFIX!==doc.prefix?"*(in DM's my prefix is **`+`**)*":""}\
-				\nWhen buyer accepts, I will try to notify you.\
-				\nFinally, you should check the commands list specific to a job: \`${doc.prefix}job cmds case\`.\
-				\n*Good luck with sales!*`;
-			return msg.author.send(string);
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(`New job case: ${meta.job}`, msg.client.user.avatarURL)
+				.setThumbnail(msg.author.avatarURL)
+				.addField("<:Grafik:588847763341705263> **Thank you**", `A new job with the **id \`${meta.job}\`** with <@${meta.target}> set as the buyer has been created.`)
+				.addField("**Some information:**", `• The job will be open for accepting for 24 hours. After that it is aborted.\
+				\n• I successdully DM'd the buyer to accept the job. They will have to do \`${doc.prefix}job accept ${meta.job}\`${process.env.PREFIX!==doc.prefix?"*(in DM's my prefix is **`+`**)*":""}\
+				\n• When buyer accepts, I will try to notify you.`)
+				.addField("**What do you need to do next?**", "There's nothing you *must* do now but wait on the buyer. What you *could* do though is familiarize yourself with commands specific to a job: `"+process.env.PREFIX+"job cmds case`");
+			return msg.author.send(embed);
 		})
 		.then(()=>{
 			meta.step = 12;
@@ -289,7 +324,7 @@ async function notifyGuild(msg, meta, channel) {
 		.setTimestamp(Date())
 		.setColor(process.env.THEME)
 		.setFooter(msg.author.tag, msg.author.avatarURL)
-		.addField("**New job created**", `<@${meta.id}> created a new job with <@${meta.target}>.\nJob identifiaction is **\`${meta.job}\`**.`);
+		.addField("**New job created**", `<@${meta.target}> hired <@${meta.id}> for a new job. Job case ID is **\`${meta.job}\`**.`);
 	msg.guild.channels.get(channel).send(embed)
 		.then(m => {
 			return jobsModel.updateOne({_id:meta.job}, {$set:{notification:`${m.channel.id}:${m.message.id}`}});
@@ -298,4 +333,21 @@ async function notifyGuild(msg, meta, channel) {
 			if(err.code && err.code===50013) return;
 			return fn.notifyErr(msg.client, err);
 		});
+}
+
+async function checkIfExist(user,target) {
+	/**
+	 * Restrictions:
+	 * 1 per 1 user, no matter guild
+	 * Exclude jobs completed
+	 * Exclude jobs aborted
+	 * 
+	 * Flags: if it finds one after exluding completed/aborted, then stop.
+	 */
+	return new Promise((resolve,reject) => {
+		jobsModel.findOne({user:user, target:target, flags:{$bitsAnyClear:flags.job.completed|flags.job.aborted}}, ["_id","created"], (err,doc) => {
+			if(err) return reject(err);
+			if(doc) return resolve({pass:false, data:doc});
+		});
+	});
 }

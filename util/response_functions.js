@@ -9,7 +9,7 @@ async function _notifyErr(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
 	const embed = new Discord.RichEmbed()
 		.setColor("#cd1818")
 		.setTimestamp(Date())
-		.addField("Error:", err);
+		.addField("Error:", err.toString());
 	try {
 		if(Client.user.id==="232224611847241729") Client.channels.get(config.notifyErrorsChannel).send(embed);
 		else console.log(err.toString());

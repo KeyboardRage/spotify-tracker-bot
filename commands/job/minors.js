@@ -8,6 +8,8 @@ const flags = require("./flags.json");
 
 // TODO: All DB operations must be done on the gruonds that the bitfield "aborted" is not set.
 // TODO: Moderators|Admin|Me can overwrite the permission check.
+// TODO: If job was not yet accepted, and abort is performed, abort it right away.
+// TODO: If a job was aborted before it was initialized, and user try to accept, notify them of that
 
 module.exports = {
 	accept: async function(msg, args, doc) {
@@ -74,7 +76,7 @@ async function _accept(msg, args) {
 					company: null,
 					company_url: null,
 					min_budget: null,
-					color: process.env.THEME
+					color: parseInt(process.env.THEME.slice(1), 16)
 				},
 				portfolios: null,
 				name: msg.author.username,
@@ -246,7 +248,7 @@ async function _makeNewUser(meta, msg, date=Date()) {
 	});
 }
 
-//TODO: Disable ability to send another abort request after one is sent.
+//TODO: Disable ability to send another abort request after one is sent. Also so not same person can send twice and do abort.
 //TODO: Fix agreement from other user just basically sending a new request reversed.
 async function _abort(msg, args) {
 	if(isNaN(args[1])) return msg.channel.send("**Invalid argument:** Where you wrote `"+args[1]+"`, you need to instead pass a job case ID.");
@@ -259,14 +261,20 @@ async function _abort(msg, args) {
 			user:msg.author.id
 		}]}, {
 		$bit:{
-			flags: {and:flags.job.requestAbort}
-		}}, {new:true, runValidators:true, lean:true})
+			flags: {or:flags.job.requestAbort}
+		},
+		$set:{temp:msg.author.id}}, {new:false, runValidators:true, lean:true})
 		.then(r => {
 			_doc = r;
 			if(_doc) {
 				if(_doc.flags&flags.job.aborted) {
 					// If already aborted, stop.
 					msg.channel.send("**No action:** The job case has already been aborted.");
+					return false;
+				}
+				
+				if(_doc.flags&flags.job.requestAbort && _doc.temp && _doc.temp===msg.author.id) {
+					msg.channel.send("**Denied:** You have already sent a request to abort. Waiting on other party to agree with it to finalize.");
 					return false;
 				}
 
@@ -351,7 +359,7 @@ async function _abort(msg, args) {
 
 async function finalizeAbort(msg, doc) {
 	let step=0,_doc;
-	jobsModel.updateOne({_id:doc._id}, {$bit:{flags:{and:flags.job.aborted}, $set:{finished:Date()}}})
+	jobsModel.updateOne({_id:doc._id}, {$bit:{flags:{or:flags.job.aborted}, $set:{finished:Date()}}})
 		.then(()=>{
 			step=1;
 			return marketUserModel.updateOne({_id: doc.target}, {$pull:{open:doc._id}});
@@ -374,29 +382,42 @@ async function finalizeAbort(msg, doc) {
 			return msg.channel.send("**Success:** Job case `" + doc._id + "` was aborted after agreement from multiple parties. It's been removed from borth parties' 'open' status.");
 		})
 		.then(()=>{
-			if(_doc.notify) {
+			console.log("Checking...");
+			console.log(_doc, _doc.notify);
+			if (_doc.notify) {
 				step=6;
+				console.log("Notifying...");
 				const embed = new Discord.RichEmbed()
 					.setTimestamp(Date())
 					.setColor("#cd1818")
 					.setFooter(`Job case ${doc._id}`, msg.client.user.avatarURL)
 					.addField("**A job was aborted:**", `After agreement from multiple parties, job case \`${doc._id}\` was aborted.\nCase events and details are now open to public.`, true)
-					.addField("**Core details:**", `**Created:** ${formatTime(doc.created, true)}\n**Number events:** ${doc.events.length}\n**Seller:** <@${doc.user}>\n**Buyer:** <@${doc.target}>\n**Payment:** ${doc.meta.payment}\n**Deadline:** ${doc.meta.deadline}\n**Brief:** ${doc.meta.brief}`, true);
-				return msg.client.guilds.get(doc._guild).channels.get(_doc.notify).send(embed);
+					.addField("**Core details:**", `**Created:** ${formatTime(doc.created, true)}\n**Number of events:** ${doc.events.length+1}\n**Seller:** <@${doc.user}>\n**Buyer:** <@${doc.target}>\n**Payment:** ${doc.meta.payment?doc.meta.payment:"None agreed upon."}\n**Deadline:** ${doc.meta.deadline?doc.meta.deadline:"None agreed upon."}\n**Brief:** ${doc.meta.brief}`, true);
+				return msg.client.guilds.get(doc.guild).channels.get(_doc.notify).send(embed);
 			}
 			step=7;
 			return;
 		})
+		.then(() => {
+			step = 8;
+			return msg.client.fetchUser(msg.author.id===doc.user?doc.target:doc.user);
+		})
+		.then(r => {
+			step = 9;
+			if(r && r.send) return r.send("**Abort successful:** Job case `" + doc._id + "` was aborted after agreement from multiple parties. It's been removed from borth parties' 'open' status.");
+			return;
+		})
 		.catch(err=>{
+			console.error(err);
 			if(step===5) {
 				if(_doc.notify) {
 					try {
 						const embed = new Discord.RichEmbed()
-						.setTimestamp(Date())
-						.setColor("#cd1818")
-						.setFooter(`Job case ${doc._id}`, msg.client.user.avatarURL)
-						.addField("**A job was aborted:**", `After agreement from multiple parties, job case \`${doc._id}\` was aborted.\nCase events and details are now open to public.`, true)
-						.addField("**Core details:**", `**Created:** ${formatTime(doc.created, true)}\n**Number events:** ${doc.events.length}\n**Seller:** <@${doc.user}>\n**Buyer:** <@${doc.target}>\n**Payment:** ${doc.meta.payment}\n**Deadline:** ${doc.meta.deadline}\n**Brief:** ${doc.meta.brief}`, true);
+							.setTimestamp(Date())
+							.setColor("#cd1818")
+							.setFooter(`Job case ${doc._id}`, msg.client.user.avatarURL)
+							.addField("**A job was aborted:**", `After agreement from multiple parties, job case \`${doc._id}\` was aborted.\nCase events and details are now open to public.`, true)
+							.addField("**Core details:**", `**Created:** ${formatTime(doc.created, true)}\n**Number of events:** ${doc.events.length+1}\n**Seller:** <@${doc.user}>\n**Buyer:** <@${doc.target}>\n**Payment:** ${doc.meta.payment}\n**Deadline:** ${doc.meta.deadline}\n**Brief:** ${doc.meta.brief}`, true);
 						return msg.client.guilds.get(doc._guild).channels.get(_doc.notify).send(embed);
 					} catch(_) {
 						return;
@@ -415,6 +436,8 @@ async function finalizeAbort(msg, doc) {
 				// Error adding event.
 				msg.channel.send("**Success:** Job case `" + doc._id + "` was aborted after agreement from multiple parties.");
 				return fn.notifyErr(msg.client, err);
+			} else if(step===8||step===9) {
+				return;
 			} else {
 				msg.channel.send("**Error:** Generic error during execution. Incident logged.");
 				return fn.notifyErr(msg.client, err);

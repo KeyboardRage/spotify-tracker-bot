@@ -126,8 +126,10 @@ function formatTime(time, clock=false) {
 	time = new Date(time);
 	let months=["Jan.","Feb.","Mar.","Apr.","May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
 	let days=["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-	if (clock) return `${days[time.getDay()]} ${months[time.getMonth()]} ${time.gettime()}, ${time.getFullYear()} @ ${time.getHours()}:${time.getMinutes()}`;
-	return `${days[time.getDay()]} ${months[time.getMonth()]} ${time.gettime()}, ${time.getFullYear()}`;
+	let hours = time.getHours().toString().length;
+	let minutes = time.getMinutes().toString().length;
+	if (clock) return `${days[time.getDay()]} ${months[time.getMonth()]} ${time.getDate()}, ${time.getFullYear()} @ ${hours===1?"0"+hours:hours}:${minutes===1?"0"+minutes:minutes}`;
+	return `${days[time.getDay()]} ${months[time.getMonth()]} ${time.getDate()}, ${time.getFullYear()}`;
 }
 module.exports.formatTime = formatTime;
 
