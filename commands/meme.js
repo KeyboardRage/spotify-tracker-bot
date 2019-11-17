@@ -52,7 +52,7 @@ async function byTag(msg, args) {
 	memesModel.aggregate([
 		{$match: {"tags": {$in: args.slice(0,5)}}},
 		{$sample: {size:1}},
-		{$project:{url:1,_id:1}}], (err,doc) => {
+		{$project:{url:1,_id:1, tags:1}}], (err,doc) => {
 
 		if (err) return handleErr(err, msg, "<:Stop:588844523832999936> **Error:** Unable to query database for relateable memes.");
 		if (!doc.length) return msg.channel.send("**Not found:** Could not find a random meme by the tag(s) `" + args.slice(0, 5).join("`, `") + "`.");
