@@ -12,7 +12,7 @@ module.exports = {
 	cmd: "template",
 	aliases: ["templates", "templ"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.user,
+	permissionLevel: ACCESS.owner,
 	dm:true,
 	daccess: [""],
 	desc: "Template library for various platforms and mediums, available in various formats *(Community driven submissions! Contact <@164736401051484160> to get your stuff added and credited)*.",
