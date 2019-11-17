@@ -198,9 +198,9 @@ module.exports.setBan = setBan;
 
 // Async forEach definition
 async function asyncForEach(array, callback) {
-  for (let index = 0; index < array.length; index++) {
-	await callback(array[index], index, array);
-  }
+	for (let index = 0; index < array.length; index++) {
+		await callback(array[index], index, array);
+	}
 }
 
 
@@ -218,3 +218,102 @@ function datePassed(existing) {
 	return (past.getTime() < Date.now());
 }
 module.exports.datePassed = datePassed;
+
+/**
+ * Redis number incremental. Returns new number
+ * @param {String} key The unique key to increment
+ * @param {Boolean} [get=false] Returns current value without increment
+ * @returns {Number} The new or existing number.
+ * @example
+ * let id = redisIncrement("job");
+ */
+function redisIncrement(field, get=false) {
+	if(get) {
+		RedisDB.get(`counter:${field}`, (err,res) => {
+			return res;
+		});
+	} else {
+		RedisDB.incr(`counter:${field}`, num => {
+			return num;
+		});
+	}
+}
+module.exports.redisIncrement = redisIncrement;
+
+/**
+ * Adds a user to Redis for CMD's locked (cannot use cmd while locked)
+ * @param {String} user User's UID
+ * @param {String} cmd The command, non-alias
+ * @param {String} [guild=false] Define GuildID if locked for guild only
+ * @returns {Number} 0 = No commit. 1 = Successfull commit.
+ * @example
+ * lock(msg.author.id, cmd, "123123123123");
+ */
+async function lock(user, cmd, guild=false) {
+	return new Promise((resolve,reject) => {
+		if(!guild) {
+			RedisDB.hset("locks", `${cmd}:${user}`, true, (err,res) => {
+				if(err) return reject(err);
+				return resolve(res);
+			});
+		} else {
+			RedisDB.hset(`locks:${guild}`, `${cmd}:${user}`, true, (err,res) => {
+				if(err) return reject(err);
+				return resolve(res);
+			});
+		}
+	});
+}
+module.exports.lock = lock;
+
+/**
+ * Removes a user from a lock.
+ * @param {String} user User's UID
+ * @param {String} cmd The command, non-alias
+ * @param {String} [guild=false] Define GuildID if unlocking only for guild
+ * @returns {Number} 0 = None found. 1 = Delete successful
+ * @example
+ * unlock(msg.author.id, cmd, "123123123123");
+ */
+async function unlock(user, cmd, guild = false) {
+	return new Promise((resolve, reject) => {
+		if (!guild) {
+			RedisDB.hdel("locks", `${cmd}:${user}`, (err, res) => {
+				if (err) return reject(err);
+				return resolve(res);
+			});
+		} else {
+			RedisDB.hdel(`locks:${guild}`, `${cmd}:${user}`, (err, res) => {
+				if (err) return reject(err);
+				return resolve(res);
+			});
+		}
+	});
+}
+module.exports.unlock = unlock;
+
+/**
+ * Checks if a user is locked from command
+ * @param {String} user User's UID
+ * @param {String} cmd The command, non-alias
+ * @param {String} [guild=false] Define GuildID if checking guild specific
+ * @returns {Boolean} null = None found. True = Is locked.
+ * @example
+ * checkLock(msg.author.id, cmd, "123123123123");
+ */
+module.exports.checkLock = checkLock;
+async function checkLock(user, cmd, guild = false) {
+	return new Promise((resolve, reject) => {
+		if (!guild) {
+			RedisDB.hget("locks", `${cmd}:${user}`, (err, res) => {
+				if (err) return reject(err);
+				return resolve(res);
+			});
+		} else {
+			RedisDB.hget(`locks:${guild}`, `${cmd}:${user}`, (err, res) => {
+				if (err) return reject(err);
+				return resolve(res);
+			});
+		}
+	});
+}

@@ -387,3 +387,14 @@ let guildJobsSchema = new mongoose.Schema({
 }, {collection: "marketGuilds"});
 let guildJobs = maindb.model("guildJobs", guildJobsSchema);
 module.exports.guildJobs = guildJobs;
+
+let memesSchema = new mongoose.Schema({
+	_id: Number,
+	contributor: String,
+	source: String,
+	url: String,
+	extension: String,
+	tags: Array
+}, {collection:"memes"});
+let memesModel = maindb.model("memesModel", memesSchema);
+module.exports.memesModel = memesModel;

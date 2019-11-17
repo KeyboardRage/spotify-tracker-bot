@@ -30,38 +30,38 @@ module.exports = {
 
 		if(args.length===0) return this.help(msg, cmd, args, doc);
 		switch(args[0]) {
-			case "info":
-				return info(msg, args);
-			case "new":
-				return formNew(msg, args); //! Done!
-			case "select":
-				return formSelect(msg, args); //! Done!
-			case "duplicate":
-				return formDuplicate(msg, args); //! Done!
-			case "delete":
-				return formDelete(msg, args); //! Done!
-			case "list":
-				return formList(msg); //! Done!
-			case "edit":
-				return formEdit(msg, args, doc); //! Semi-done!
-			case "export":
-				return formExport(msg, args); //! Done!
-			case "import":
-				return formImport(msg); //! Done!
-			case "+":
-				return formAdd(msg, args, doc); //! Semi-done!
-			case "-":
-				return formRemove(msg, args, doc); //! Done
-			case ".":
-				return formChange(msg, args, doc); //! Done
-			case ",":
-				return formShow(msg, args, doc); //! Done!
-			case "!":
-				return startLoop(msg, args, doc); //! Done	
-			case "v":
-				return formVars(msg, args); //! Done
-			case "planned":
-				return msg.channel.send(`***PLANNED FEATURES***\
+		case "info":
+			return info(msg, args);
+		case "new":
+			return formNew(msg, args); //! Done!
+		case "select":
+			return formSelect(msg, args); //! Done!
+		case "duplicate":
+			return formDuplicate(msg, args); //! Done!
+		case "delete":
+			return formDelete(msg, args); //! Done!
+		case "list":
+			return formList(msg); //! Done!
+		case "edit":
+			return formEdit(msg, args, doc); //! Semi-done!
+		case "export":
+			return formExport(msg, args); //! Done!
+		case "import":
+			return formImport(msg); //! Done!
+		case "+":
+			return formAdd(msg, args, doc); //! Semi-done!
+		case "-":
+			return formRemove(msg, args, doc); //! Done
+		case ".":
+			return formChange(msg, args, doc); //! Done
+		case ",":
+			return formShow(msg, args, doc); //! Done!
+		case "!":
+			return startLoop(msg, args, doc); //! Done	
+		case "v":
+			return formVars(msg, args); //! Done
+		case "planned":
+			return msg.channel.send(`***PLANNED FEATURES***\
 				\n- **Input validation**\
 				\n	└ Define acceptable values, like number, number range, pre-defined list, long text, short text, file, etc..\
 				\n- **Re-ordering**\
@@ -79,10 +79,10 @@ module.exports = {
 				\n\nIf you have other suggestions, please use \`${doc.prefix}suggest <suggestion>\` and explain your suggestion.\
 				\n- **Auto-add emotes**\
 				\n	└ Automatically append up to 5 emotes on the output message.`);
-			case "template":
-				return formInfoTemplate(msg, doc); //! Done
-			default:
-				return;
+		case "template":
+			return formInfoTemplate(msg, doc); //! Done
+		default:
+			return;
 		}
 	},
 	help(msg, cmd, args, doc) {

@@ -5,11 +5,15 @@ const Discord = require("discord.js");
 const {guildJobs,jobsModel,marketEvents,marketUserModel} = require("../../util/database");
 const mongoose = require("mongoose"); 
 const flags = require("./flags.json");
+const {RedisDB} = require("../../util/redis");
+const ACCESS = require("../../data/permissions.json");
+
+// Permission checks
+const staff = ACCESS.community|ACCESS.mod|ACCESS.admin|ACCESS.dev|ACCESS.owner;
+const dev = ACCESS.dev|ACCESS.owner;
 
 // TODO: All DB operations must be done on the gruonds that the bitfield "aborted" is not set.
 // TODO: Moderators|Admin|Me can overwrite the permission check.
-// TODO: If job was not yet accepted, and abort is performed, abort it right away.
-// TODO: If a job was aborted before it was initialized, and user try to accept, notify them of that
 
 module.exports = {
 	accept: async function(msg, args, doc) {
@@ -24,28 +28,65 @@ module.exports = {
 	makeNewUser: async function(meta, msg, date) {
 		return await _makeNewUser(meta, msg, date);
 	},
-	abort: async function(msg, args) {
-		return await _abort(msg, args);
+	abort: async function(msg, args, doc) {
+		return await _abort(msg, args, doc);
+	},
+	checkMax: async function(user) {
+		return await _checkMax(user);
 	}
 };
 
-async function _accept(msg, args) {
+async function _accept(msg, args, doc) {
 	if(isNaN(args[1])) return msg.channel.send("**Invalid argument:** Where you wrote `"+args[1]+"`, you need to instead pass a job case ID.");
-	let usr, guild, job, stop=false;
-	jobsModel.findOne({_id:args[1], target:msg.author.id})
+	let usr, guild, job, targ, stop=false;
+
+	// Used to ignore checks:
+	let b = {
+		dev: (doc.level.userLevel&dev), // Is dev, bypass all
+		staff: (doc.level.userLevel&staff), // Has staff permission
+		staffAct: doc.level.staff, // An act as a staff member, not a user of the feature,
+		guild: msg.channel.type==="text"?msg.guild.id:false // Guild ID or false
+	};
+
+	_checkMax(msg.author.id, b)
+		.then(r => {
+			if(parseInt(r)>=10) {
+				stop=true;
+				msg.channel.send("**Denied:** You already have 10 deals open. Finish some of them before accepting more.");
+				return;
+			}
+			if (b.dev) return jobsModel.findOne({_id:args[1]});
+			else if (b.staff && b.guild && b.staffAct) jobsModel.findOne({_id:args[1], guild:b.guild});
+			else return jobsModel.findOne({_id:args[1], target:msg.author.id});
+		})
 		.then(doc => {
+			if(stop) return;
 			if(!doc) {
 				stop=true;
-				return msg.channel.send("**Not found:** Either the job case doesn't exist, or you're not involved with it.");
+				return msg.channel.send("**Not found:** Either the job case doesn't exist, you're not involved with it, or you are not the one to accept it.");
+			}
+			if(doc.flags&flags.job.aborted) {
+				stop=true;
+				return msg.channel.send("**Aborted:** This job case is closed for edits as it has been aborted.");
 			}
 			if(doc.flags&flags.job.accepted) {
 				stop=true;
 				return msg.channel.send("**Aborted:** You've already accepted this job case.");
 			}
+			if (doc.flags & flags.job.declined) {
+				stop = true;
+				return msg.channel.send("**Aborted:** You've already declined this job case.");
+			}
 			usr = doc.user;
+			targ = doc.target;
 			guild = doc.guild;
 			job = doc._id;
+
+			if(b.dev) return true;
+			
 			let string = `Buyer ${msg.author.id} accepted the job case.`;
+			if(b.staff && b.staffAct) string = `A staff member ${msg.author.id} accepted the job case.`;
+
 			let q = {"$set":{last_updated:Date(), flags: doc.flags|flags.job.accepted}};
 			return _event({
 				guild:guild,
@@ -58,17 +99,35 @@ async function _accept(msg, args) {
 		})
 		.then(()=>{
 			if(stop) return;
-			return marketUserModel.findOne({_id:msg.author.id});
+			return marketUserModel.findOne({_id:targ});
+			// if(b.dev) {
+			// 	return marketUserModel.findOne({_id:targ});
+			// } else if (b.staff && b.staffAct) {
+			// 	return marketUserModel.findOne({_id:targ});
+			// } else return marketUserModel.findOne({_id:msg.author.id});
 		})
-		.then(d=>{
-			if(d) return marketUserModel.updateOne({_id:msg.author.id}, {$push:{open:args[1]}});
+		.then(async d=>{
+			if(stop) return;
+			if(d) return marketUserModel.updateOne({_id:targ}, {$push:{open:args[1]}});
+
+			let user = {
+				discord: msg.author.username,
+				discriminator: msg.author.discriminator
+			};
+
+			if(b.dev || (b.staff && b.staffAct)) {
+				let _u = await msg.client.fetchUser(targ).catch(err=>{throw err;});
+				if(!_u) throw new Error("Could not find buyer.");
+				user.discord = _u.username,
+				user.discriminator = _u.discriminator;
+			}
 
 			// Make if not exist.
 			d = new marketUserModel({
-				_id: msg.author.id,
+				_id: targ,
 				meta: {
-					discord: msg.author.username,
-					discriminator: msg.author.discriminator,
+					discord: user.username,
+					discriminator: user.discriminator,
 					available: false,
 					title: "Unknown buyer",
 					main_type: 6,
@@ -79,7 +138,7 @@ async function _accept(msg, args) {
 					color: parseInt(process.env.THEME.slice(1), 16)
 				},
 				portfolios: null,
-				name: msg.author.username,
+				name: user.username,
 				purchases: 0,
 				sales: 0,
 				reviews: null,
@@ -92,6 +151,7 @@ async function _accept(msg, args) {
 		})
 		.then(()=>{
 			if(stop) return;
+			RedisDB.incr("jobs:open:" + targ);
 			return guildJobs.updateOne({_id:guild}, {$set:{
 				last_job_date: Date(),
 			}, $inc: {
@@ -105,7 +165,11 @@ async function _accept(msg, args) {
 		})
 		.then(_usr => {
 			if(stop) return;
-			_usr.send(`<@${msg.author.id}> accepted job case \`${args[1]}\`.`);
+			if(b.staff && b.staffAct) {
+				return _usr.send(`Staff member <@${msg.author.id}> force-accepted job case \`${args[1]}\` for you.`);
+			} else if (b.dev) {
+				return _usr.send(`A bot dev force-accepted job case \`${args[1]}\` for you.`);
+			} else return _usr.send(`<@${msg.author.id}> accepted job case \`${args[1]}\`.`);
 		})
 		.then(()=>{
 			if(stop) return;
@@ -130,7 +194,11 @@ async function _decline(msg, args) {
 		.then(doc => {
 			if(!doc) {
 				stop=true;
-				return msg.channel.send("**Not found:** Either the job case doesn't exist, or you're not involved with it.");
+				return msg.channel.send("**Not found:** Either the job case doesn't exist, you're not involved in it, or is not the one that can decline it.");
+			}
+			if(doc.flags&flags.job.aborted) {
+				stop = true;
+				return msg.channel.send("**Aborted:** This job case is closed for edits as it has been aborted.");
 			}
 			if(doc.flags&flags.job.accepted) {
 				stop=true;
@@ -138,15 +206,15 @@ async function _decline(msg, args) {
 			}
 			if(doc.flags&flags.job.declined) {
 				stop=true;
-				return msg.channel.send("**Aborted:** You've already declined this job case.");
+				return msg.channel.send("**Aborted:** This job case has already been declined.");
 			}
 			
 			usr = doc.user;
 			guild = doc.guild;
 			let string = `Buyer ${msg.author.id} declined the job case.`;
-			let q = {"$set":{last_updated:Date(), flags: doc.flags|flags.job.declined}};
+			let q = {"$set":{last_updated:Date(), flags: doc.flags|flags.job.declined|flags.job.aborted}};
 			return _event({
-				guild: msg.guild.id,
+				guild: guild,
 				job: args[1],
 				user: msg.author.id,
 				hidden: false,
@@ -160,10 +228,12 @@ async function _decline(msg, args) {
 		})
 		.then(()=>{
 			if(stop) return;
+			RedisDB.decr("jobs:open:" + usr); // Only needed once for seller, since buyer only gets status on accept.
 			return guildJobs.updateOne({_id:guild}, {$inc:{jobs_aborted:1}});
 		})
 		.then(()=>{
 			if(stop) return;
+			removeIfZero(msg.client, usr);
 			return msg.client.fetchUser(usr);
 		})
 		.then(usr => {
@@ -172,7 +242,7 @@ async function _decline(msg, args) {
 		})
 		.then(()=>{
 			if(stop) return;
-			return msg.author.send("Thank you for the feedback. I've notified <@"+usr.id+">.");
+			return msg.author.send("Thank you for the feedback. I've notified <@"+usr+">.");
 		})
 		.catch(err => {
 			console.error(err);
@@ -248,18 +318,30 @@ async function _makeNewUser(meta, msg, date=Date()) {
 	});
 }
 
-//TODO: Disable ability to send another abort request after one is sent. Also so not same person can send twice and do abort.
-//TODO: Fix agreement from other user just basically sending a new request reversed.
-async function _abort(msg, args) {
+async function _abort(msg, args, doc) {
 	if(isNaN(args[1])) return msg.channel.send("**Invalid argument:** Where you wrote `"+args[1]+"`, you need to instead pass a job case ID.");
 	let _doc,user,step=0;
-	return jobsModel.findOneAndUpdate({
-		_id:args[1], 
-		$or:[{
-			target:msg.author.id
-		}, {
-			user:msg.author.id
-		}]}, {
+
+	// Used to ignore checks:
+	let b = {
+		dev: (doc.level.userLevel&dev), // Is dev, bypass all
+		staff: (doc.level.userLevel&staff), // Has staff permission
+		staffAct: doc.level.staff, // An act as a staff member, not a user of the feature,
+		guild: msg.channel.type==="text"?msg.guild.id:false // Guild ID or false
+	};
+
+	if (b.dev||(b.staff && b.staffAct)) {
+		return finalizeAbort(msg, doc, false, args[1], b);
+	}
+
+	jobsModel.findOneAndUpdate({
+			_id: args[1],
+			$or: [{
+				target: msg.author.id
+			}, {
+				user: msg.author.id
+			}]
+	}, {
 		$bit:{
 			flags: {or:flags.job.requestAbort}
 		},
@@ -267,9 +349,13 @@ async function _abort(msg, args) {
 		.then(r => {
 			_doc = r;
 			if(_doc) {
+				if(_doc.flagd^flags.job.accepted) {
+					finalizeAbort(msg, _doc, true);
+					return false;
+				}
 				if(_doc.flags&flags.job.aborted) {
 					// If already aborted, stop.
-					msg.channel.send("**No action:** The job case has already been aborted.");
+					msg.channel.send("**Aborted:** The job case has already been aborted.");
 					return false;
 				}
 				
@@ -280,6 +366,10 @@ async function _abort(msg, args) {
 
 				if(_doc.flags&flags.job.requestAbort) {
 					finalizeAbort(msg, _doc);
+					return false;
+				}
+				if (_doc.flags & flags.job.declined) {
+					msg.channel.send("**Aborted:** You've already declined this job case.");
 					return false;
 				}
 
@@ -357,41 +447,91 @@ async function _abort(msg, args) {
 		});
 }
 
-async function finalizeAbort(msg, doc) {
+async function finalizeAbort(msg, doc, pulled=false, force=false, b) {
 	let step=0,_doc;
-	jobsModel.updateOne({_id:doc._id}, {$bit:{flags:{or:flags.job.aborted}, $set:{finished:Date()}}})
+	// doc = job model.
+	// _doc = guild jobs
+	if(force) {
+		doc = await jobsModel.findOne({_id:force, guild:msg.guild.id}).catch(err=>{throw err;});
+		if(!doc) return msg.channel.send("**Not found:** Could not find job case `"+force+"` in this guild.");
+	}
+
+	jobsModel.updateOne({_id:doc._id}, {$bit:{flags:{or:flags.job.aborted|flags.job.completed}, $set:{finished:Date()}}})
 		.then(()=>{
 			step=1;
-			return marketUserModel.updateOne({_id: doc.target}, {$pull:{open:doc._id}});
+			if(!pulled) return marketUserModel.updateOne({_id: doc.target}, {$pull:{open:doc._id}});
+			return;
 		})
 		.then(()=>{
 			step=2;
+			// 1 after to ensure sync with DB.
+			if(!pulled) {
+				RedisDB.decr("jobs:open:" + doc.target);
+			}
 			return marketUserModel.updateOne({_id: doc.user}, {$pull:{open:doc._id}, jobs:doc._id});
 		})
 		.then(()=>{
 			step=3;
-			return _event({guild:doc.guild, user:msg.author.id, job:doc._id}, `${doc.user===msg.author.id?"Seller":"buyer"} ${msg.author.id} accepted the request to abort the job. It has now been cancelled, and all case detils are open to public.`);
+			// 1 after to ensure sync with DB.
+			RedisDB.decr("jobs:open:" + doc.user);
+			if(!pulled) {
+				removeIfZero(msg.client, doc.target);
+				if(!b.staff && b.staffAct) {
+					return _event({guild:doc.guild, user:msg.author.id, job:doc._id}, `A staff member ${msg.author.id} force-accepted the request to abort the job. It has now been cancelled, and all case detils are open to public.`);
+				} else if (b.dev) {
+					return _event({guild:doc.guild, user:msg.author.id, job:doc._id}, "A bot developer force-accepted the request to abort the job. It has now been cancelled, and all case detils are open to public.");
+				} else {
+					return _event({
+						guild: doc.guild,
+						user: msg.author.id,
+						job: doc._id
+					}, `${doc.user===msg.author.id?"Seller":"buyer"} ${msg.author.id} accepted the request to abort the job. It has now been cancelled, and all case detils are open to public.`);
+				}
+			}
+			if(b.staff & b.staffAct) {
+				return _event({
+					guild: doc.guild,
+					user: msg.author.id,
+					job: doc._id
+				}, `A staff member ${msg.author.id} force-aborted the request before it begun. All case detils are open to public.`);
+			} else if (b.dev) {
+				return _event({
+					guild: doc.guild,
+					user: msg.author.id,
+					job: doc._id
+				}, "A bot developer force-aborted the request before it begun. All case detils are open to public.");
+			} else {
+				return _event({
+					guild: doc.guild,
+					user: msg.author.id,
+					job: doc._id
+				}, `${doc.user===msg.author.id?"Seller":"buyer"} ${msg.author.id} aborted the request before it begun. All case detils are open to public.`);
+			}
 		})
 		.then(()=>{
 			step=4;
+			removeIfZero(msg.client, doc.user);
 			return guildJobs.findOneAndUpdate({_id:doc.guild}, {$inc:{jobs_aborted:1, jobs_open:-1}}, {new:true, lean:true});
 		})
 		.then(r=>{
 			_doc = r;
 			step=5;
-			return msg.channel.send("**Success:** Job case `" + doc._id + "` was aborted after agreement from multiple parties. It's been removed from borth parties' 'open' status.");
+			return msg.channel.send("**Success:** Job case `" + doc._id + "` was aborted.");
 		})
 		.then(()=>{
-			console.log("Checking...");
-			console.log(_doc, _doc.notify);
-			if (_doc.notify) {
+			if (_doc.notify && !pulled) {
+				let string = `After agreement from multiple parties, job case \`${doc._id}\` was aborted.\nCase events and details are now open to public.`;
 				step=6;
-				console.log("Notifying...");
+				if(b.staff & b.staffAct) {
+					string = `A staff member <@${msg.author.id}> force-aborted job case \`${doc._id}\`.\nCase events and details are now open to public.`;
+				} else if (b.dev) {
+					string = `A bot developer force-aborted job case \`${doc._id}\`.\nCase events and details are now open to public.`;
+				}
 				const embed = new Discord.RichEmbed()
 					.setTimestamp(Date())
 					.setColor("#cd1818")
 					.setFooter(`Job case ${doc._id}`, msg.client.user.avatarURL)
-					.addField("**A job was aborted:**", `After agreement from multiple parties, job case \`${doc._id}\` was aborted.\nCase events and details are now open to public.`, true)
+					.addField("**A job was aborted:**", string, true)
 					.addField("**Core details:**", `**Created:** ${formatTime(doc.created, true)}\n**Number of events:** ${doc.events.length+1}\n**Seller:** <@${doc.user}>\n**Buyer:** <@${doc.target}>\n**Payment:** ${doc.meta.payment?doc.meta.payment:"None agreed upon."}\n**Deadline:** ${doc.meta.deadline?doc.meta.deadline:"None agreed upon."}\n**Brief:** ${doc.meta.brief}`, true);
 				return msg.client.guilds.get(doc.guild).channels.get(_doc.notify).send(embed);
 			}
@@ -400,23 +540,41 @@ async function finalizeAbort(msg, doc) {
 		})
 		.then(() => {
 			step = 8;
-			return msg.client.fetchUser(msg.author.id===doc.user?doc.target:doc.user);
+			if(b.staff && b.staffAct) {
+				msg.author.send("**Abort successful:** You should porentially notify the parties involved of the abort.");
+				return false;
+			} else if (b.dev) {
+				return false;
+			} else {
+				return msg.client.fetchUser(msg.author.id===doc.user?doc.target:doc.user);
+			}
 		})
 		.then(r => {
 			step = 9;
-			if(r && r.send) return r.send("**Abort successful:** Job case `" + doc._id + "` was aborted after agreement from multiple parties. It's been removed from borth parties' 'open' status.");
+			if(!pulled && r && r.send) {
+				return r.send("**Abort successful:** Job case `" + doc._id + "` was aborted after agreement from multiple parties. It's been removed from borth parties' 'open' status.");
+			} else if (r && r.send) {
+				return r.send("**Abort successful:** Job case `" + doc._id + "` was aborted before it begun.");
+			}
 			return;
 		})
 		.catch(err=>{
 			console.error(err);
 			if(step===5) {
-				if(_doc.notify) {
+				if(_doc.notify && !pulled) {
 					try {
+						let string = `After agreement from multiple parties, job case \`${doc._id}\` was aborted.\nCase events and details are now open to public.`;
+						step = 6;
+						if (b.staff & b.staffAct) {
+							string = `A staff member <@${msg.author.id}> force-aborted job case \`${doc._id}\`.\nCase events and details are now open to public.`;
+						} else if (b.dev) {
+							string = `A bot developer force-aborted job case \`${doc._id}\`.\nCase events and details are now open to public.`;
+						}
 						const embed = new Discord.RichEmbed()
 							.setTimestamp(Date())
 							.setColor("#cd1818")
 							.setFooter(`Job case ${doc._id}`, msg.client.user.avatarURL)
-							.addField("**A job was aborted:**", `After agreement from multiple parties, job case \`${doc._id}\` was aborted.\nCase events and details are now open to public.`, true)
+							.addField("**A job was aborted:**", string, true)
 							.addField("**Core details:**", `**Created:** ${formatTime(doc.created, true)}\n**Number of events:** ${doc.events.length+1}\n**Seller:** <@${doc.user}>\n**Buyer:** <@${doc.target}>\n**Payment:** ${doc.meta.payment}\n**Deadline:** ${doc.meta.deadline}\n**Brief:** ${doc.meta.brief}`, true);
 						return msg.client.guilds.get(doc._guild).channels.get(_doc.notify).send(embed);
 					} catch(_) {
@@ -434,7 +592,11 @@ async function finalizeAbort(msg, doc) {
 				return fn.notifyErr(msg.client, new Error(`Error on step ${step} for aborting jobs. Message: ${msg.author.id}: ${msg.content}\nError message: ` + err.toString()));
 			} else if(step===3) {
 				// Error adding event.
-				msg.channel.send("**Success:** Job case `" + doc._id + "` was aborted after agreement from multiple parties.");
+				if(!pulled) {
+					msg.channel.send("**Success:** Job case `" + doc._id + "` was aborted after agreement from multiple parties.");
+				} else {
+					msg.channel.send("**Success:** Job case `" + doc._id + "` was aborted.");
+				}
 				return fn.notifyErr(msg.client, err);
 			} else if(step===8||step===9) {
 				return;
@@ -443,4 +605,28 @@ async function finalizeAbort(msg, doc) {
 				return fn.notifyErr(msg.client, err);
 			}
 		});
+}
+
+async function _checkMax(user, bypass) {
+	return new Promise(resolve => {
+		if(bypass.staff) return resolve(0);
+		RedisDB.get("jobs:open:" + user, (err, res) => {
+			if (err) return resolve(null);
+			if (!res) return resolve(0);
+			return resolve(res);
+		});
+	});
+}
+
+async function removeIfZero(Client, user) {
+	RedisDB.get("jobs:open:"+user, (err,res) => {
+		if(err) fn.notifyErr(Client, err);
+		else {
+			if(parseInt(res)===0) {
+				RedisDB.del("jobs:open:"+user, err => {
+					if(err) fn.notifyErr(Client, err);
+				});
+			}
+		}
+	});
 }

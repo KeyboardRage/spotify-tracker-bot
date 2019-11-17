@@ -6,12 +6,24 @@ module.exports = {
 	cmd: "job",
 	aliases: ["jobs","work"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.user,
 	dm: true,
 	daccess: [""],
 	desc: "Make, modify, or perform actions on a job",
 	async exec(msg, cmd, args, doc) {
 		// The response for help on this command.
+		const staff = ACCESS.community|ACCESS.mod|ACCESS.admin|ACCESS.dev|ACCESS.owner;
+
+		// Add a 'staff action' flag
+		if(args.indexOf("--staff")>=0) {
+			if(doc.level&staff) {
+				args.splice(args.indexOf("--staff"), 1);
+				doc.level.staff = true;
+			} else {
+				return msg.channel.send("**Denied:** The `--staff` flag is only for guild administrators and guild bot moderators.");
+			}
+		}
+
 		if(!args.length) return fn.info.command(msg, args, doc);
 		if(args[0] && args.length===1) return msg.channel.send("**Missing argument:** You must also tell me who the buyer is.");
 		switch(args[0].toLowerCase()) {
@@ -23,7 +35,7 @@ module.exports = {
 		case "decline":
 			return fn.decline(msg, args, doc);
 		case "abort":
-			return fn.abort(msg, args);
+			return fn.abort(msg, args, doc);
 		}
 	},
 	help(msg, cmd, args, doc) {

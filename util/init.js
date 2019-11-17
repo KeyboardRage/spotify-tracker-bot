@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 // CACHE / DATABASES ==============================================
 const {RedisDB} = require("./redis");
-const {serverSettings,botPerms,permsModel} = require("./database");
+const {serverSettings,botPerms,permsModel,marketUserModel} = require("./database");
 // COMMANDS =======================================================
 const commands_loader = require("./load_commands");
 // CONFIGURATION VALUES ===========================================
@@ -42,13 +42,16 @@ async function masterCacheLoader() {
 		// Load local and global bans from permissions
 		allCache.push(cacher_bans());
 
+		// Load users with open deals
+		allCache.push(cacher_openDeals());
+
 		Promise.all(allCache)
 			.then(()=>{
 				return resolve(true);
 			})
 			.catch(err=>{
 				if(err) {
-					console.error(chalk.black.bgRed(" × ") + chalk.red(` ERROR: masterCacheLoader() → `), err);
+					console.error(chalk.black.bgRed(" × ") + chalk.red(" ERROR: masterCacheLoader() → "), err);
 				}
 				return reject(err);
 			});
@@ -163,6 +166,38 @@ async function cacher_bans() {
 			// }
 		// }
 	// }])
+}
+// Async forEach definition
+async function asyncForEach(array, callback) {
+	for (let index = 0; index < array.length; index++) {
+		await callback(array[index], index, array);
+	}
+}
+
+async function cacher_openDeals() {
+	return new Promise((resolve,reject) => {
+		// Find all where "open[0]" exists, meaning length 1<
+		let i=0;
+		marketUserModel.find({"open.0":{$exists:true}}, ["_id","open"], async (err,docs) => {
+			if(err) return reject(err);
+			// Async forEach definition
+			await asyncForEach(docs, async doc => {
+				// jobs:open = userID:N
+				i++;
+				await _set(doc._id, doc.open.length).catch(err=>{return reject(err);});
+			});
+			console.info(chalk.black.bgGreen(" ✓ ") + " Open deals cached. N: "+i);
+			return resolve(true);
+		});
+	});
+}
+async function _set(id,open) {
+	return new Promise((resolve,reject) => {
+		RedisDB.set("jobs:open:"+id, open, err => {
+			if(err) return reject(err);
+			return resolve(true);
+		});
+	});
 }
 
 //===============================================================

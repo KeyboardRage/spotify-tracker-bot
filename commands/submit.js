@@ -1,6 +1,6 @@
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
-const fn = require("./logo/main");
+const fn = require("./submit/main");
 
 module.exports = {
 	cmd: "submit",
@@ -11,10 +11,6 @@ module.exports = {
 	daccess: [""],
 	desc: "Submit a new file to a library. Logo or templates.",
 	async exec(msg, cmd, args, doc) {
-		if (args.length < 2) return msg.channel.send("**Missing arguments:** You must give the logo a name and some tags.");
-		if (msg.attachments.size === 0) return msg.channel.send("**Missing input:** You must attach a SVG file along with the command.");
-		if (!msg.attachments.first().url.endsWith(".svg")) return msg.channel.send("**Invalid input:** The attached file must be of type SVG.");
-
 		let type = args.shift();
 		let tagsStart = args.findIndex(e => e.startsWith("-"));
 		let sourceStart = args.indexOf("--source");
@@ -25,14 +21,20 @@ module.exports = {
 			name: args.slice(0, tagsStart).join(" "),
 			allTags: args.slice(tagsStart, sourceStart<0?undefined:sourceStart).join(" ").split("-").filter(Boolean).map(e=>e.trim()),
 			source: sourceStart>0?args.slice(sourceStart+1).join(" "):null,
-			url: msg.attachments.first().url,
+			url: msg.attachments.size?msg.attachments.first().url:null,
 			user: msg.author.id
 		};
 
 		switch(type) {
 		case "logo":
 		case "logos":
+			if (args.length < 2) return msg.channel.send("**Missing arguments:** You must give the logo a name and some tags.");
+			if (msg.attachments.size === 0) return msg.channel.send("**Missing input:** You must attach a SVG file along with the command.");
+			if (!msg.attachments.first().url.endsWith(".svg")) return msg.channel.send("**Invalid input:** The attached file must be of type SVG.");
 			return fn.logo(msg, data, doc);
+		case "meme":
+		case "memes":
+			return fn.meme(msg, data, doc, args);
 		// case "templates":
 		// case "template":
 		// case "templ":

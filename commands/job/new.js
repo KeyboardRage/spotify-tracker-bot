@@ -3,9 +3,9 @@ const fn = require("../../util/response_functions");
 const invite = "https://discord.gg/SEssczu";
 const Discord = require("discord.js");
 const Sentry = require("../../util/extras");
+const {RedisDB,lock,unlock} = require("../../util/redis");
 const {guildJobs,jobsModel,marketEvents,marketUserModel} = require("../../util/database");
-const mongoose = require("mongoose");
-const {event,makeNewUser} = require("./minors");
+const {event,makeNewUser,checkMax} = require("./minors");
 const flags = require("./flags.json");
 
 module.exports = init;
@@ -14,6 +14,8 @@ async function init(msg, args, doc) {
 	// new <user>
 	//TODO: Insert new counters to coutners model: marketReviews, marketReports, marketJobs, marketEvents
 
+	let n = await checkMax(msg.author.id);
+	if(parseInt(n)>=10) return msg.channel.send("**Denied:** You already have 10 open deals. Finish some of them before making more.").catch(err=>{console.error(err);});
 	let meta = {
 		step: 0,
 		id: msg.author.id,
@@ -24,21 +26,48 @@ async function init(msg, args, doc) {
 		guild: msg.guild.id,
 		guild_name: msg.guild.name,
 	};
-	findUser(msg.client, args[1], {inGuild:msg.guild.id, msg:msg, onlyId:true})
-		.then(r => {
-			if(!r) return msg.channel.send("**Could not initiate:** I could not find the user you specified.");
-			if(r===msg.author.id) return msg.channel.send("**Aborted:** You cannot create a job with yourself as the buyer.");
+	let stop=false;
+	lock(msg.author.id, "job")
+		.then(() => {
+			return findUser(msg.client, args[1], {inGuild:msg.guild.id, msg:msg, onlyId:true});
+		})
+		.then(async r => {
+			if(!r) {
+				stop=true;
+				msg.channel.send("**Could not initiate:** I could not find the user you specified.");
+				unlock(msg.author.id, "job");
+				return;
+			}
+			if(r===msg.author.id) {
+				stop=true;
+				msg.channel.send("**Aborted:** You cannot create a job with yourself as the buyer.");
+				unlock(msg.author.id, "job");
+				return;
+			}
 			meta.target = r;
-
+			n = await checkMax(r);
+			if(parseInt(n)>=10) {
+				stop=true;
+				msg.channel.send("**:warning: Aborted:** The buyer already has 10 deals open at this moment, and is not allowed to accept more.");
+				unlock(msg.author.id, "job");
+				return;
+			}
 			return checkIfExist(msg.author.id, meta.target);
 		})
 		.then(r => {
+			if(stop) return;
 			if(!r.pass) {
-				return msg.channel.send("**Denied:** You already have a job with this user, created at "+formatTime(r.data.created)+". You may only have one concurrent job case per user at once.\nIf you need to make changes to the job, use `"+doc.prefix+"job edit "+r.data._id+"`.\nAbort or finish job case with `"+doc.prefix+"job abort "+r.data._id+"` or `"+doc.prefix+"job done "+r.data._id+"` if it's a new un-related job.");
+				stop=true;
+				msg.channel.send("**Denied:** You already have a job with this user, created at "+formatTime(r.data.created)+".\
+				\n•    You may only have one concurrent job case per user at once.\
+				\n•    If you need to make changes to the job, use `"+doc.prefix+"job edit "+r.data._id+"`.\
+				\n•    Abort or finish job case with `"+doc.prefix+"job abort "+r.data._id+"` or `"+doc.prefix+"job done "+r.data._id+"` if it's a new un-related job.");
+				return unlock(msg.author.id, "job");
 			}
 			return marketUserModel.findOne({_id:meta.target});
 		})
 		.then(r => {
+			if(stop) return;
 			const embed = new Discord.RichEmbed()
 				.setTimestamp(Date())
 				.setColor(process.env.THEME)
@@ -57,22 +86,24 @@ Everything you input can be changed later, but require mutual agreement. After 2
 				if (warning.length) {
 					embed.addField("**Warnings:**", warning);
 				}
-				embed.addField("**Payment:**", "Is there an agreed payment for this job?\
+				
+			}
+			embed.addField("**Payment:**", "Is there an agreed payment for this job?\
 \n**Reply with…**\
 \n• `no` No payment agreed upon.\
 \n• `<message>` An amount or arbitrary payment");
-				return send(msg, args, doc, embed, catch_sum, meta);
-			} else {
-				return send(msg, args, doc, embed, catch_sum, meta);
-			}
+			return send(msg, args, doc, embed, catch_sum, meta);
 		})
 		.catch(err=>{
+			console.log(err);
+			unlock(msg.author.id, "job");
 			return handleErr(err, msg, meta, "**Error:** Could not look for user. Incident logged. Make a `+bug <message>` report if problem persists, or join support guild: " + invite);
 		});
 }
 
 async function handleErr(err, msg, meta, response=null) {
 	console.error(err);
+	unlock(msg.author.id, "job");
 	if(response) {
 		msg.author.send(response);
 		return fn.notifyErr(msg.client, new Error("ERROR @ New job: "+JSON.stringify(meta)+"\n"+err.toString()));
@@ -99,7 +130,8 @@ async function send(msg, args, doc, response, callback, meta) {
 }
 
 async function abortJob(msg, doc, meta) {
-	return msg.author.send("Aborted.");
+	unlock(msg.author.id, "job");
+	return msg.author.send("**Aborted.**");
 }
 
 async function catch_sum(msg, args, doc, meta) {
@@ -131,7 +163,7 @@ async function catch_deadline(msg, args, doc, meta) {
 	meta.data.deadline = args[0].toLowerCase()==="no"?null:args.join(" ");
 
 	// Generate job ID
-	meta.job = await counter_number("marketJobs", msg).catch(err=>{handleErr(err, msg, meta);});
+	meta.job = await counter_number("marketJobs").catch(err => {handleErr(err, msg, meta);});
 
 	let date = Date();
 	let mongoose = require("mongoose");
@@ -171,6 +203,7 @@ async function catch_deadline(msg, args, doc, meta) {
 	job.save()
 		.then(()=>{
 			meta.step=4;
+			RedisDB.incr("jobs:open:"+msg.author.id);
 			return newEvent.save();
 		})
 		.then(()=>{
@@ -277,9 +310,11 @@ async function catch_deadline(msg, args, doc, meta) {
 		})
 		.then(()=>{
 			meta.step = 12;
+			unlock(msg.author.id, "job");
 			return event(meta, `Successfully DM'd buyer ${meta.target} to accept the job, and informed seller ${meta.id} of it.`);
 		})
 		.catch(err=>{
+			unlock(msg.author.id, "job");
 			console.error(err);
 			if([9,10,11].includes(meta.step)) return failover(err, msg, doc, meta);	
 			else {
@@ -288,6 +323,7 @@ async function catch_deadline(msg, args, doc, meta) {
 			}
 		});
 }
+
 async function failover(err, msg, doc, meta) {
 	if (meta.step === 9) {
 		// Could not find user.
@@ -345,9 +381,11 @@ async function checkIfExist(user,target) {
 	 * Flags: if it finds one after exluding completed/aborted, then stop.
 	 */
 	return new Promise((resolve,reject) => {
-		jobsModel.findOne({user:user, target:target, flags:{$bitsAnyClear:flags.job.completed|flags.job.aborted}}, ["_id","created"], (err,doc) => {
+		jobsModel.findOne({$or:[{user:user}, {target:target},{user:target}, {target:user}], flags:{$bitsAnyClear:flags.job.completed|flags.job.aborted|flags.job.declined}}, ["_id","created"], (err,doc) => {
 			if(err) return reject(err);
+			console.log(doc);
 			if(doc) return resolve({pass:false, data:doc});
+			return resolve({pass:true});
 		});
 	});
 }

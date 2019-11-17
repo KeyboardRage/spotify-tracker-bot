@@ -7,6 +7,7 @@ require("./util/extras");
 const chalk = require("chalk");
 const {masterLoadCommands,masterCacheLoader,masterPermissionsLoader} = require("./util/init");
 const fn = require("./util/response_functions");
+const {init} = require("./util/stats");
 Client.locks = {users: new Set(), cmds: new Set(), cooldowns: new Map()};
 masterCacheLoader()
 	.then(()=>{
@@ -25,6 +26,7 @@ masterCacheLoader()
 Client.on("ready", () => {
 	Client.block_all = false;
 	console.info(chalk.black.bgGreen(" ✓ ") + chalk.green(` Logged in as ${Client.user.tag}`));
+	init(Client);
 });
 Client.on("message", async msg => {
 	if(msg.author.bot||msg.content.length>500) return;
@@ -36,6 +38,7 @@ Client.on("message", async msg => {
 	if(!await fn.user_locked(msg, cmd)) return;
 	if(msg.channel.type==="dm" && !Client.commands[cmd].dm) return msg.channel.send(config.messages.dm_only);
 	if(msg.channel.type!=="dm" && await fn.disabled(msg.channel.id, cmd, args, doc)) return;
+	if(await fn.checkLock(msg.author.id, cmd, msg.channel.type==="dm"?false:msg.guild.id)) return msg.channel.send("**Locked:** You must end and existing session of this command first.");
 	fn.catch_new(msg, cmd, doc);
 	// if(msg.channel.type!=="dm" && await fn.check_self_perms(msg, cmd, doc.prefix)) return;
 

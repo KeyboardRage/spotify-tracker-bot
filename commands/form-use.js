@@ -1,6 +1,6 @@
 const {formModel} = require("../util/database"),
 	m = require("mustache"),
-	{RedisDB} = require("../util/redis"),
+	{RedisDB,lock,unlock} = require("../util/redis"),
 	Discord = require("discord.js"),
 	Entities = require("html-entities").XmlEntities;
 const ACCESS = require("../data/permissions.json");
@@ -48,6 +48,7 @@ module.exports = {
 			if (await findChannel(msg, formDoc.channel) === null) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** The output channel does not exist.");
 
 			let meta = {step:0, errorStack:0};
+			lock(msg.author.id, cmd);
 			return loop(msg, formDoc, formDoc.fields[meta.step].question, meta);
 		});
 	
@@ -148,6 +149,7 @@ async function sendAndAwait(msg, text, collected=false, deleteSelf=false, dm=fal
 				else return resolve(collected);
 			})
 			.catch(err => {
+				unlock(msg.author.id, "f");
 				if (err.size===0) return reject({timeError:true, message:"<:Stop:588844523832999936> Time ran out.", msg:sentMessage}); // is either 0 or undefined
 				else return reject(err);
 			});
@@ -155,6 +157,7 @@ async function sendAndAwait(msg, text, collected=false, deleteSelf=false, dm=fal
 }
 
 async function handleErr(err, msg, response) {
+	unlock(msg.author.id, "f");
 	if(err.hasOwnProperty("timeError")) {
 		return err.msg.edit(err.message);
 	} else {
@@ -185,9 +188,12 @@ async function loop(msg, doc, response, meta) {
 }
 
 async function runField(msg, doc, reply, meta) {
-	if(meta.errorStack === 2) return msg.channel.send("An error have happened one too many times, aborting. Sorry.");
+	if(meta.errorStack === 2) {
+		unlock(msg.author.id, "f");
+		return msg.channel.send("An error have happened one too many times, aborting. Sorry.");
+	}
 
-	//! Add to DB here. Need to discern users as well. Also needs to lock usage of other forms for same user.
+	//! Add to DB here. Need to discern users as well.
 	//! Maximum amount in total too?
 	RedisDB.hset("form_" + msg.id, meta.step, reply, async err => {
 		if(err) {
@@ -213,6 +219,7 @@ async function runField(msg, doc, reply, meta) {
 								msg.channel.send("<:Stop:588844523832999936> Output channel was deleted during form submission. Using this channel instead.");
 								msg.channel.send(formResponse);
 							}
+							unlock(msg.author.id, "f");
 							return;
 						});
 					})

@@ -5,6 +5,7 @@ const response = require("./responses.json");
 const types = require("../../data/config.json").market.creator_types;
 const portfolios = require("../../data/config.json").market.portfolios;
 const {marketUserModel,userTags} = require("../../util/database");
+const {lock,unlock} = require("../../util/redis");
 const Discord = require("discord.js");
 const re = require("../../util/response_functions");
 
@@ -16,7 +17,7 @@ async function _register(msg, doc) {
 			if(msg.channel.type!=="dm") {
 				msg.reply("<:Yes:588844524177195047> Starting registration progress in your DM's.");
 			}
-
+			lock(msg.author.id, "register");
 			let meta = {
 				_id: msg.author.id,
 				discrim: msg.author.discriminator,
@@ -35,6 +36,7 @@ async function _register(msg, doc) {
 			return send(msg, doc, response.isType, meta, catch_isType);
 		})
 		.catch(err => {
+			unlock(msg.author.id, "register");
 			if ([50007, 50013].includes(err.code)) {
 				return msg.reply("… actually, seems like I couldn't DM you. No permission. Check your inbox open status, possibly if blocked specifically from this guild.");
 			} else {
@@ -46,6 +48,7 @@ async function _register(msg, doc) {
 }
 
 async function handleErr(err, msg, meta, prefix, reply=null) {
+	unlock(msg.author.id, "register");
 	if(reply) return msg.reply(reply);
 	if(err.size===0) {
 		save(meta, msg.client)
@@ -321,8 +324,6 @@ async function ask_tags(msg, doc, meta, r) {
 	else return send(msg, doc, response.yesOrNo, meta, ask_tags);
 }
 
-
-
 async function catch_tags(msg, doc, meta, r) {
 	// Catch the tags given
 	if(r.toLowerCase()!=="next") {
@@ -409,6 +410,7 @@ async function catch_portfolio(msg, doc, meta, r) {
 
 async function give_info(msg, doc, meta) {
 	// End of registration. Give general info.
+	unlock(msg.author.id, "register");
 	save(meta, msg.client)
 		.then(()=>{
 			let title = String();

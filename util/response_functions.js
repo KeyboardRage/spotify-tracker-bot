@@ -491,6 +491,32 @@ function _blocked_for_restart(msg) {
 	return msg.channel.send("**Aborted command:** Command execution aborted due to bot being queued for restart. Commands will be available once restarted in ~a minute.");
 }
 
+async function _checkLock(/**@type {String}*/userId, /**@type {String}*/cmd, /**@type {String}*/guildId) {
+	return new Promise(resolve => {
+		// First check global locks:
+		const {checkLock} = require("./redis");
+		let stop=false;
+		checkLock(userId, cmd)
+			.then(r => {
+				if(r) {
+					stop=true;
+					return resolve(true);
+				} else if(guildId) {
+					// If not, check guildLock.
+					return checkLock(userId, cmd, guildId);
+				}
+			})
+			.then(r=>{
+				// Return guildLock, or global if stopped. Only stops if it's true.
+				if(stop) return resolve(true);
+				return resolve(r);
+			})
+			.catch(err=>{
+				throw err;
+			});
+	});
+}
+
 // MASTER FUNCTION EXPORT.
 module.exports = {
 	notifyErr: async function(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
@@ -501,63 +527,63 @@ module.exports = {
 		return _notify(Client, message, color, channel);
 	},
 
-	reconnect: async function (/**@type {"Client"}*/Client) {
+	reconnect: async function(/**@type {"Client"}*/Client) {
 		return _reconnect(Client);
 	},
 
-	new_member: async function (/**@type {"GuildMember"}*/member) {
+	new_member: async function(/**@type {"GuildMember"}*/member) {
 		return _new_member(member);
 	},
 
-	remove_member: async function (/**@type {"GuildMember"}*/ member) {
+	remove_member: async function(/**@type {"GuildMember"}*/ member) {
 		return _remove_member(member);
 	},
 
-	remove_role: async function (/**@type {"GuildRole"}*/ role) {
+	remove_role: async function(/**@type {"GuildRole"}*/ role) {
 		return _remove_role(role);
 	},
 
-	remove_guild: async function (/**@type {"Guild"}*/guild) {
+	remove_guild: async function(/**@type {"Guild"}*/guild) {
 		return _remove_guild(guild);
 	},
 
-	add_guild: async function (/**@type {"Guild"}*/ guild, /**@type {"Client"}*/Client) {
+	add_guild: async function(/**@type {"Guild"}*/ guild, /**@type {"Client"}*/Client) {
 		return _add_guild(guild, Client);
 	},
 
-	stats_up: async function (/**@type {String}*/guild_id, /**@type {String}*/cmd) {
+	stats_up: async function(/**@type {String}*/guild_id, /**@type {String}*/cmd) {
 		return _stats_up(guild_id, cmd);
 	},
 
-	user_locked: async function (/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
+	user_locked: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
 		return await _user_locked(msg, cmd);
 	},
 
-	user_lock: async function (/**@type {"msg"}*/msg, /**@type {String}*/type, /**@type {String}*/value, /**@type {Number}*/cooldown=5) {
+	user_lock: async function(/**@type {"msg"}*/msg, /**@type {String}*/type, /**@type {String}*/value, /**@type {Number}*/cooldown=5) {
 		return await _user_lock(msg, type, value, cooldown);
 	},
 
-	check_ban: async function (/**@type {String}*/guild_id, /**@type {String}*/author_id) {
+	check_ban: async function(/**@type {String}*/guild_id, /**@type {String}*/author_id) {
 		return await _check_ban(guild_id, author_id);
 	},
 
-	parse_message: async function (/**@type {"msg"}*/msg) {
+	parse_message: async function(/**@type {"msg"}*/msg) {
 		return await _parse_message(msg);
 	},
 
-	sanitize_message: async function (/**@type {String}*/ message) {
+	sanitize_message: async function(/**@type {String}*/ message) {
 		return await _sanitize_message(message);
 	},
 
-	get_prefix: async function (/**@type {"Guild"}*/guild) {
+	get_prefix: async function(/**@type {"Guild"}*/guild) {
 		return await _get_prefix(guild);
 	},
 
-	check_alias: async function (/**@type {"Client"}*/Client, /**@type {String}*/cmd) {
+	check_alias: async function(/**@type {"Client"}*/Client, /**@type {String}*/cmd) {
 		return await _check_alias(Client, cmd);
 	},
 
-	perms_guild_ceck: async function ( /**@type {Object}*/ doc, /**@type {"member"}*/ member) {
+	perms_guild_ceck: async function( /**@type {Object}*/ doc, /**@type {"member"}*/ member) {
 		return await _perms_guild_ceck(doc, member);
 	},
 
@@ -572,13 +598,16 @@ module.exports = {
 	catch_new: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {Object}*/doc) {
 		return await _catch_new(msg, cmd, doc);
 	},
-	check_self_perms: async function (/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {String}*/prefix) {
+	check_self_perms: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {String}*/prefix) {
 		return await _check_self_perms(msg, cmd, prefix);
 	},
-	render_variable_text: async function (/**@type {"msg"}*/msg, /**@type {String}*/text) {
+	render_variable_text: async function(/**@type {"msg"}*/msg, /**@type {String}*/text) {
 		return await _render_variable_text(msg, text);
 	},
 	blocked_for_restart: function(/**@type {"msg"}*/msg) {
 		return _blocked_for_restart(msg);
+	},
+	checkLock: async function(/**@type {String}*/userId, /**@type {String}*/cmd, /**@type {String}*/guildId) {
+		return await _checkLock(userId, cmd, guildId);
 	}
 };
