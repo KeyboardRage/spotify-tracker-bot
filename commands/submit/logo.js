@@ -73,7 +73,7 @@ async function execute(msg, data) {
 				.addField("**Information:**", `**Name:** ${_body.message.name}\n**ID:** ${_body.message._id}\n**Version:** ${_body.message.version}\n**Last updated:** ${_body.message.last_updated}\n**Available:** ${(_body.message.available)?"Yes.":"No."}`, true)
 				.addField("**Tags:**", `${_body.message.tags.join(", ")}`, true)
 				.addField("**Contributors:**", `<@${_body.message.contributors.join(">, <@")}>`, true)
-				.addField("**Downloads:**", `[SVG – Vector](https://grafik-bot.net/assets/${_body.message.download.svg}) | [PNG – Bitmap](https://grafik-bot.net/assets/${_body.message.download.png})`, true);
+				.addField("**Downloads:**", `[SVG – Vector](https://grafik-bot.net/logos/${_body.message.download.svg}) | [PNG – Bitmap](https://grafik-bot.net/logos/${_body.message.download.png})`, true);
 			if(_body.message.notes) embed.addField("**Notes:**", `- ${_body.message.notes.join("\n- ")}`);
 	
 			return msg.channel.send(embed);
