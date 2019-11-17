@@ -56,14 +56,25 @@ async function byTag(msg, args) {
 
 		if (err) return handleErr(err, msg, "<:Stop:588844523832999936> **Error:** Unable to query database for relateable memes.");
 		if (!doc.length) return msg.channel.send("**Not found:** Could not find a random meme by the tag(s) `" + args.slice(0, 5).join("`, `") + "`.");
-
-		const embed = new Discord.RichEmbed()
-			.setTimestamp(Date())
-			.setColor(process.env.THEME)
-			.setFooter(`Meme ID: ${doc[0]._id} | Tags: ${doc[0].tags.join(", ")}`, msg.author.avatarURL)
-			.setDescription("Random meme by tag(s)")
-			.setImage(`https://grafik-bot.net/memes/${doc[0].url}`);
-		msg.channel.send(embed);
+		if(Array.isArray(doc)) {
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(`Meme ID: ${doc[0]._id} | Tags: ${doc[0].tags.join(", ")}`, msg.author.avatarURL)
+				.setDescription("Random meme by tag(s)")
+				.setImage(`https://grafik-bot.net/memes/${doc[0].url}`);
+			msg.channel.send(embed);
+		} else {
+			if (Array.isArray(doc)) {
+				const embed = new Discord.RichEmbed()
+					.setTimestamp(Date())
+					.setColor(process.env.THEME)
+					.setFooter(`Meme ID: ${doc._id} | Tags: ${doc.tags.join(", ")}`, msg.author.avatarURL)
+					.setDescription("Random meme by tag(s)")
+					.setImage(`https://grafik-bot.net/memes/${doc.url}`);
+				msg.channel.send(embed);
+			}
+		}
 	});
 }
 
