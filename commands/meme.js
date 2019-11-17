@@ -15,8 +15,8 @@ module.exports = {
 		// The response for help on this command.
 		//TODO: '--info' to also get all available information embedded in the result 
 		if(!args.length) return random(msg);
-		if(isNaN(args[1])) return byTag(msg, args);
-		return byId(msg, parseInt(args[1]));
+		if(isNaN(args[0])) return byTag(msg, args);
+		return byId(msg, parseInt(args[0]));
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);
