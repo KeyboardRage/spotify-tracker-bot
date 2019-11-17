@@ -57,21 +57,19 @@ class Command {
 			// UID's are unique, so store their ID's as the MongoDB ID (_id)
 			permsModel.aggregate([{
 				$match: {$or: [
-					{_id:"global"}, {_id:(msg.channel.type!=="dm")?msg.guild.id:null}
+					{_id:"global", "users._id":msg.author.id}, {_id:(msg.channel.type!=="dm")?msg.guild.id:null}
 				]}
-			},{
-				$project: {
-					users: {
-						$filter: {
-							input: "$users",
-							as: "user",
-							cond: {
-								$gte: ["$$user.permission", parseInt(ACCESS.user)]
-							}
-						}
+			}, {$project:{
+				users: {
+					$filter: {
+						input: "$users",
+						as: "user",
+						cond: {$gte: ["$$user._id", msg.author.id]}
 					}
 				}
-			}], (err, docs) => {
+			}}], (err, docs) => {
+				// console.log(docs.length?docs[0].users:docs);
+				// console.log(docs[0].users);
 				// Errors should return TRUE (Default: ACCESS.user) to let people at least use User commands
 				if (err) {
 					console.error(`ERROR → PermissionChecker.FindById: ${msg.author.id} failed: `, err);

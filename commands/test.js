@@ -10,7 +10,7 @@ module.exports = {
 	cmd: "test",
 	aliases: ["testing"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.owner|ACCESS.community,
 	dm: true,
 	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
