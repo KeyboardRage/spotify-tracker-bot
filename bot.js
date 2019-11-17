@@ -45,7 +45,8 @@ Client.on("message", async msg => {
 	if(Client.block_all) return fn.blocked_for_restart(msg);
 
 	doc.level = await Client.commands[cmd].permission(msg, doc);
-	if(process.env.DEBUG==="true") console.log(doc.level);
+	// if(process.env.DEBUG==="true") console.log(doc.level);
+	console.log(msg.author.username+": "+doc.level);
 
 	if(!doc.level.grant) return msg.channel.send(config.messages.no_permission);
 	if(args[0]==="?") return Client.commands[cmd].help(msg, cmd, args, doc);

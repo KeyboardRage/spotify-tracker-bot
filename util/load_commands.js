@@ -68,7 +68,7 @@ class Command {
 					}
 				}
 			}}], (err, docs) => {
-				// console.log(docs.length?docs[0].users:docs);
+				console.log(docs?JSON.stringify(docs):"No docs found on "+msg.author.id);
 				// console.log(docs[0].users);
 				// Errors should return TRUE (Default: ACCESS.user) to let people at least use User commands
 				if (err) {
