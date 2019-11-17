@@ -6,10 +6,10 @@ module.exports = {
 	cmd: "submit",
 	aliases: ["new"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.owner|ACCESS.community,
 	dm: true,
 	daccess: [""],
-	desc: "Submit a new file to a library. Logo or templates.",
+	desc: "Submit a new file to a library.",
 	async exec(msg, cmd, args, doc) {
 		let type = args.shift();
 		let tagsStart = args.findIndex(e => e.startsWith("-"));
@@ -50,8 +50,9 @@ module.exports = {
 			.addField("Description", this.desc, true)
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
-			.addField("Usage", `\`${doc.prefix}${this.cmd} <text>\``)
-			.addField("Examples", `\`${doc.prefix}${this.cmd} lorem ipsum\``);
+			.addField("Usage", `\`${doc.prefix}${this.cmd} <options> <tags> <source>\``)
+			.addField("Options", "`logo` Submit a logo. Must attach an SVG file.\n`meme` Submit a meme. Instead of name, URL. Optionally skip URL and attach image.")
+			.addField("Examples", `\`${doc.prefix}${this.cmd} My logo -my -logo -brand --source This site: www.site.com/logo/\`, \`${doc.prefix}${this.cmd} https://site.com/meme.png -some -meme --source Username, found at https://site.com/meme.png \``);
 		msg.channel.send(embed);
 	}
 };

@@ -27,8 +27,8 @@ module.exports = {
 			.addField("Description", this.desc, true)
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
-			.addField("Usage", `\`${doc.prefix}${this.cmd}\``)
-			.addField("Examples", `\`${doc.prefix}${this.cmd}\``);
+			.addField("Usage", `\`${doc.prefix}${this.cmd} [meme id|keyword(s)]\``)
+			.addField("Examples", `\`${doc.prefix}${this.cmd}\`, \`${doc.prefix}${this.cmd} free\`, \`${doc.prefix}${this.cmd} 1\`, \`${doc.prefix}${this.cmd} illustration art\``);
 		return msg.channel.send(embed);
 	}
 };
