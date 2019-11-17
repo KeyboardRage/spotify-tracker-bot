@@ -64,7 +64,7 @@ class Command {
 					$filter: {
 						input: "$users",
 						as: "user",
-						cond: {$gte: ["$$user._id", msg.author.id]}
+						cond: {$eq: ["$$user._id", msg.author.id]}
 					}
 				}
 			}}], (err, docs) => {
