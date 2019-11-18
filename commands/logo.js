@@ -12,7 +12,7 @@ module.exports = {
 	cmd: "logo",
 	aliases: ["logos"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.user,
 	dm: true,
 	daccess: [""],
 	desc: "Search for company, service, item logos.",
