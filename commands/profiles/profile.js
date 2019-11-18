@@ -100,7 +100,13 @@ async function _find(msg, args, doc, search=false) {
 			if (!user) return msg.channel.send("You don't have a profile. Register with `" + doc.prefix + "register`.");
 			if (user) {
 				let embed = await create_embed(msg, user.toObject(), true).catch(err=>{return _handleErr(err, msg);});
-				return msg.channel.send(embed);
+				return msg.channel.send(embed).catch(err=>{
+					if(err.code && err.code === 50035) {
+						return msg.channel.send("**Could not send:** If your profile has an image, its link is most likely malformated, so Discord refuse to send embed.\nChange image with `"+doc.prefix+"profile set cover <image link>`.");
+					} else {
+						return _handleErr(err, msg);
+					}
+				});
 			}
 		});
 	} else {
@@ -422,6 +428,12 @@ async function create_embed(msg, doc) {
 				}
 				embed.addField("**Social media & portfolios:**", string);
 			}
+
+			// Cover image
+			if(doc.meta.cover_img) {
+				embed.setImage(doc.meta.cover_img);
+			}
+
 			return resolve(embed);
 		} catch(err) {
 			console.error(err);

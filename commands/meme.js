@@ -13,6 +13,7 @@ module.exports = {
 	desc: "Post random design/art related memes, meme by ID, or random meme by keyword.",
 	async exec(msg, cmd, args) {
 		// The response for help on this command.
+		console.log(args);
 		//TODO: '--info' to also get all available information embedded in the result 
 		if(!args.length) return random(msg);
 		if(isNaN(args[0])) return byTag(msg, args);

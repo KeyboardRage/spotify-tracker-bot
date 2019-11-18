@@ -27,8 +27,9 @@ async function _edit(msg, args, doc) {
 \n•    \`${doc.prefix}profile set available <true|yes|false|no>\` sets your commissions availability status.\
 \n•    \`${doc.prefix}profile set company <name>\` sets a company you work for.\
 \n•    \`${doc.prefix}profile set company-site <url>\` sets the website of the company.\
-\n•    \`${doc.prefix}profile set minimum <number>\` sets minimum budgets you work with, in USD\
+\n•    \`${doc.prefix}profile set minimum <number>\` sets minimum budgets you work with, in USD.\
 \n•    \`${doc.prefix}profile set title <type> [tags]\` sets the creative field type, which determine possible tags. **Comma separated.**\
+\n•    \`${doc.prefix}profile set cover <url>\` Add a cover image to be embedded at the bottom of your profile.\
 \n		Optionally change tags right away too. If not given, current tags will be cleared.`;
 
 	let remove = `Use \`unset\` instead of \`set\`.\
@@ -52,6 +53,7 @@ async function _edit(msg, args, doc) {
 
 let rg = {
 	site: new RegExp(/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/, "ig"),
+	site_image: new RegExp(/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/, "ig"),
 	fb: new RegExp(/^(https?:\/\/)?(www\.)?facebook\.com(\/\S*)?$/, "ig"),
 	username: new RegExp(/^[a-zA-Z0-9-_.]+$/, "ig"),
 	name_or_username: new RegExp(/^[a-zA-Z0-9-_. ]+$/, "ig"),
@@ -133,6 +135,13 @@ async function _edit_unset(msg, args, doc) {
 			})
 			.then(()=>{
 				return msg.channel.send("**Success:** Put your availability status to <:Red:642514386497568789>Not available for hire.");
+			}).catch(err=>{return handleErr(err, msg);});
+		break;
+	case 10:
+		// image
+		update(msg.author.id, {$unset:{"meta.cover_img":false}, last_modified:Date()})
+			.then(()=>{
+				return msg.channel.send("**Success:** Your featured image was removed.");
 			}).catch(err=>{return handleErr(err, msg);});
 	}
 }
@@ -387,11 +396,19 @@ async function _edit_set(msg, args, doc) {
 			.then(()=>{
 				return msg.channel.send(`**Success:** Put your availability status to${args[1]?"<:Green:642514515514228736>Open for commissions.":"<:Red:642514386497568789>Not available for hire."}`);
 			}).catch(err=>{return handleErr(err, msg);});
+		break;
+	case 10:
+		// cover image
+		if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `"+args[1]+"` is not a valid common link scheme.");
+		if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
+		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
+		update(msg.author.id, {$set:{"meta.cover_img":args[1]}, last_modified:Date()})
+			.then(()=>{
+				return msg.channel.send("**Success:** Your featured image was set to `"+args[1]+"`.\n*Note: If you control the host, you can update the image itself instead of setting a new one — though Discord will most likely cache it.*");
+			}).catch(err=>{return handleErr(err, msg);});
+		return;
 	}
 }
-
-
-
 
 /**
  * Checks if input is any valid sub-field you can edit
@@ -465,6 +482,13 @@ function isValidSub(input, name=false) {
 	case "commissions":
 	case "open":
 		return (name)?"open for commissions status":9;
+	case "10":
+	case 10:
+	case "ten":
+	case "image":
+	case "cover":
+	case "img":
+		return (name)?"image":10;
 	default:
 		return 0;
 	}
@@ -536,6 +560,7 @@ async function fields_list() {
 		\n<:Five:588844516283252736> Company website | `site`|`company-site`|`company-url`\
 		\n<:Six:588844524332384276> E-mail | `email`\
 		\n<:Seven:588844523938119680> Social media and portfolio's | `social`|`socials`|`portfolio`\
-		\n<:Eight:588844512286343179> Creative field / title | `title`|`field`|`creative`";
+		\n<:Eight:588844512286343179> Creative field / title | `title`|`field`|`creative`\
+		\n<:Eight:588844512286343179> Image | `image`|`img`|`cover`";
 	return response;
 }
