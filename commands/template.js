@@ -12,7 +12,7 @@ module.exports = {
 	cmd: "template",
 	aliases: ["templates", "templ"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.user,
 	dm:true,
 	daccess: [""],
 	desc: "Template library for various platforms and mediums, available in various formats *(Community driven submissions! Contact <@164736401051484160> to get your stuff added and credited)*.",
@@ -25,10 +25,10 @@ module.exports = {
 		 * 1. Search by contributor
 		 * 2. Search by ID
 		 */
+		if(!args[0].startsWith("--")) return search(msg, args);
 		if (msg.author.id !== "164736401051484160") {
 			return msg.channel.send("<:Stop:588844523832999936> **Permission denied:** That's reserved for bot developers <:Grafik:588847763341705263>");
 		}
-		if(!args[0].startsWith("--")) return search(msg, args);
 		switch(args[0].slice(2)) {
 			case "new":
 				return newEntry(msg, args.slice(1));
