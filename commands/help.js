@@ -27,8 +27,8 @@ module.exports = {
 			.setColor(process.env.THEME)
 			.setFooter(msg.author.tag, msg.author.avatarURL)
 			.addField("Help", `To get help on a command, what it does, and syntax, put \`?\` as the first argument of any command, or \`${doc.prefix}help <command>\`.\n**Examples:**\n\`${doc.prefix}alias ?\`\n\`${doc.prefix}help alias\`.`)
-			.addField("Commands available to you:", availableCmds)
-			.addField("More information", "For more information about commands, syntax, and the bot in general, visit https://static.grafik-bot.net");
+			.addField("Commands available to you:", availableCmds);
+			// .addField("More information", "For more information about commands, syntax, and the bot in general, visit https://static.grafik-bot.net");
 		msg.channel.send(embed);
 		msg.channel.stopTyping();
 	},

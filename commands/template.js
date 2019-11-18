@@ -79,9 +79,7 @@ async function search(msg, args) {
 				response += "\n\n**Reply with** the corresponding number to get.";
 				sendAndAwait(msg, response)
 				.then(r => {
-					
-					if (!/\d/.test(r)) return msg.channel.send("<:Stop:588844523832999936> **Invalid argument:** Not a valid number.");
-
+					if (isNaN(r)) return msg.channel.send("<:Stop:588844523832999936> **Invalid argument:** Not a valid number.");
 					try {
 						r = parseInt(r);
 					} catch(err) {
