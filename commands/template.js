@@ -67,9 +67,11 @@ async function handleErr(err, msg, response) {
 }
 
 async function search(msg, args) {
+	if (args.length > 5) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is five.");
+	
 	templateModel.find({keywords: {$in:[...args]}}, (err,docs) => {
 			if(err) {console.error(err);return handleErr(err, msg);}
-			if (!docs.length) return msg.channel.send("<:Info:588844523052859392> No templates found matching `"+args[0]+"`.");
+			if (!docs.length) return msg.channel.send("<:Info:588844523052859392> No templates found matching `"+args.join("`, `")+"`.");
 			else if(docs.length>1) {
 				let response = "<:Info:588844523052859392> Multiple matches:";
 				for(let i=0;i<docs.length;i++) {

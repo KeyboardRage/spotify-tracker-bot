@@ -47,9 +47,11 @@ async function handleErr(err, msg, reply=null) {
 }
 
 async function search(msg, args) {
+	if (args.length > 5) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is five.");
+	
 	logoModel.find({tags:{$in:args}}, (err,docs) => {
 		if(err) return handleErr(err, msg, "**Error:** An error occurred trying to query database.");
-		if (!docs.length) return msg.channel.send("<:Info:588844523052859392> No logos found matching `" + args[0] + "`.");
+		if (!docs.length) return msg.channel.send("<:Info:588844523052859392> No logos found matching `"+args.join("`, `")+"`.");
 
 		else if (docs.length>1) {
 			// Multiple logos found.
