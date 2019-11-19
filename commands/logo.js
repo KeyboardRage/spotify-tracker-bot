@@ -18,7 +18,7 @@ module.exports = {
 	desc: "Search for company, service, item logos.",
 	async exec(msg, cmd, args, doc) {
 		// TODO: Only search.
-		if(!args.length) return msg.channel.send("**Missing arguments:** You must give the logo a name and some tags to search for.");
+		if(!args.length) return msg.channel.send("**Missing arguments:** You must give the logo a name or some tags to search for.");
 		return search(msg, args, doc);
 	},
 	help(msg, cmd, args, doc) {

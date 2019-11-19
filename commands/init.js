@@ -123,7 +123,17 @@ async function send(msg, doc, meta, reply, cb) {
 				else return cb(msg, doc, meta, r.toLowerCase());
 			})
 			.catch(err => {
-				return handleErr(err, msg, doc, meta);
+				if (err.code && err.code === 50013) {
+					clearTimeout(t);
+					clearTimeout(tt);
+					delete msg.client.locks[msg.guild.id];
+					return msg.author.send("**Could not initiate:** I do not have permission to write in that channel.")
+						.catch(()=>{
+							return;
+						});
+				} else {
+					return handleErr(err, msg, doc, meta);
+				}
 			});
 	}
 }
