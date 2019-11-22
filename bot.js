@@ -35,19 +35,20 @@ Client.on("message", async msg => {
 	let {cmd,args,doc} = await fn.parse_message(msg);
 	cmd = await fn.check_alias(Client, cmd);
 	if(!cmd) return;
+	if(Client.block_all) return fn.blocked_for(msg, config.messages.restart);
 	if(!await fn.user_locked(msg, cmd)) return;
-	if(msg.channel.type==="dm" && !Client.commands[cmd].dm) return msg.channel.send(config.messages.dm_only);
 	if(msg.channel.type!=="dm" && await fn.disabled(msg.channel.id, cmd, args, doc)) return;
-	if(await fn.checkLock(msg.author.id, cmd, msg.channel.type==="dm"?false:msg.guild.id)) return msg.channel.send("**Locked:** You must end and existing session of this command first.");
+	if(await fn.check_cooldown(msg, cmd)) return;
+	if(msg.channel.type==="dm" && !Client.commands[cmd].dm) return msg.channel.send(config.messages.dm_only);
+	if(await fn.checkLock(msg.author.id, cmd, msg.channel.type==="dm"?false:msg.guild.id)) return fn.blocked_for(msg, config.messages.user_locked);
 	fn.catch_new(msg, cmd, doc);
 	// if(msg.channel.type!=="dm" && await fn.check_self_perms(msg, cmd, doc.prefix)) return;
-
-	if(Client.block_all) return fn.blocked_for_restart(msg);
 
 	doc.level = await Client.commands[cmd].permission(msg, doc);
 	if(process.env.DEBUG==="true") console.log(doc.level);
 
 	if(!doc.level.grant) return msg.channel.send(config.messages.no_permission);
+	fn.add_cooldown(msg, cmd);
 	if(args[0]==="?") return Client.commands[cmd].help(msg, cmd, args, doc);
 	else return Client.commands[cmd].exec(msg, cmd, args, doc);
 });

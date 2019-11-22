@@ -15,8 +15,13 @@ module.exports = {
 	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg, cmd, args) {
-		return msg.channel.send(args.join(" "));
+		// return msg.channel.send(args.join(" "));
+		console.log(msg.client.locks.users.size, msg.client.locks.cmds.size, msg.client.locks.cooldowns.size);
 
+		restartWhenReady(msg.client, ()=>{
+			msg.client.block_all = false;
+			console.log("REEEESAAAAAAART");
+		});
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);

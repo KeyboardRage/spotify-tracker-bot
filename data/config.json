@@ -41,7 +41,9 @@
 		"cmd_locked":"**Unique session:** The session for this command is already in use.",
 		"user_locked":"**Unique session:** You cannot execute commands until you finish your onging session.",
 		"dm_only":"**Denied:** This command can only be used in guilds.",
-		"no_permission":"**Denied:** You do not have the necessary permissions for this command."
+		"no_permission":"**Denied:** You do not have the necessary permissions for this command.",
+		"cooldown": "**Cooldown:** Wait until cooldown is over.",
+		"restart": "**Aborted:** Bot is queued for restart. All commands blocked for ~30 seconds."
 	},
 	"colors": {
 		"red":"cd1818",
@@ -54,7 +56,7 @@
 				"max_tags":6,
 				"name":"Designer",
 				"synonyms": ["design","designer"],
-				"tags": ["webdesign", "illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "informatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap"]
+				"tags": ["webdesign", "illustration", "other", "avatar", "signature", "banner", "ui", "ux", "clothing", "vinyl", "print", "poster", "informatics", "brochure", "magazine", "branding", "logo", "typography", "decoration", "manipulation", "digital", "icon", "vector", "bitmap","socials"]
 			},
 			"2": {
 				"max_tags":4,

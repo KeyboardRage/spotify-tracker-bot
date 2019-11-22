@@ -302,7 +302,7 @@ module.exports.unlock = unlock;
  * checkLock(msg.author.id, cmd, "123123123123");
  */
 module.exports.checkLock = checkLock;
-async function checkLock(user, cmd, guild = false) {
+async function checkLock(user, cmd, guild=false) {
 	return new Promise((resolve, reject) => {
 		if (!guild) {
 			RedisDB.hget("locks", `${cmd}:${user}`, (err, res) => {

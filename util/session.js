@@ -36,7 +36,7 @@ module.exports.restartWhenReady = restartWhenReady;
 async function restartWhenReady(Client, callback) {
 	Client.block_all = true;
 
-	retry_until_ready("sessions", (err, res) => {
+	retry_until_ready(Client, "sessions", (err, res) => {
 		console.log(err,res);
 		if (err) {
 			Client.block_all = false;
@@ -54,11 +54,15 @@ async function restartWhenReady(Client, callback) {
 }
 
 module.exports.retry_until_ready = retry_until_ready;
-async function retry_until_ready(collection, cb) {
+async function retry_until_ready(Client, collection, cb) {
 	var operation = retry.operation({retries:10, minTimeout:2*1000,maxTimeout:5*1000, randomize:true});
 	operation.attempt(function (currentAttempt) {
 		RedisDB.hgetall(collection, (err,res) => {
+			// Client.locks = {users: new Set(), cmds: new Set(), cooldowns: new Map()};
+
+			// Check cooldowns too.
 			if (operation.retry(res)) {
+				console.log(Client.locks.users.size, Client.locks.cmds.size, Client.locks.cooldowns.size);
 				console.log("Still session, waiting.");
 				return;
 			}

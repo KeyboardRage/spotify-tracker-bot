@@ -20,11 +20,13 @@ process.on("exit", code => {
 	}
 });
 process.on("unhandledRejection", err => {
+	if(err.code && [50013,50007].includes(err.code)) return; // Nothing to be done with UNCAUGHUNCAUGHT errors for no permission.
 	if (process.env.DEBUG === "true") console.error(chalk.black.bgRed(" × ")+chalk.red(" ERROR: "), err);
 	else Sentry.captureException(err);
 	return;
 });
 process.on("uncaughtException", err => {
+	if(err.code && [50013,50007].includes(err.code)) return; // Nothing to be done with UNCAUGHUNCAUGHT errors for no permission.
 	if(process.env.DEBUG==="true") console.error(chalk.black.bgRed(" × ")+chalk.red(" ERROR: "), err);
 	else Sentry.captureException(err);
 	return;

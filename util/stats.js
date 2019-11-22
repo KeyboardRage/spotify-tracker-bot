@@ -19,16 +19,17 @@ async function postStats(Client){
 		guilds: Client.user.guilds.size,
 		shards: 1
 	};
-
-	request.post(dbs_uri, {
-		body:JSON.stringify({server_count: stats.guilds}), 
-		headers:{
-			"Authorization":process.env.DBS_TOKEN,
-			"Content-Type":"application/json"
-		}
-	}, (err,res) => {
-		if (err) return fn.notifyErr(Client, err);
-		console.log(res.body);
-	});
-	fn.notify(Client, "**Daily stats update:**\nGuilds: `"+stats.guilds+"`");
+	if(stats.guilds) {
+		request.post(dbs_uri, {
+			body:JSON.stringify({server_count: stats.guilds}), 
+			headers:{
+				"Authorization":process.env.DBS_TOKEN,
+				"Content-Type":"application/json"
+			}
+		}, (err,res) => {
+			if (err) return fn.notifyErr(Client, err);
+			console.log(res.body);
+		});
+		fn.notify(Client, "**Daily stats update:**\nGuilds: `"+stats.guilds+"`");
+	} else return;
 }

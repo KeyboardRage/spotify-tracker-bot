@@ -399,3 +399,21 @@ let memesSchema = new mongoose.Schema({
 }, {collection:"memes"});
 let memesModel = maindb.model("memesModel", memesSchema);
 module.exports.memesModel = memesModel;
+
+let votesSchema = new mongoose.Schema({
+	user: {
+		ref: "marketUsers",
+		type: mongoose.Schema.Types.ObjectId
+	},
+	date: Date,
+	weekend: Boolean,
+	query: String
+}, {collection: "votes"});
+let votesModel = maindb.model("votesModel", votesSchema);
+module.exports.votesModel = votesModel;
+
+let voteChangeStream = votesModel.watch();
+
+voteChangeStream.on("data", chunk => {
+	console.log(chunk);
+});

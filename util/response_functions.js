@@ -217,7 +217,7 @@ async function _stats_up(/**@type {String}*/guild_id, /**@type {String}*/cmd) {
 async function _user_locked(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
 	return new Promise(resolve => {
 		if (msg.client.locks.cooldowns.has(msg.author.id+"_"+cmd)) {
-			//TODO: Change to redis with expiry later
+
 			let time = msg.client.locks.cooldowns.get(msg.author.id+"_"+cmd);
 			msg.channel.send(`**Cooldown:** Wait another \`${time-Date.now()/1000}\` seconds.`)
 				.then(m => {
@@ -487,11 +487,23 @@ async function _render_variable_text(/**@type {"msg"}*/msg, /**@type {String}*/t
 	});
 }
 
-function _blocked_for_restart(msg) {
-	return msg.channel.send("**Aborted command:** Command execution aborted due to bot being queued for restart. Commands will be available once restarted in ~a minute.");
+function _blocked_for(/**@type {"msg"}*/msg, /**@type {String}*/reason) {
+	msg.channel.send(reason).then(m => {
+		setTimeout(()=>{
+			try {
+				m.delete();
+			} catch(_){return;}
+		}, 4000);
+	});
 }
 
 async function _checkLock(/**@type {String}*/userId, /**@type {String}*/cmd, /**@type {String}*/guildId) {
+	/**
+	 * 0 = No locks.
+	 * 2 = Guild-wide lock
+	 * 3 = Manual user specific lock.
+	 */
+	// TODO: Change how guild locks work. Practically useless as is. Needs to be 'locks -> guild:cmd, user'.
 	return new Promise(resolve => {
 		// First check global locks:
 		const {checkLock} = require("./redis");
@@ -500,7 +512,7 @@ async function _checkLock(/**@type {String}*/userId, /**@type {String}*/cmd, /**
 			.then(r => {
 				if(r) {
 					stop=true;
-					return resolve(true);
+					return;
 				} else if(guildId) {
 					// If not, check guildLock.
 					return checkLock(userId, cmd, guildId);
@@ -508,14 +520,45 @@ async function _checkLock(/**@type {String}*/userId, /**@type {String}*/cmd, /**
 			})
 			.then(r=>{
 				// Return guildLock, or global if stopped. Only stops if it's true.
-				if(stop) return resolve(true);
-				return resolve(r);
+				if(stop) return resolve(3);
+				if(r) return resolve(2);
+				return resolve(0);
 			})
 			.catch(err=>{
 				throw err;
 			});
 	});
 }
+
+async function _add_cooldown(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
+	const {RedisDB} = require("./redis");
+	RedisDB.set(`${msg.author.id}:${cmd}`, true, "EX", msg.client.commands[cmd].cooldown.min, err => {
+		if(err) return;
+	});
+}
+
+async function _check_cooldown(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
+	return new Promise(resolve => {
+		const {RedisDB} = require("./redis");
+		RedisDB.get(`${msg.author.id}:${cmd}`, (err,res) => {
+			if(err) return resolve(false);
+
+			if(res) {
+				msg.channel.send(config.messages.cooldown).then(m => {
+					try {
+						setTimeout(() => {
+							m.delete();
+						}, 3000);
+					} catch (_) {
+						return;
+					}
+				});
+			}
+			return resolve(res);
+		});
+	});
+}
+
 
 // MASTER FUNCTION EXPORT.
 module.exports = {
@@ -598,16 +641,28 @@ module.exports = {
 	catch_new: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {Object}*/doc) {
 		return await _catch_new(msg, cmd, doc);
 	},
+
 	check_self_perms: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd, /**@type {String}*/prefix) {
 		return await _check_self_perms(msg, cmd, prefix);
 	},
+
 	render_variable_text: async function(/**@type {"msg"}*/msg, /**@type {String}*/text) {
 		return await _render_variable_text(msg, text);
 	},
-	blocked_for_restart: function(/**@type {"msg"}*/msg) {
-		return _blocked_for_restart(msg);
+
+	blocked_for: function(/**@type {"msg"}*/msg, /**@type {String}*/reason) {
+		return _blocked_for(msg, reason);
 	},
+
 	checkLock: async function(/**@type {String}*/userId, /**@type {String}*/cmd, /**@type {String}*/guildId) {
 		return await _checkLock(userId, cmd, guildId);
+	},
+
+	add_cooldown: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
+		return _add_cooldown(msg, cmd);
+	},
+
+	check_cooldown: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
+		return await _check_cooldown(msg, cmd);
 	}
 };

@@ -58,6 +58,7 @@ async function handleErr(err, msg, meta, prefix, reply=null) {
 			.catch(err=>{
 				Sentry.captureException(err);
 				re.notifyErr(msg.client, err);
+				if(err.code && err.code===50007) return;
 				return msg.author.send("**<:Info:588844523052859392> Time ran out.**\nAdditionally, an error occurred trying to save what you provided so far. Try `"+prefix+"register` again at a later time.");
 			});
 	} else {
@@ -74,6 +75,7 @@ async function handleErr(err, msg, meta, prefix, reply=null) {
 				.catch(err => {
 					Sentry.captureException(err);
 					re.notifyErr(msg.client, err);
+					if(err.code && err.code===50007) return;
 					return msg.author.send("**<:Stop:588844523832999936> An error occurred.**\nAdditionally, an error occurred trying to save what you provided so far. Try `" + prefix + "register` again at a later time.");
 				});
 		}
@@ -259,6 +261,7 @@ async function catch_isType(msg, doc, meta, r) {
 	if(isNaN(r)) return send(msg, doc, response.not_valid_num, meta, catch_isType);
 	meta.type = parseInt(r);
 	//TODO: Incorporate list generated from config.market.creator_types
+	if (meta.type > 6) return send(msg, doc, "**Invalid argument:** Pick *one* option form the provided list.", meta, catch_isType);
 	if(meta.type>=5) {
 		// Is customer type
 		if(meta.type===6) return send(msg, doc, response.askCompany, meta, catch_customerCompany);
