@@ -3,7 +3,7 @@ dotenv.config();
 const config = require("./data/config.json");
 const Discord = require("discord.js");
 const Client = new Discord.Client(config.client);
-require("./util/extras");
+const Sentry = require("./util/extras");
 const chalk = require("chalk");
 const {masterLoadCommands,masterCacheLoader,masterPermissionsLoader} = require("./util/init");
 const fn = require("./util/response_functions");
@@ -49,6 +49,11 @@ Client.on("message", async msg => {
 
 	if(!doc.level.grant) return msg.channel.send(config.messages.no_permission);
 	fn.add_cooldown(msg, cmd);
+	// Configure sentry to contain extra metadata in potential errors:
+	Sentry.configureScope(scope=>{
+		scope.setUser({id:msg.author.id, username:msg.author.username});
+		scope.setTags({guild:msg.channel.type==="dm"?"DM":msg.guild.id, guildName:msg.channel.type==="dm"?"DM":msg.guild.name, command: cmd, args:JSON.stringify(args)});
+	});
 	if(args[0]==="?") return Client.commands[cmd].help(msg, cmd, args, doc);
 	else return Client.commands[cmd].exec(msg, cmd, args, doc);
 });

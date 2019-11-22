@@ -15,72 +15,78 @@ module.exports = {
 	desc: "Get various pings for the bot.",
 	async exec(msg, cmd, args) {
 		msg.channel.startTyping();
-		let guildId = (msg.hasOwnProperty("guild"))?msg.guild.id:"123";
-		if(args[0] === "--site" && args.length >= 2) {
-			let timeStart = Date.now();
-			request.get(args[1], (err,res) => {
-				if(err) {
-					msg.channel.stopTyping();
-					msg.channel.send("An error occurred trying to ping the site: ```"+err.message+"```");
-					throw err;
+		let m;
+		let grafik = {start:Date.now()};
+		msg.channel.send("Pinging…")
+			.then(_ => {
+				grafik.end=Date.now();
+				m=_;
+				let guildId = msg.channel.type!=="dm"?msg.guild.id:"575439977736044585";
+				if(args[0] === "--site" && args.length >= 2) {
+					let timeStart = Date.now();
+					request.get(args[1], (err,res) => {
+						if(err) {
+							msg.channel.stopTyping();
+							msg.channel.send("An error occurred trying to ping the site: ```"+err.message+"```");
+							throw err;
+						}
+						if (res.statusCode !== 200) {
+							msg.channel.stopTyping();					
+							return msg.channel.send(`Got an error code ${res.statusCode}. Anyway, ping was \`${Date.now()-timeStart} ms\`.`);
+						}
+						msg.channel.stopTyping();
+						return msg.channel.send(`Recieved "pong" in \`${Date.now()-timeStart} ms\`.`);
+					});
 				}
-				if (res.statusCode !== 200) {
-					msg.channel.stopTyping();					
-					return msg.channel.send(`Got an error code ${res.statusCode}. Anyway, ping was \`${Date.now()-timeStart} ms\`.`);
-				}
-				msg.channel.stopTyping();
-				return msg.channel.send(`Recieved "pong" in \`${Date.now()-timeStart} ms\`.`);
-			});
-		}
 
-		// New API, Google
-		let app = () => new Promise(resolve => {
-			let time = {start:Date.now(),end:Number()};
-			request.get(`${process.env.NEW_API}${process.env.API_VERSION}/ping`, {timeout:5000}, (err,res) => {
-				if(err || res.statusCode !== 200) console.error(err);
-				time.end = Date.now(); // Do time anyway.
-				return resolve(time);
-			});
-		});
-			
-		// Get ping of Database
-		let db = () => new Promise(resolve => {
-			let time = {start:Date.now(),end:Number()};
-			serverSettings.findOne({_id:guildId}, err => {
-				if(err) console.error(err);
-				time.end = Date.now();
-				return resolve(time);
-			});
-		});
+				// New API, Google
+				let app = () => new Promise(resolve => {
+					let time = {start:Date.now(),end:Number()};
+					request.get(`${process.env.NEW_API}${process.env.API_VERSION}/ping`, {timeout:5000}, (err,res) => {
+						if(err || res.statusCode !== 200) console.error(err);
+						time.end = Date.now(); // Do time anyway.
+						return resolve(time);
+					});
+				});
+					
+				// Get ping of Database
+				let db = () => new Promise(resolve => {
+					let time = {end:Number(),start:Date.now()};
+					serverSettings.findOne({_id:guildId}, err => {
+						if(err) console.error(err);
+						time.end = Date.now();
+						return resolve(time);
+					});
+				});
 
-		// Get ping of cache
-		let redis = () => new Promise(resolve => {
-			let time = {start:Date.now(),end:Number()};
-			RedisDB.hget("serverPrefixes", guildId, err => {
-				if (err) console.error(err);
-				time.end = Date.now();
-				return resolve(time);
-			});
-		});
+				// Get ping of cache
+				let redis = () => new Promise(resolve => {
+					let time = {end:Number(),start:Date.now()};
+					RedisDB.hget("serverPrefixes", guildId, err => {
+						if (err) console.error(err);
+						time.end = Date.now();
+						return resolve(time);
+					});
+				});
 
-		// Get ping of client
-		let grafik = msg.client.ping;
-		Promise.all([app(), db(), redis()])
+				// Get ping of client
+				return Promise.all([app(), db(), redis()]);
+			})
 			.then(results => {
 				const embed = new Discord.RichEmbed()
 					.setTimestamp(Date())
 					.setColor(process.env.THEME)
 					.setFooter(msg.author.tag, msg.author.avatarURL)
-					.addField("Client:", `Avg. ping: \`${Math.round(grafik)} ms\``, true)
+					.addField("Client:", `Avg. ping: \`${Math.round(grafik.end - grafik.start)} ms\``, true)
 					.addField("API:", `API roundtrip: \`${results[1].end - results[1].start} ms\``, true)
 					.addField("Database:", `DB Roundtrip: \`${results[1].end - results[1].start} ms\`\n Cache: \`${results[2].end - results[2].start} ms\``, true);
 				msg.channel.stopTyping();
-				msg.channel.send(embed);
+				m.edit("<:Yes:588844524177195047> Ping complete.", embed);
 				return {
 					api: results[0].end - results[0].start,
 					db: results[1].end - results[1].start,
 					redis: results[2].end - results[2].start,
-					client: grafik
+					client: grafik.end - grafik.start
 				};
 			})
 			.then(ping => {

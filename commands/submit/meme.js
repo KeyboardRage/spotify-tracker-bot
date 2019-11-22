@@ -40,8 +40,8 @@ async function main(msg, data, doc, args) {
 			.setFooter(msg.author.tag, msg.author.avatarURL)
 			.setDescription("Logo submission summary")
 			.addField("**Information:**", `\n**ID:** ${body.message._id}\n**Contributor:** ${body.message.contributor}`, true)
-			.addField("**Source:**", body.message.source, true)
-			.addField("**Tags:**", `${body.message.tags.join(", ")}`, true)
+			.addField("**Source:**", body.message.source?body.message.source:"Unknown.", true)
+			.addField("**Tags:**", `${body.message.tags?body.message.tags.join(", "):"NO TAGS."}`, true)
 			.addField("**Link:**", `https://grafik-bot.net/memes/${body.message.url}`, true);
 		return msg.channel.send(embed);
 	});
