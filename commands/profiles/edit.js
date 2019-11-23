@@ -4,6 +4,7 @@ const {userTags,marketUserModel} = require("../../util/database");
 const {portfolios,creator_types} = require("../../data/config.json").market;
 const Sentry = require("../../util/extras");
 const Discord = require("discord.js");
+const request = require("request");
 
 module.exports = {
 	edit: async function(msg, args, doc) {
@@ -19,19 +20,23 @@ module.exports = {
 
 
 async function _edit(msg, args, doc) {
-	let add = `\n•    \`${doc.prefix}profile set email <email>\` set your email.\
-\n•    \`${doc.prefix}profile set social <number|name> <value>\` sets a social item. \
-\n		See \`${doc.prefix}profile socials\` for list of number/names.\
+	let core = `\n•    \`${doc.prefix}profile set email <email>\` set your email.\
+
 \n•    \`${doc.prefix}profile set name <name>\` change the preferred name. Defaults to Discord username.\
 \n•    \`${doc.prefix}profile set tags <tags>\` replaces current tags with given list. **Comma separated.**\
 \n•    \`${doc.prefix}profile set available <true|yes|false|no>\` sets your commissions availability status.\
-\n•    \`${doc.prefix}profile set company <name>\` sets a company you work for.\
-\n•    \`${doc.prefix}profile set company-site <url>\` sets the website of the company.\
 \n•    \`${doc.prefix}profile set minimum <number>\` sets minimum budgets you work with, in USD.\
 \n•    \`${doc.prefix}profile set title <type> [tags]\` sets the creative field type, which determine possible tags. **Comma separated.**\
-\n•    \`${doc.prefix}profile set cover <url>\` Add a cover image to be embedded at the bottom of your profile.\
 \n		Optionally change tags right away too. If not given, current tags will be cleared.`;
 
+	let extra = `\n•    \`${doc.prefix}profile set social <number|name> <value>\` sets a social item. \
+	\n		See \`${doc.prefix}profile socials\` for list of number/names.\
+	\n•    \`${doc.prefix}profile set company-site <url>\` sets the website of the company.\
+	\n•    \`${doc.prefix}profile set company <name>\` sets a company you work for.\
+	\n•    \`${doc.prefix}profile set description <text>\` Set a 'description' field containing whatever text and formatting. Max 255 chars.\
+	\n•    \`${doc.prefix}profile set cover <url|image>\` Add a cover image to be embedded at the bottom of your profile.\
+	\n•    \`${doc.prefix}profile set watermark <url|image>\` Custom watermark image. Vote needed. See \`${doc.prefix}profile info watermark\` for info.`;
+	
 	let remove = `Use \`unset\` instead of \`set\`.\
 \n*Examples:*\
 \n•    \`${doc.prefix}profile unset email\`\
@@ -41,14 +46,30 @@ async function _edit(msg, args, doc) {
 
 	let example = `\`${doc.prefix}profile set name My Name\`\n\`${doc.prefix}profile set 1 My Name\`\n\`${doc.prefix}profile set social 1 myportfolio.com\`\n\`${doc.prefix}profile unset social 1\`\n\`${doc.prefix}profile set title vfx 2d, 3d, intro, outro\``;
 
-	const embed = new Discord.RichEmbed()
-		.setTimestamp(Date())
-		.setColor(process.env.THEME)
-		.setFooter(msg.author.tag, msg.author.avatarURL)
-		.addField("**Adding / changing:**", add)
-		.addField("**Removing:**", remove)
-		.addField("**Examples:**", example);
-	return msg.channel.send(embed);
+	async function e() {
+		return new Promise(resolve => {
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(msg.author.tag, msg.author.avatarURL);
+			return resolve(embed); 
+		});
+	}
+
+	let _ = await e();
+	_.addField("**[Core] Adding / changing:**", core);
+
+	msg.channel.send(_)
+		.then(async ()=>{
+			_ = await e();
+			_.addField("**[Extras] Adding / changing:**", extra);
+			return msg.channel.send(_);
+		})
+		.then(async ()=>{
+			_ = await e();
+			_.addField("**Removing:**", remove).addField("**Examples:**", example);
+			return msg.channel.send(_);
+		}).catch(err=>{throw err;});
 }
 
 let rg = {
@@ -68,7 +89,7 @@ async function _edit_unset(msg, args, doc) {
 	switch(sub) {
 	case 1:
 		// name
-		update(msg.author.id, {$set:{"name":msg.author.username}})
+		update(msg.author.id, {$set:{"name":msg.author.username, last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Removed your displayname, but since it cannot be empy, it's **set to "+msg.author.username+"**.");
 			}).catch(err=>{return handleErr(err, msg);});
@@ -82,28 +103,28 @@ async function _edit_unset(msg, args, doc) {
 		break;
 	case 3:
 		// budget
-		update(msg.author.id, {$set:{"meta.min_budget":0}})
+		update(msg.author.id, {$set:{"meta.min_budget":0, last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Minimum budget **set to $0**, so it will not show up.");
 			}).catch(err=>{return handleErr(err,msg);});
 		break;
 	case 4:
 		// company
-		update(msg.author.id, {$set: {"meta.company":null}})
+		update(msg.author.id, {$set: {"meta.company":null, last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Removed company name. If you have a company URL specified, it will show that instead.");
 			}).catch(err=>{return handleErr(err, msg);});
 		break;
 	case 5:
 		// company site
-		update(msg.author.id, {$set:{"meta.company_url":null}})
+		update(msg.author.id, {$set:{"meta.company_url":null, last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Removed company URL. If you have a company name specified, it will show that instead.");
 			}).catch(err=>{return handleErr(err, msg);});
 		break;
 	case 6:
 		// email
-		update(msg.author.id, {$set:{"meta.email":null}})
+		update(msg.author.id, {$set:{"meta.email":null, last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Removed your email.");
 			}).catch(err=>{return handleErr(err, msg);});
@@ -112,7 +133,7 @@ async function _edit_unset(msg, args, doc) {
 		// socials
 		if (!args[1]) return msg.channel.send("**Missing argument:** You must give which social to remove. See `"+doc.prefix+"profile socials` for list of number/names.");
 		else if (valid_social(args[1])) {
-			update(msg.author.id, {$unset:{["portfolios."+valid_social(args[1])]:""}})
+			update(msg.author.id, {$unset:{["portfolios."+valid_social(args[1])]:""}, $set:{last_modified:Date()}})
 				.then(()=>{
 					return msg.channel.send("**Succes:** **"+portfolios[valid_social(args[1].toString())].name+" removed** — if you had it listed.");
 				}).catch(err=>{return handleErr(err, msg);});
@@ -129,7 +150,7 @@ async function _edit_unset(msg, args, doc) {
 		break;
 	case 9:
 		// availability
-		update(msg.author.id, {$set:{"meta.available":false}, last_modified:Date()})
+		update(msg.author.id, {$set:{"meta.available":false, last_modified:Date()}})
 			.then(()=>{
 				return userTags.updateOne({_id:msg.author.id}, {$set:{available:false}});
 			})
@@ -139,9 +160,23 @@ async function _edit_unset(msg, args, doc) {
 		break;
 	case 10:
 		// image
-		update(msg.author.id, {$unset:{"meta.cover_img":false}, last_modified:Date()})
+		update(msg.author.id, {$unset:{"meta.cover_img":false}, $set:{last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Your featured image was removed.");
+			}).catch(err=>{return handleErr(err, msg);});
+		break;
+	case 11:
+		// description
+		update(msg.author.id, {$set:{"meta.desc":null, last_modified:Date()}})
+			.then(()=>{
+				return msg.channel.send("**Success:** Description field removed.");
+			}).catch(err=>{return handleErr(err, msg);});
+		break;
+	case 12:
+		// watermark
+		update(msg.author.id, {$set:{"meta.watermark":null, last_modified:Date()}})
+			.then(()=>{
+				return msg.channel.send("**Success:** Custom watermark removed.");
 			}).catch(err=>{return handleErr(err, msg);});
 	}
 }
@@ -277,7 +312,7 @@ async function _edit_set(msg, args, doc) {
 				args = (/^https?:\/\//i.test(args))?args:"https://"+args;
 				if(!rg.site.test(args)) return msg.channel.send("**Invalid argument:** The input after the number did not match that of a valid website URL. Try again.");
 				else {
-					//TODO: Update DB here. num = key, args = value
+					// num = key, args = value
 					update(msg.author.id, {$set:{[`portfolios.${num}`]:args, last_updated:Date()}})
 						.then(()=>{
 							return msg.channel.send("**Success:** Social item **"+portfolios[num.toString()].name+"** updated to: `"+portfolios[num.toString()].prefix+args+"`.");
@@ -289,7 +324,7 @@ async function _edit_set(msg, args, doc) {
 				args = (/^https?:\/\//i.test(args))?args:"https://"+args;
 				if(!rg.fb.test(args)) return msg.channel.send("**Invalid argument:** The input after the number **did not match** that of a valid **Facebook URL**. Try again.");
 				else {
-					//TODO: Update DB here. num = key, args = value
+					// num = key, args = value
 					update(msg.author.id, {$set:{[`portfolios.${num}`]:args, last_updated:Date()}})
 						.then(()=>{
 							return msg.channel.send("**Success:** Social item **"+portfolios[num.toString()].name+"** updated to: `"+portfolios[num.toString()].prefix+args+"`.");
@@ -307,7 +342,7 @@ async function _edit_set(msg, args, doc) {
 					let usr = args.split("/");
 					usr = usr[usr.length-1];
 					if(usr.length && rg.username.test(usr)) {
-						//TODO: Update DB here. num = key, args = value
+						// num = key, args = value
 						update(msg.author.id, {$set:{[`portfolios.${num}`]:args, last_updated:Date()}})
 							.then(()=>{
 								return msg.channel.send("**Success:** Social item **"+portfolios[num.toString()].name+"** updated to: "+portfolios[num.toString()].prefix+args+".");
@@ -332,9 +367,7 @@ async function _edit_set(msg, args, doc) {
 		break;
 	case 8:
 		// Creative field
-		//TODO: Check if tags were passed as well.
 		if (await creative_type(args[1])) {
-			console.log(args);
 			// return;
 			let type = await creative_type(args[1]);
 			update(msg.author.id, {$set:{"meta.main_type":type, last_updated:Date()}})
@@ -374,7 +407,6 @@ async function _edit_set(msg, args, doc) {
 					// return handleErr(err, msg);
 				});
 		} else return msg.channel.send("**Invalid input:** The creative field `"+args[1]+"` is not one I consider valid. See `"+doc.prefix+"profile fields` for a list of creative fields numbers/names.");
-		//TODO: Some command to see valid Creative field names/numbers
 		break;
 	case 9:
 		// available
@@ -389,7 +421,7 @@ async function _edit_set(msg, args, doc) {
 		default:
 			args[1] = false;
 		}
-		update(msg.author.id, {$set:{"meta.available":args[1]}, last_modified:Date()})
+		update(msg.author.id, {$set:{"meta.available":args[1], last_modified:Date()}})
 			.then(()=>{
 				return userTags.updateOne({_id:msg.author.id}, {$set:{available:args[1]}});
 			})
@@ -402,11 +434,33 @@ async function _edit_set(msg, args, doc) {
 		if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `"+args[1]+"` is not a valid common link scheme.");
 		if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
 		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
-		update(msg.author.id, {$set:{"meta.cover_img":args[1]}, last_modified:Date()})
+		update(msg.author.id, {$set:{"meta.cover_img":args[1], last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Your featured image was set to `"+args[1]+"`.\n*Note: If you control the host, you can update the image itself instead of setting a new one — though Discord will most likely cache it.*");
 			}).catch(err=>{return handleErr(err, msg);});
-		return;
+		break;
+	case 11:
+		if(args.join(" ").length>255) return msg.channel.send(`**Invalid input:** Your description exceeds the maximum of 255 by **${args.join(" ").length-255}** characters.`);
+		update(msg.author.id, {$set:{"meta.desc":args.join(" "), last_modified:Date()}})
+			.then(()=>{
+				return msg.channel.send("**Success:** Your description was set.");
+			}).catch(err=>{return handleErr(err, msg);});
+		break;
+	case 12:
+		// watermark
+		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `" + args[1] + "` is not a valid common link scheme.");
+		if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
+		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`");
+		request.patch({url:`${process.env.NEW_API}${process.env.API_VERSION}/profile/watermark`, form:{user:msg.author.id, url:args[1]}}, (err,res,body) => {
+			if (err) return handleErr(err, msg);
+			try {
+				body = JSON.parse(body);
+			} catch(_) {
+				return handleErr(err, msg, "**Error:** API responded with something unexpected. Incident logged.");
+			}
+			return msg.channel.send(body.message);
+		});
+		break;
 	}
 }
 
@@ -489,6 +543,20 @@ function isValidSub(input, name=false) {
 	case "cover":
 	case "img":
 		return (name)?"image":10;
+	case "11":
+	case 11:
+	case "elleven":
+	case "bio":
+	case "desc":
+	case "about":
+	case "description":
+		return (name)?"desc":11;
+	case "12":
+	case 12:
+	case "twelve":
+	case "wm":
+	case "watermark":
+		return (name)?"watermark":12;
 	default:
 		return 0;
 	}

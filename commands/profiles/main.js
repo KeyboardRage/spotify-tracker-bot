@@ -2,6 +2,7 @@
 const _register = require("./register");
 const _profile = require("./profile");
 const _edit = require("./edit");
+const _info = require("./info");
 
 module.exports = {
 	/**
@@ -24,6 +25,12 @@ module.exports = {
 	 * @param {Object} doc The guild document
 	 * @param {Array} args The command arguments
 	 */
-	edit: _edit
+	edit: _edit,
+	/**
+	 * Everything 'information' in general
+	 * @param {"msg"} msg The original message object
+	 * @param {Object} doc The guild document
+	 */
+	info: _info
 };
 

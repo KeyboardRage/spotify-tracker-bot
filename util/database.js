@@ -273,8 +273,10 @@ let marketUserSchema = new mongoose.Schema({
 		"company": String,
 		"company_url": String,
 		"min_budget": Number,
-		"color":Number,
-		"cover_img":String
+		"color": Number,
+		"cover_img": String,
+		"watermark": String,
+		"desc": String
 	},
 	"portfolios": mongoose.SchemaTypes.Mixed,
 	"name": String,

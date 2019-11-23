@@ -16,8 +16,8 @@ module.exports = {
 	cmds: async function(msg, args, doc) {
 		return await _cmds(msg, args, doc);
 	},
-	handleErr: async function(err, msg) {
-		return await _handleErr(err, msg);
+	handleErr: async function(err, msg, custom) {
+		return await _handleErr(err, msg, custom);
 	},
 	show_types: async function(msg, args, doc) {
 		return await _show_types(msg, args, doc);
@@ -36,8 +36,8 @@ module.exports = {
 	}
 };
 
-async function _handleErr(err, msg) {
-	msg.channel.send("**Could not complete command:** An error ocurred. The error has been reported.");
+async function _handleErr(err, msg, custom=false) {
+	msg.channel.send(custom?custom:"**Could not complete command:** An error ocurred. The error has been reported.");
 	fn.notifyErr(msg.client, err);
 	return;
 }
@@ -102,7 +102,7 @@ async function _find(msg, args, doc, search=false) {
 				let embed = await create_embed(msg, user.toObject(), true).catch(err=>{return _handleErr(err, msg);});
 				return msg.channel.send(embed).catch(err=>{
 					if(err.code && err.code === 50035) {
-						return msg.channel.send("**Could not send:** If your profile has an image, its link is most likely malformated, so Discord refuse to send embed.\nChange image with `"+doc.prefix+"profile set cover <image link>`.");
+						return msg.channel.send("**Could not send:** If your profile has an image, its link is most likely malformated, so Discord refuse to send embed.\nChange image with `"+doc.prefix+"profile set cover <image link>`. That or some of your content contains invalid characters.");
 					} else {
 						return _handleErr(err, msg);
 					}
@@ -394,6 +394,12 @@ async function create_embed(msg, doc) {
 				embed.setThumbnail(user.avatarURL);
 			}
 
+			// Custom description field
+			if(user.meta.desc) {
+				embed.addField("**Description:**", user.meta.desc);
+			}
+
+			// Company info
 			if(doc.meta.company) {
 				string = (doc.meta.company_url)?`[${doc.meta.company}](${doc.meta.company_url})`:doc.meta.company;
 				embed.addField("**Company information:**", `Works at ${string}`);

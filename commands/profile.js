@@ -27,6 +27,7 @@ module.exports = {
 		case "cmds":
 		case "commands":
 		case "cmd":
+		case "help":
 			return fn.profile.cmds(msg, args, doc);
 		case "social":
 		case "socials":
@@ -66,6 +67,7 @@ module.exports = {
 			if(msg.channel.type==="dm") return msg.channel.send("**Cannot use command:** This sub-command is only available in guilds, as it searches for users in the guild that does one of the types of work.");
 			return fn.profile.tags(msg, args, doc);
 		case "register":
+		case "setup":
 			return msg.client.commands.register.exec(msg, cmd, args, doc);
 		case "field":
 		case "fields":
@@ -74,6 +76,9 @@ module.exports = {
 		case "creative-field":
 		case "creative-fields":
 			return msg.channel.send(await fn.profile.creative_fields(msg, doc));
+		case "info":
+			args.shift();
+			return fn.info.main(msg, args, doc);
 		default:
 			return fn.profile.find(msg, args, doc);
 		}
