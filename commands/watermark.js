@@ -14,7 +14,8 @@ module.exports = {
 		let options = {
 			color: "black",
 			opacity: 50,
-			url: null
+			url: null,
+			normal: false
 		};
 		if (msg.channel.type !== "dm") msg.delete();
 
@@ -62,6 +63,8 @@ module.exports = {
 				options.color = arg.toLowerCase();
 			} else if(/^[0-9]{1,3}$/.test(arg)) {
 				options.opacity = parseInt(arg);
+			} else if (arg==="--normal") {
+				options.normal = true;
 			}
 		});
 		msg.channel.startTyping();
