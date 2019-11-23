@@ -11,6 +11,7 @@ module.exports = {
 	daccess: [""],
 	desc:"Generate a watermarked version of your image.",
 	exec(msg, cmd, args, doc) {
+		if (msg.author.id !== "164736401051484160") return msg.channel.send("**Disabled:** This command is disabled while it's being upgraded. Try again later.");
 		let options = {
 			color: "black",
 			opacity: 50,
