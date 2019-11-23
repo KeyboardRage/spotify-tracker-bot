@@ -67,6 +67,7 @@ module.exports = {
 				options.normal = true;
 			}
 		});
+		options.user = msg.author.id;
 		msg.channel.startTyping();
 		request.post(`${process.env.NEW_API}${process.env.API_VERSION}/watermark`, {form: options}, (err, res, body) => {
 			if(err) {
