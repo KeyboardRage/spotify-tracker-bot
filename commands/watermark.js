@@ -80,7 +80,6 @@ module.exports = {
 				try {
 					body = JSON.parse(body);
 				} catch {};
-
 				if (body.err) {
 					msg.channel.stopTyping();
 					msg.channel.send(body.message);
