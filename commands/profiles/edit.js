@@ -33,7 +33,7 @@ async function _edit(msg, args, doc) {
 	\n		See \`${doc.prefix}profile socials\` for list of number/names.\
 	\n•    \`${doc.prefix}profile set company-site <url>\` sets the website of the company.\
 	\n•    \`${doc.prefix}profile set company <name>\` sets a company you work for.\
-	\n•    \`${doc.prefix}profile set description <text>\` Set a 'description' field containing whatever text and formatting. Max 255 chars.\
+	\n•    \`${doc.prefix}profile set description <text>\` Set a 'description' field containing whatever text and formatting. Max 200 chars.\
 	\n•    \`${doc.prefix}profile set cover <url|image>\` Add a cover image to be embedded at the bottom of your profile.\
 	\n•    \`${doc.prefix}profile set watermark <url|image>\` Custom watermark image. Vote needed. See \`${doc.prefix}profile info watermark\` for info.`;
 	
@@ -440,8 +440,9 @@ async function _edit_set(msg, args, doc) {
 			}).catch(err=>{return handleErr(err, msg);});
 		break;
 	case 11:
+		// desc
 		args.shift();
-		if(args.join(" ").length>255) return msg.channel.send(`**Invalid input:** Your description exceeds the maximum of 255 by **${args.join(" ").length-255}** characters.`);
+		if(args.join(" ").length>200) return msg.channel.send(`**Invalid input:** Your description exceeds the maximum of 200 by **${args.join(" ").length-200}** characters.`);
 		update(msg.author.id, {$set:{"meta.desc":args.join(" "), last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Your description was set.");
