@@ -440,6 +440,7 @@ async function _edit_set(msg, args, doc) {
 			}).catch(err=>{return handleErr(err, msg);});
 		break;
 	case 11:
+		args.shift();
 		if(args.join(" ").length>255) return msg.channel.send(`**Invalid input:** Your description exceeds the maximum of 255 by **${args.join(" ").length-255}** characters.`);
 		update(msg.author.id, {$set:{"meta.desc":args.join(" "), last_modified:Date()}})
 			.then(()=>{

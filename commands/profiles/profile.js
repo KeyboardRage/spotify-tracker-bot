@@ -395,8 +395,8 @@ async function create_embed(msg, doc) {
 			}
 
 			// Custom description field
-			if(user.meta.desc) {
-				embed.addField("**Description:**", user.meta.desc);
+			if(doc.meta.desc) {
+				embed.addField("**Description:**", doc.meta.desc);
 			}
 
 			// Company info
