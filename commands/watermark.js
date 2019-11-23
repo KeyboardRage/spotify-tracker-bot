@@ -98,8 +98,9 @@ module.exports = {
 			.addField("Description", this.desc, true)
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
-			.addField("Usage", `\`${doc.prefix}${this.cmd} [image url if used] [\"black\"|\"white\"] [# 0 to 100 opacity]\``)
-			.addField("Valid arguments", "`an image URL`, `\"black\"`, `\"white\"`, `#…`, `#.#`, `.#`")
+			.addField("Usage", `\`${doc.prefix}${this.cmd} [image url if used] [\"black\"|\"white\"|\"--normal\"] [# 0 to 100 opacity]\``)
+			.addField("Flags", "`--normal` use normal watermarking instead of a custom. See `"+doc.prefix+"profile info watermark` for more info.")
+			.addField("Valid arguments", "`an image URL`, `\"black\"`, `\"white\"`, `\"--normal\"`, `#…`, `#.#`, `.#`")
 			.addField("Examples", `\`${doc.prefix}${this.cmd} https://i.thevirt.us/06/K6j1F.png white 30\`\n\`${doc.prefix}${this.cmd}  https://i.thevirt.us/06/K6j1F.png 80 black\`\n\`${doc.prefix}${this.cmd} 15\` *(with an image embeded)*`)
 		msg.channel.send(embed);
 	}
