@@ -164,7 +164,7 @@ async function _tags(msg, args, doc) {
 	args.shift(); // remove 'does'
 	// Page handling
 	let skips = 0;
-	let limit = 10;
+	let limit = 40;
 	let page = 0;
 	if (fe.regexIndexOf(args, /\d+/) !== -1) {
 		skips = parseInt(args.splice(fe.regexIndexOf(args, /\d+/), 1));
@@ -223,7 +223,7 @@ async function _tags(msg, args, doc) {
 
 			// Inform about profile inspection, and display bug, and rest of embed.
 			embed.addField("Inspect profile", `Check out a specific user's profile with \`${doc.prefix}profile <id|mention|username>\`\n\
-				\n<:Info:588844523052859392> ***NOTE:*** *Your Discord client may not have all the users cached, so they're displayed as <@UID|invalid-user> even though they're in this guild.*`);
+				\n<:Info:588844523052859392> ***NOTE:*** *Your Discord client may not have all the users cached, so they're displayed as <@UID | invalid-user> even though they're in this guild.*`);
 			if(col1.length) embed.addField("Users", col1, true);
 			if(col2.length) embed.addField("\u200B", col2, true); // if Math.floor(1/2) = 0, and i>=0 is true, then user is added to coloumn two.
 
