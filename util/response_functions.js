@@ -579,17 +579,14 @@ async function _sync_market_users(/**@type {"Client"}*/Client) {
 		if(err) throw err;
 		if(!docs.length) return;
 		let existing = Array(), now = Array(), updates = Array();
+
 		for(let i=0;i<docs.length;i++) {
 			existing = docs[i].guilds.sort().join("|");
-			now = Client.guilds.filter(g => g.members.has(docs[i]._id)).keyArray();
+			now = Client.guilds.filter(g => g.members.has(docs[i]._id)).keyArray(); // Find all guilds that has iteration member, and convert that to an array
 			
-			if(existing===now.sort().join("|")) {
-				console.log("No changes in "+docs[i]._id);
-				continue; // No changes.
-			}
+			if(existing===now.sort().join("|")) continue; // No changes.
 
-			docs[i].guilds = now;
-			updates.push(docs[i].save());
+			updates.push(userTags.updateOne({_id:docs[i]._id}, {$set:{guilds:now}}));
 		}
 
 		Promise.all(updates)
