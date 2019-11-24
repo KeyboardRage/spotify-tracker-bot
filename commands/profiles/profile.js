@@ -194,7 +194,7 @@ async function _tags(msg, args, doc) {
 			return marketUserModel.find({"_id":{$in:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], {limit:limit, skip:skips});
 		})
 		.then(docs => {
-			if(!docs.length) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
+			if(!docs.length) return msg.channel.send("**Invalid argument:** There aren't that many pages.");
 			let col1 = String(),
 				col2 = String();
 
