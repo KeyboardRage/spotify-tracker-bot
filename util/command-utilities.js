@@ -556,7 +556,7 @@ async function findUser(Client, input, options={onlyId:false,inGuild:false,msg:f
 				if(user)return resolve((options.onlyId)?user.id:user);
 			}
 
-			user = guild.members.find(u => u.user.tag.toLowerCase() == input.toLowerCase()) || guild.members.find(u => u.user.username.toLowerCase() == input.toLowerCase());
+			user = guild.members.find(u => u.user.tag.toLowerCase() == input.toLowerCase()) || guild.members.find(u => u.user.username.toLowerCase() == input.toLowerCase()) || guild.members.find(u => u.displayName.toLowerCase() == input.toLowerCase());
 			if(user) return resolve((options.onlyId)?user.id:user);
 			return resolve(null);
 		}

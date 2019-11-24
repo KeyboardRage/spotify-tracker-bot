@@ -3,7 +3,6 @@ const {marketUserModel,userTags} = require("../../util/database");
 const {portfolios,creator_types} = require("./config.json");
 const fn = require("../../util/response_functions");
 const fe = require("../../util/command-utilities");
-const Sentry = require("../../util/extras");
 const {allValidTags} = require("./info");
 
 module.exports = {
@@ -116,7 +115,7 @@ async function _find(msg, args, doc, search=false) {
 		// Only possible if in guild
 		if(!dm) {
 			user = msg.guild.members.find(u => u.user.id == args[0]);
-			if (!user) user = msg.mentions.members.first() || msg.guild.members.find(u => u.user.tag.toLowerCase() == args.join(" ").toLowerCase()) || msg.guild.members.find(u => u.user.username.toLowerCase() == args.join(" ").toLowerCase());
+			if (!user) user = msg.mentions.members.first() || msg.guild.members.find(u => u.user.tag.toLowerCase() == args.join(" ").toLowerCase()) || msg.guild.members.find(u => u.user.username.toLowerCase() == args.join(" ").toLowerCase()) || msg.guild.members.find(u => u.displayName.toLowerCase() == args.join(" ").toLowerCase());
 			user = (user) ? user.id : null;
 		}
 
@@ -148,7 +147,7 @@ async function _cmds(msg, args, doc) {
 	\n•    \`${doc.prefix}profile tags\` list all possible sub-categories *(tags)* of work for a creative field.\
 	\n•    \`${doc.prefix}profile fields\` list all possible creative field.\
 	\n•    \`${doc.prefix}profile socials\` list all possible social items / portfolios you can put on your profile.\
-	\n•    \`${doc.prefix}profile does <type of work>\` finds users in current guild that does one of the things *(tags)* specified.\
+	\n•    \`${doc.prefix}profile does <type of work>\` finds users in current guild that does all of/one of *(\`--or\`)* the tags specified.\
 	\n•    \`${doc.prefix}profile <id|mention|username|tag>\` search for user in this guild by ID, mention, username, or tag. Use ID for global search outside guild.\
 	\n•    \`${doc.prefix}profile search <id|mention|username|tag>\` same as above, except for cases where name would be same as a sub-command.\
 	\n•    \`${doc.prefix}profile register\` alias of the command \`${doc.prefix}register\`.`;
@@ -378,7 +377,7 @@ async function _show_types(msg, args, doc) {
 				.setFooter(msg.author.tag, msg.author.avatarURL)
 				.setDescription("All tags for "+creator_types[type.toString()].name);
 			embed = gen_tags_embed(embed, type);
-			embed.addField("Using the tags", "You can search for a user in this guild that does one of the tags. You can search **up to three tags** at a time, and it will return users that have at least one of them.\n**Command:** `"+doc.prefix+"profile does <tag(s)>`.");
+			embed.addField("Using the tags", "You can search for a user in this guild that does all of/one of the tags. You can search **up to three tags** at a time, and it will return users that does all of them, or one of them with `--or` flag set.\n**Command:** `"+doc.prefix+"profile does <tag(s)> ['--or']`.");
 	
 			return msg.channel.send(embed);
 		}

@@ -93,6 +93,7 @@ module.exports = {
 			.addField("user", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd} <id|mention|username|tag|[option]>\``)
+			.addField("Flags", "`--or` when searching by tags to make multiple tags 'or' instead of 'and'.")
 			.addField("Examples", `\`${doc.prefix}${this.cmd} cmds\`\n\`${doc.prefix}${this.cmd} VirtusGraphics\`\n\`${doc.prefix}${this.cmd} edit\`\n\`${doc.prefix}${this.cmd} search 164736401051484160\`\n`);
 		msg.channel.send(embed);
 	}
