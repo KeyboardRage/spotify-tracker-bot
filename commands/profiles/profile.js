@@ -162,56 +162,90 @@ async function _cmds(msg, args, doc) {
 
 async function _tags(msg, args, doc) {
 	let time = Date.now();
-	args.shift();
-	try {
-		if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
-		let tags = await allValidTags();
-		args = args.filter(t => {
-			t = t.toLowerCase();
-			return (tags.includes(t));
-		});
-		if(!args.length) return msg.channel.send("**Invalid argument(s):**  None of the tags you gave were not valid. See `"+doc.prefix+"profile tags` for a list of valid tags.");
-		userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}, "available":true}, ["_id"], {limit:20}, (err,docs) => {
-			if(err) {
-				return msg.channel.send("An error occurred searching for users.");
-			}
-			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `"+args.join("`, `")+"`.");
-
-			marketUserModel.find({"_id":{$in:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], {limit:20}, (err,users) => {
-				if (err) {
-					return msg.channel.send("An error occurred fetching users.");
-				}
-				if (!users.length) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
-
-				let string = String();
-				for(let i=0;i<users.length;i++) {
-					string += `<@${users[i]._id}> — \`${users[i]._id}\`\n`;
-				}
-
-				const embed = new Discord.RichEmbed()
-					.setTimestamp(Date())
-					.setColor(process.env.THEME)
-					.setFooter(msg.author.tag, msg.author.avatarURL)
-					.setDescription("Tag search results")
-					.addField("Tags", `Users found that has one of these tags: **${args.join("**, **")}**.`)
-					.addField("Inspect profile", `Check out a specific user's profile with \`${doc.prefix}profile <id|mention|username>\``)
-					.addField("Users", string);
-
-				let taken = Date.now()-time;
-				if(taken>100) {
-					fn.notifyErr(msg.client, new Error("Took "+taken+"ms for "+msg.author.id+" user profile search on tags: "+args.join(", ")));
-				}
-				return msg.channel.send(embed);
-			});
-		});
-	} catch(err) {
-		// eslint-disable-next-line no-console
-		console.error(err);
-		let taken = time - Date.now();
-		fn.notifyErr(msg.client, new Error("Took " + taken + "ms for " + msg.author.id + " user profile search on tags: " + args.join(", ")));
-		Sentry.captureException(err);
-		return msg.channel.send("**Could not complete command:** An error occurred. Error has been reported.");
+	args.shift(); // remove 'does'
+	// Page handling
+	let skips = 0;
+	let limit = 10;
+	let page = 0;
+	if (fe.regexIndexOf(args, /\d+/) !== -1) {
+		skips = parseInt(args.splice(fe.regexIndexOf(args, /\d+/), 1));
+		skips--;
+		if(skips<0) skips = 0;
+		page = skips;
+		skips = limit*skips;
 	}
+	// console.log(page, skips, limit);
+	// --or flag handling
+	let or = false;
+	if(args.includes("--or")) {
+		or = true;
+		args.splice(args.indexOf("--or"), 1);
+	}
+	// Rest is tags
+	if(args.length > 3) return msg.channel.send("**Too many argument:** Maximum amount of tags for search is three.");
+	let tags = await allValidTags();
+	args = args.filter(t => {t = t.toLowerCase();return (tags.includes(t));});
+	if(!args.length) return msg.channel.send("**Invalid argument(s):**  None of the tags you gave were not valid. See `"+doc.prefix+"profile tags` for a list of valid tags.");
+	
+	let total = Number();
+	userTags.find({"guilds":{$in:msg.guild.id}, "tags":{[or?"$in":"$all"]:args}, "available":true}, ["_id"])
+		.then(docs => {
+			if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that had one of these tags: `" + args.join("`, `") + "`.");
+			total = docs.length;
+			return marketUserModel.find({"_id":{$in:docs.map(u=>u._id)}}, ["_id","meta.discord","meta.discriminator"], {limit:limit, skip:skips});
+		})
+		.then(docs => {
+			if(!docs.length) return msg.channel.send("**No results:** Could not fetch the users. Fetching returned 0 retults.");
+			let col1 = String(),
+				col2 = String();
+
+			for(let i=0;i<docs.length;i++) {
+				if(i>=Math.floor(docs.length/2)) {
+					col2 += `<@${docs[i]._id}>\n`;
+				} else {
+					col1 += `<@${docs[i]._id}>\n`;
+				}
+			}
+
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setDescription("Tag search results");
+
+			// Logic for AND | OR mode, and showing total amount of users.
+			if(!or) embed.addField("Results", `**${total} users** found that has all of these tags: **${args.join("**, and **")}**.\
+			\n**Showing ${total>docs.length?docs.length+"** of **"+total+"** members.":"all** possible members."}\
+			\n\nUse \`${doc.prefix}profile does ${args.join(" ")} <number>\` to browse other pages.\
+			\nAdd flag \`--or\` to change search to 'or' more instead of 'and' for multiple tags.`);
+			else embed.addField("Results", `**${total} users** found that has one of these tags: **${args.join("**, or **")}**.\
+			\n**Showing ${total>docs.length?docs.length+"** of **"+total+"** members.":"all** possible members."}\
+			\n\nUse \`${doc.prefix}profile does ${args.join(" ")} <number>\` to browse other pages.\
+			\nAdd flag \`--or\` to change search to 'or' more instead of 'and' for multiple tags.`);
+
+			// Inform about profile inspection, and display bug, and rest of embed.
+			embed.addField("Inspect profile", `Check out a specific user's profile with \`${doc.prefix}profile <id|mention|username>\`\n\
+				\n<:Info:588844523052859392> ***NOTE:*** *Your Discord client may not have all the users cached, so they're displayed as <@UID> even though they're in this guild.*`);
+			if(col1.length) embed.addField("Users", col1, true);
+			if(col2.length) embed.addField("\u200B", col2, true); // if Math.floor(1/2) = 0, and i>=0 is true, then user is added to coloumn two.
+
+			// Logic for footer
+			embed.setFooter(`${msg.author.tag} — Page ${page+1}/${(total-total%limit)/limit+(total%limit?1:0)}`, msg.author.avatarURL);
+
+			// Early warning system for too complicated query
+			let taken = Date.now()-time;
+			if(taken>100) {
+				fn.notifyErr(msg.client, new Error("Took "+taken+"ms for "+msg.author.id+" user profile search on tags: "+args.join(", ")));
+			}
+
+			return msg.channel.send(embed);
+		})
+		.catch(err => {
+			let taken = Date.now() - time;
+			if (taken > 100) {
+				fn.notifyErr(msg.client, new Error("Took " + taken + "ms for " + msg.author.id + " user profile search on tags: " + args.join(", ")));
+			}
+			return _handleErr(err, msg, "**Error:** An error occurred searching for users. Incident logged.");
+		});
 }
 
 async function send(msg, doc, response, callback, dm=false) {
@@ -483,7 +517,9 @@ async function _list(msg) {
 		if(!docs.length) return msg.channel.send("**No results:** Could not find any users in this guild that has a profile.");
 		let page_max = 50,
 			col1 = String(),
-			col2 = String();
+			col2 = String(),
+			more = null;
+		if(docs.length>50) more = `… and ${docs.length-50} other members.`;
 
 		for(let i=0;i<docs.length;i++) {
 			if(i>=Math.ceil(docs.length/2)) {
@@ -493,6 +529,8 @@ async function _list(msg) {
 			}
 			if(i>page_max-1) break;
 		}
+		if(more) col2 += more;
+
 		const embed = new Discord.RichEmbed()
 			.setTimestamp(Date())
 			.setColor(process.env.THEME)

@@ -136,20 +136,20 @@ module.exports.formatTime = formatTime;
 
 /**
  * Like string.indexOf, except it uses regEx to find the position
- * @param {String} string String to work with
+ * @param {String|Array} input A string or array
  * @param {RegExp} regex The regular expression to search with
  * @param {Number} end Optional. End position.
  * @returns {Number} Index position. -1 if no matches.
  * @example
  * if(regexIndexOf(array, /\w+/) == -1) {...}
  */
-function regexIndexOf(string, regex, startpos=0) {
-	if(typeof(string) == "string") {
-		let indexOf = string.substring(startpos).search(regex);
+function regexIndexOf(input, regex, startpos=0) {
+	if(typeof(input) == "string") {
+		let indexOf = input.substring(startpos).search(regex);
 		return (indexOf >= 0) ? (indexOf + (startpos)) : indexOf;
-	} else if(typeof(string) == "object") {
-		for(let i=0;i<string.length;i++) {
-			if (string[i].match(regex)) {
+	} else if(Array.isArray(input)) {
+		for(let i=0;i<input.length;i++) {
+			if (input[i].match(regex)) {
 				return i;
 			}
 		}

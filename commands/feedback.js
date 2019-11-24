@@ -35,7 +35,7 @@ module.exports = {
 				} else {
 					let chan = (msg.channel.type==="dm")?"**DM's**":`${msg.guild.name} \`${msg.guild.id}\``;
 					message += `\n**From:** ${msg.author.tag} \`${msg.author.id}\` **in** ${chan}.`;
-					fn.notify(msg.client, message, config.colors.green);
+					fn.notify(msg.client, message, config.colors.green, "592832212693418006");
 					return msg.channel.send(`\`ID: ${feedback._id}\` → Feedback submission successful.`);
 				}
 			});
