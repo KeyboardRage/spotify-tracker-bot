@@ -578,18 +578,24 @@ async function _sync_market_users(/**@type {"Client"}*/Client) {
 	userTags.find({}, ["_id","guilds"], (err,docs) => {
 		if(err) throw err;
 		if(!docs.length) return;
-	
+		let existing = Array(), now = Array(), updates = Array();
 		for(let i=0;i<docs.length;i++) {
-			let existing = docs[i].guilds.sort().join("|");
-			let now = Client.guilds.filter(g => g.members.has(docs[i]._id)).keyArray();
+			existing = docs[i].guilds.sort().join("|");
+			now = Client.guilds.filter(g => g.members.has(docs[i]._id)).keyArray();
 			
-			if(existing===now.sort().join("|")) continue; // No changes.
+			if(existing===now.sort().join("|")) {
+				console.log("No changes in "+docs[i]._id);
+				continue; // No changes.
+			}
 
 			docs[i].guilds = now;
-			docs[i].save(err=>{
-				if(err) throw err;
-			});
+			updates.push(docs[i].save());
 		}
+
+		Promise.all(updates)
+			.then(()=>{
+				console.log("All guilds synced.");
+			}).catch(err=>{throw err;});
 	});
 }
 
