@@ -5,6 +5,7 @@
 const iso = require("iso8601-duration");
 const {counterModel} = require("./database");
 const fn = require("./response_functions");
+const request = require("request");
 
 /**
  * Slices an array from start to end. End being a word or index.
@@ -630,3 +631,27 @@ async function getUser(Client, userId) {
 	});
 }
 module.exports.getUser = getUser;
+
+
+
+/**
+ * Gets a direct image link from an indirect image link on imgur
+ * @param {String} URL_ID The ~5 character URL ID.
+ * @returns {Promise} Resolves to direct link if success, or the ID if failed.
+ */
+module.exports.getImgur = getImgur;
+async function getImgur(input) {
+	return new Promise(resolve => {
+		request.get(`https://api.imgur.com/3/album/${input}/images`, {headers:{"Authorization":`Client-ID ${process.env.IMGUR_ID}`}}, (err,res,body) => {
+			if(err) return resolve(input);
+			if(res.statusCode!==200) return resolve(input);
+			try {
+				body = JSON.parse(body);
+				if(body.data && body.data.length && body.data[0].link) return resolve(body.data[0].link);
+				else return resolve(input);
+			} catch(_){
+				return resolve(input);
+			}
+		});
+	});
+}

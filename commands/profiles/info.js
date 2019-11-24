@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const {creator_types} = require("./config.json");
 
 module.exports = {
 	main: async function(msg, args, doc) {
@@ -6,6 +7,9 @@ module.exports = {
 	},
 	watermark: async function(msg, args, doc) {
 		return _watermark(msg, args, doc);
+	},
+	allValidTags: async function() {
+		return await _allValidTags();
 	}
 };
 
@@ -35,4 +39,12 @@ async function _watermark(msg, args, doc) {
 		.addField("**Not** using the watermark", "If you for whatever reason do not wish to use your custom watermark and instead the default, you can add the flag `--normal` when performing the command.")
 		.addField("Setting a watermark", `You can set a 200×200 px PNG by using \`${doc.prefix}profile set watermark <image url>\`, or alternatively embed your image along with the command.`);
 	return msg.channel.send(_embed);
+}
+
+async function _allValidTags() {
+	let allTags = new Set();
+	for (let type in creator_types) {
+		creator_types[type].tags.forEach(tag => allTags.add(tag));
+	}
+	return Array.from(allTags).sort();
 }

@@ -2,8 +2,7 @@
 const fn = require("../../util/command-utilities");
 const Sentry = require("../../util/extras");
 const response = require("./responses.json");
-const types = require("../../data/config.json").market.creator_types;
-const portfolios = require("../../data/config.json").market.portfolios;
+const {portfolios,creator_types} = require("./config.json");
 const {marketUserModel,userTags} = require("../../util/database");
 const {lock,unlock} = require("../../util/redis");
 const Discord = require("discord.js");
@@ -87,7 +86,7 @@ async function save(meta, client) {
 		
 		let title = String();
 		try {
-			title = (meta.company) ? meta.company: types[meta.type.toString()].name; // One will have null
+			title = (meta.company) ? meta.company: creator_types[meta.type.toString()].name; // One will have null
 		} catch(err) {
 			title = null;
 		}
@@ -164,8 +163,8 @@ async function send(msg, doc, reply, meta, callback) {
 function gen_tags_embed(msg, meta) {
 	let col1 = String();
 	let col2 = String();
-	let half = Math.ceil(types[meta.type.toString()].tags.length/2);
-	let sorted_tags = types[meta.type.toString()].tags.sort();
+	let half = Math.ceil(creator_types[meta.type.toString()].tags.length/2);
+	let sorted_tags = creator_types[meta.type.toString()].tags.sort();
 	sorted_tags.forEach((tag, i) => {
 		if (i < half) {
 			if(i===0) col1 +=tag;
@@ -178,9 +177,9 @@ function gen_tags_embed(msg, meta) {
 		.setTimestamp(Date())
 		.setColor(process.env.THEME)
 		.setFooter(msg.author.tag, msg.author.avatarURL)
-		.setDescription(`Tags possible for ${types[meta.type.toString()].name}`)
+		.setDescription(`Tags possible for ${creator_types[meta.type.toString()].name}`)
 		.addField("Reply with tags", "Give me a list of tags that describe the type(s) of work you do / are open to comissions for, separated by comma.")
-		.addField("Max number tags", `Maximum of **${types[meta.type.toString()].max_tags} tags**`)
+		.addField("Max number tags", `Maximum of **${creator_types[meta.type.toString()].max_tags} tags**`)
 		.addField("Tags", col1, true)
 		.addField("\u200B", col2, true);
 	return embed;
@@ -331,10 +330,10 @@ async function catch_tags(msg, doc, meta, r) {
 	// Catch the tags given
 	if(r.toLowerCase()!=="next") {
 		// Define list of variables
-		let max = types[meta.type.toString()].max_tags;
+		let max = creator_types[meta.type.toString()].max_tags;
 		let tags = r.split(/, |,+/ig);
-		let invalidOnes = tags.filter(t => !types[meta.type.toString()].tags.includes(t.toLowerCase()));
-		let validOnes = tags.filter(t => types[meta.type.toString()].tags.includes(t.toLowerCase()));
+		let invalidOnes = tags.filter(t => !creator_types[meta.type.toString()].tags.includes(t.toLowerCase()));
+		let validOnes = tags.filter(t => creator_types[meta.type.toString()].tags.includes(t.toLowerCase()));
 		let response = String();
 
 		// Use same response in all cases where user gives no valid tags
@@ -420,7 +419,7 @@ async function give_info(msg, doc, meta) {
 			if(meta.type===6) {
 				title = (meta.companySite) ? `Works at [${meta.company}](${meta.companySite})` : "Works at "+meta.company;
 			} else if(meta.type===5) title = "Private person";
-			else title = types[meta.type.toString()].name;
+			else title = creator_types[meta.type.toString()].name;
 
 			const embed = new Discord.RichEmbed()
 				.setTimestamp(Date())

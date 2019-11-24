@@ -1,7 +1,7 @@
 const chalk = require("chalk");
 const config = require("../data/config.json");
 const Discord = require("discord.js");
-const {statisticsModel,serverSettings} = require("./database");
+const {statisticsModel,serverSettings,userTags} = require("./database");
 const Sentry = require("@sentry/node");
 const mustache = require("mustache");
 
@@ -560,6 +560,63 @@ async function _check_cooldown(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
 }
 
 
+async function _update_market_users(/**@type {Number}*/action, /**@type {"GuildMember"}*/member) {
+	if(member.user.bot) return;
+	// 0 = remove
+	// 1 = add
+	Sentry.configureScope(scope=>{
+		scope.setUser({id:member.id, username:member.user.username});
+		scope.setTags({guild:member.guild.id, guildName:member.guild.name, action:action?"Adding":"Removing"});
+	});
+
+	userTags.updateOne({_id: member.id}, {[action?"$push":"$pull"]:{guilds:member.guild.id}}, err=>{
+		if (err) Sentry.captureException(err);
+	});
+}
+
+async function _sync_market_users(/**@type {"Client"}*/Client) {
+	userTags.find({}, ["_id","guilds"], (err,docs) => {
+		if(err) throw err;
+		if(!docs.length) return;
+	
+		for(let i=0;i<docs.length;i++) {
+			let existing = docs[i].guilds.sort().join("|");
+			let now = Client.guilds.filter(g => g.members.has(docs[i]._id)).keyArray();
+			
+			if(existing===now.sort().join("|")) continue; // No changes.
+
+			docs[i].guilds = now;
+			docs[i].save(err=>{
+				if(err) throw err;
+			});
+		}
+	});
+}
+
+async function _sync_market_users_for_guild(/**@type {"Guild"}*/guild) {
+	let members = Array.from(guild.members.keys()).sort();
+	// Find all members that does not have the new guild in array
+	userTags.find({guilds:{$nin:guild.id}}, ["_id"]).sort("_id")
+		.then(r => { 
+			let toUpdate = Array();
+			r = r.map(m=>m._id); // [{_id:x}] → [x]
+
+			// Base comparison off of whichever array is shortest, for fastest computing
+			if(members.length>r.length) toUpdate = r.filter(m=>members.includes(m));
+			else toUpdate = members.filter(m => r.includes(m));
+			
+			// Push to array if it does not exist (atomic on top of filtered query)
+			userTags.updateMany({_id:{$in:toUpdate}}, {$addToSet:{guilds:guild.id}}, (err,res) => {
+				if(err) throw err;
+				console.log(`Market users synced with guild ${guild.id} → ${res.n}`);
+			});
+		})
+		.catch(err=>{
+			throw err;
+		});
+}
+
+
 // MASTER FUNCTION EXPORT.
 module.exports = {
 	notifyErr: async function(/**@type {"Client"}*/Client, /**@type {Error}*/err) {
@@ -664,5 +721,17 @@ module.exports = {
 
 	check_cooldown: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
 		return await _check_cooldown(msg, cmd);
+	},
+	
+	update_market_users: async function(/**@type {Number}*/action, /**@type {"GuildMember"}*/member) {
+		return _update_market_users(action, member);
+	},
+
+	sync_market_users: async function(/**@type {"Client"}*/Client) {
+		return _sync_market_users(Client);
+	},
+
+	sync_market_users_for_guild: async function(/**@type {"Guild"}*/guild) {
+		return _sync_market_users_for_guild(guild);
 	}
 };

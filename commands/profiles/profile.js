@@ -1,10 +1,10 @@
 const Discord = require("discord.js");
 const {marketUserModel,userTags} = require("../../util/database");
-const types = require("../../data/config.json").market.creator_types;
-const portfolios = require("../../data/config.json").market.portfolios;
+const {portfolios,creator_types} = require("./config.json");
 const fn = require("../../util/response_functions");
 const fe = require("../../util/command-utilities");
 const Sentry = require("../../util/extras");
+const {allValidTags} = require("./info");
 
 module.exports = {
 	social_list: function () {
@@ -62,7 +62,7 @@ async function _create_embed(msg, user, self=false) {
 			if (user.meta.main_type === 6) {
 				title = (user.meta.company_url) ? `Works at [${user.meta.company}](${user.meta.company_url})` : "Works at " + user.meta.company;
 			} else if (user.meta.main_type === 5) title = "Private person";
-			else title = types[user.meta.main_type.toString()].name;
+			else title = creator_types[user.meta.main_type.toString()].name;
 	
 			const embed = new Discord.RichEmbed()
 				.setTimestamp(Date())
@@ -165,6 +165,12 @@ async function _tags(msg, args, doc) {
 	args.shift();
 	try {
 		if(args.length > 3) return msg.channel.send("**Invalid argument(s):** Maximum amount of tags for search is three.");
+		let tags = await allValidTags();
+		args = args.filter(t => {
+			t = t.toLowerCase();
+			return (tags.includes(t));
+		});
+		if(!args.length) return msg.channel.send("**Invalid argument(s):**  None of the tags you gave were not valid. See `"+doc.prefix+"profile tags` for a list of valid tags.");
 		userTags.find({"guilds":{$in:[msg.guild.id]}, "tags":{$in:args}, "available":true}, ["_id"], {limit:20}, (err,docs) => {
 			if(err) {
 				return msg.channel.send("An error occurred searching for users.");
@@ -336,7 +342,7 @@ async function _show_types(msg, args, doc) {
 				.setTimestamp(Date())
 				.setColor(process.env.THEME)
 				.setFooter(msg.author.tag, msg.author.avatarURL)
-				.setDescription("All tags for "+types[type.toString()].name);
+				.setDescription("All tags for "+creator_types[type.toString()].name);
 			embed = gen_tags_embed(embed, type);
 			embed.addField("Using the tags", "You can search for a user in this guild that does one of the tags. You can search **up to three tags** at a time, and it will return users that have at least one of them.\n**Command:** `"+doc.prefix+"profile does <tag(s)>`.");
 	
@@ -348,8 +354,8 @@ async function _show_types(msg, args, doc) {
 function gen_tags_embed(embed, type) {
 	let col1 = String();
 	let col2 = String();
-	let half = Math.ceil(types[type.toString()].tags.length/2);
-	let sorted_tags = types[type.toString()].tags.sort();
+	let half = Math.ceil(creator_types[type.toString()].tags.length/2);
+	let sorted_tags = creator_types[type.toString()].tags.sort();
 	sorted_tags.forEach((tag, i) => {
 		if (i < half) {
 			if(i===0) col1 +=tag;
@@ -409,7 +415,7 @@ async function create_embed(msg, doc) {
 
 			// Creative type / title
 			if(doc.meta.main_type<=4) {
-				let type = types[doc.meta.main_type].name;
+				let type = creator_types[doc.meta.main_type].name;
 				string = `**${type}**${(doc.meta.available)?"<:Green:642514515514228736>Open for commissions.":"<:Red:642514386497568789>Not available for hire."}`;
 				if(doc.meta.min_budget) string += `\n**Minimum budgets:** $${doc.meta.min_budget}`;
 				let res = await userTags.findById(user.id, ["tags"]).catch(err=>{return reject(err);});
@@ -463,23 +469,13 @@ async function _creative_fields(msg, doc) {
 
 	let string = String();
 	let i = 0;
-	for (let type in types) {
+	for (let type in creator_types) {
 		i++;
-		string += `\n${num(i)} ${types[type].name} \`${types[type].synonyms.join("`, `")}\``;
+		string += `\n${num(i)} ${creator_types[type].name} \`${creator_types[type].synonyms.join("`, `")}\``;
 	}
 	embed.addField("**Fields:**", string);
 	return embed;
 }
-
-
-/**
-fn.notifyErr(msg.client, );
-// \u200B
-const embed = new Discord.RichEmbed()
-	.setTimestamp(Date())
-	.setColor(process.env.THEME)
-	.setThumbnail(`https://cdn.discordapp.com/avatars/${target_user.id}/${target_user.avatar}.png?size=1024`)
- */
 
 async function _list(msg) {
 	userTags.find({guilds:{$in:[msg.guild.id]}}, (err,docs) => {

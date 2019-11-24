@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 const {handleErr,creative_type} = require("./profile");
 const {userTags,marketUserModel} = require("../../util/database");
-const {portfolios,creator_types} = require("../../data/config.json").market;
+const {portfolios,creator_types} = require("./config.json");
 const Sentry = require("../../util/extras");
 const Discord = require("discord.js");
 const request = require("request");
+const {getImgur} = require("../../util/command-utilities");
 
 module.exports = {
 	edit: async function(msg, args, doc) {
@@ -433,7 +434,8 @@ async function _edit_set(msg, args, doc) {
 		// cover image
 		if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `"+args[1]+"` is not a valid common link scheme.");
 		if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
-		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
+		if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
+		else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
 		update(msg.author.id, {$set:{"meta.cover_img":args[1], last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Your featured image was set to `"+args[1]+"`.\n*Note: If you control the host, you can update the image itself instead of setting a new one — though Discord will most likely cache it.*");
@@ -452,7 +454,8 @@ async function _edit_set(msg, args, doc) {
 		// watermark
 		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `" + args[1] + "` is not a valid common link scheme.");
 		if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
-		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`");
+		if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
+		else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`");
 		request.patch({url:`${process.env.NEW_API}${process.env.API_VERSION}/profile/watermark`, form:{user:msg.author.id, url:args[1]}}, (err,res,body) => {
 			if (err) return handleErr(err, msg);
 			try {

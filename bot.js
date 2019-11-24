@@ -27,6 +27,7 @@ Client.on("ready", () => {
 	Client.block_all = false;
 	console.info(chalk.black.bgGreen(" ✓ ") + chalk.green(` Logged in as ${Client.user.tag}`));
 	init(Client);
+	fn.sync_market_users(Client);
 });
 Client.on("message", async msg => {
 	if(msg.author.bot||msg.content.length>500) return;
@@ -59,6 +60,7 @@ Client.on("message", async msg => {
 });
 Client.on("guildCreate", guild => {
 	fn.add_guild(guild, Client);
+	fn.sync_market_users_for_guild(guild);
 });
 Client.on("guildDelete", guild => {
 	fn.remove_guild(guild);
@@ -68,9 +70,11 @@ Client.on("roleDelete", role => {
 });
 Client.on("guildMemberRemove", member => {
 	fn.remove_member(member);
+	fn.update_market_users(0, member);
 });
 Client.on("guildMemberAdd", member => {
 	fn.new_member(member);
+	fn.update_market_users(1, member);
 });
 Client.on("disconnect", () => {
 	fn.reconnect(Client);
