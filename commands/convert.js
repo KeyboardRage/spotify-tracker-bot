@@ -30,10 +30,17 @@ module.exports = {
 					return msg.channel.send("**Error:** My API gave the wrong status code. Incident has been reported.");
 				}
 
-				try {body = JSON.parse(body);} catch {}
-				if (body.err) return msg.channel.send(body.message);
+				try {body = JSON.parse(body);} catch (_) {
+					msg.channel.stopTyping();
+				}
+
+				if (body.err) {
+					msg.channel.stopTyping();
+					return msg.channel.send(body.message);
+				}
 
 				if(typeof(body)!=="object") {
+					msg.channel.stopTyping();
 					msg.channel.send("**Error:** I was unable to format the API's response. Incident logged.");
 					throw new Erro("Unit conversion > Body was not an object!");
 				}
