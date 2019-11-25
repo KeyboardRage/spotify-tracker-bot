@@ -15,7 +15,7 @@ module.exports = {
 
 		// If starting with dot
 		if(/^\.\d+/.test(args[0])) args[0] = parseFloat("0"+args[0]);
-		if (parseInt(args[0]) > 99999999) return msg.reply("That number is a bit too high for me to bother processing.");
+		if (parseInt(args[0]) > 999999999) return msg.reply("That number is a bit too high for me to bother processing.");
 
 		msg.channel.startTyping();
 		try {
@@ -33,11 +33,26 @@ module.exports = {
 				try {body = JSON.parse(body);} catch {}
 				if (body.err) return msg.channel.send(body.message);
 
-				const embed = new Discord.RichEmbed()
-					.setTimestamp(Date())
-					.setColor(process.env.THEME)
-					.setFooter(msg.author.tag, msg.author.avatarURL)
-					.addField("Conversion", `${body.amount} ${body.from} is **${body.result}** ${body.to}.`);
+				if(typeof(body)!=="object") {
+					msg.channel.send("**Error:** I was unable to format the API's response. Incident logged.");
+					throw new Erro("Unit conversion > Body was not an object!");
+				}
+				const embed = new Discord.RichEmbed();
+				
+				if(body.type === 1) {
+					embed.setTimestamp(Date())
+						.setColor(process.env.THEME)
+						.setTitle("Unit conversion")
+						.setFooter(msg.author.tag, msg.author.avatarURL)
+						.addField("Conversion", `${body.amount} ${body.from} is **${body.result}** ${body.to}.`);
+				} else if (body.type===2) {
+					embed.setTimestamp(Date())
+						.setColor(process.env.THEME)
+						.setTitle("Currency conversion")
+						.setFooter(msg.author.tag, msg.author.avatarURL)
+						.addField("Exchange rate", body.rate)
+						.addField("Conversion", `${body.amount} ${body.from} is **${body.result}** ${body.to}.`);
+				}
 				msg.channel.stopTyping();
 				return msg.channel.send(embed);
 			});
@@ -57,8 +72,8 @@ module.exports = {
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd} <value> <from unit> <to unit>\``)
-			.addField("Valid arguments", "[See list here](https://grafik-bot.net/units.html). Also supports common values, like `inch`, `feet`, `weeks`, etc.")
-			.addField("Examples", `\`${doc.prefix}${this.cmd} 30 pica cm\`\n\`${doc.prefix}${this.cmd} 2 days hours\`\n\`${doc.prefix}${this.cmd} 200 m/h km/h\`\n\`${doc.prefix}${this.cmd} 29 C F\``)
+			.addField("Valid arguments", "Short name form for units, like km/h, cm, in, usd, nok, h, min, cm3, c, f, month, GB, TB, cl, gal, GHz, etc.")
+			.addField("Examples", `\`${doc.prefix}${this.cmd} 30 pica cm\`\n\`${doc.prefix}${this.cmd} 2 days hours\`\n\`${doc.prefix}${this.cmd} 200 m/h km/h\`\n\`${doc.prefix}${this.cmd} 29 C F\`\n\`${doc.prefix}${this.cmd} 300 NOK $\``)
 		return msg.channel.send(embed);
 	}
 }
