@@ -226,7 +226,7 @@ async function _edit_set(msg, args, doc) {
 	if(!args.length) return msg.channel.send("**Missing arguments:** You must give me a field and a value to update.\n*See `"+doc.prefix+"profile edit` for list of names of fields.*");
 	let sub = isValidSub(args[0]);
 	if(!sub) return msg.channel.send("**Invalid argument:** `"+args[0]+"` is not a valid sub-command parameter.\n*See `"+doc.prefix+"profile edit` for list of names of fields.*");
-	if (!args[1]) return msg.channel.send("**Missing argument(s):** You must give the value to set " + isValidSub(args[0],true) + " to as well.");
+	if (!args[1] && sub!==10 && sub!==12) return msg.channel.send("**Missing argument(s):** You must give the value to set " + isValidSub(args[0],true) + " to as well.");
 	switch(sub) {
 	case 1:
 		// name
@@ -432,10 +432,15 @@ async function _edit_set(msg, args, doc) {
 		break;
 	case 10:
 		// cover image
-		if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `"+args[1]+"` is not a valid common link scheme.");
-		if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
-		if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
-		else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
+		if (msg.attachments.size) {
+			if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(msg.attachments.first().proxyURL)) return msg.channel.semd("**Invalid format:** \nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
+			args[1] = msg.attachments.first().proxyURL;
+		} else {
+			if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `"+args[1]+"` is not a valid common link scheme.");
+			if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
+			if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
+			else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
+		}
 		update(msg.author.id, {$set:{"meta.cover_img":args[1], last_modified:Date()}})
 			.then(()=>{
 				return msg.channel.send("**Success:** Your featured image was set to `"+args[1]+"`.\n*Note: If you control the host, you can update the image itself instead of setting a new one — though Discord will most likely cache it.*");
@@ -452,10 +457,15 @@ async function _edit_set(msg, args, doc) {
 		break;
 	case 12:
 		// watermark
-		if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `" + args[1] + "` is not a valid common link scheme.");
-		if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
-		if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
-		else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`");
+		if(msg.attachments.size) {
+			if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(msg.attachments.first().proxyURL)) return msg.channel.semd("**Invalid format:** The image must be a PNG.");
+			args[1] = msg.attachments.first().proxyURL;
+		} else {
+			if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `" + args[1] + "` is not a valid common link scheme.");
+			if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
+			if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
+			else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`");
+		}
 		request.patch({url:`${process.env.NEW_API}${process.env.API_VERSION}/profile/watermark`, form:{user:msg.author.id, url:args[1]}}, (err,res,body) => {
 			if (err) return handleErr(err, msg);
 			try {

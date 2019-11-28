@@ -6,6 +6,7 @@
   "dependencies": {
     "@sentry/node": "^5.7.1",
     "chalk": "^2.4.2",
+    "dialogflow": "^0.14.1",
     "discord.js": "^11.5.1",
     "dotenv": "^8.1.0",
     "html-entities": "^1.2.1",

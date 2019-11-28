@@ -81,11 +81,11 @@ module.exports = {
 				} catch {};
 				if (body.err) {
 					msg.channel.stopTyping();
-					msg.channel.send(body.message);
-					return
+					return msg.channel.send(body.message);
+				} else {
+					msg.channel.stopTyping();
+					return msg.channel.send(body.message);
 				}
-				msg.channel.stopTyping();
-				msg.channel.send(body.message);
 			}
 		});
 	},

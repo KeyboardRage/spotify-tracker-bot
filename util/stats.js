@@ -16,7 +16,7 @@ async function init(Client) {
 async function postStats(Client){
 	let dbs_uri = `https://top.gg/api/bots/${process.env.BOT_ID}/stats`;
 	let stats = {
-		guilds: Client.user.guilds.size,
+		guilds: Client.guilds.size,
 		shards: 1
 	};
 	if(stats.guilds) {
