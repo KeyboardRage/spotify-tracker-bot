@@ -88,7 +88,15 @@ Everything you input can be changed later, but require mutual agreement. After 2
 				}
 				
 			}
-			embed.addField("**Payment:**", "Is there an agreed payment for this job?\
+			return msg.author.send(embed);
+		})
+		.then(()=>{
+			if(stop) return;
+			const embed = new Discord.RichEmbed()
+				.setTimestamp(Date())
+				.setColor(process.env.THEME)
+				.setFooter(`New job case with ${meta.target}`, msg.author.avatarURL)
+				.addField("**Payment:**", "Is there an agreed payment for this job?\
 \n**Reply with…**\
 \n• `no` No payment agreed upon.\
 \n• `<message>` An amount or arbitrary payment");
@@ -381,7 +389,13 @@ async function checkIfExist(user,target) {
 	 * Flags: if it finds one after exluding completed/aborted, then stop.
 	 */
 	return new Promise((resolve,reject) => {
-		jobsModel.findOne({$or:[{user:user}, {target:target},{user:target}, {target:user}], flags:{$bitsAnyClear:flags.job.completed|flags.job.aborted|flags.job.declined}}, ["_id","created"], (err,doc) => {
+		jobsModel.findOne({
+			$or:[{user:user}, {target:target}, {user:target}, {target:user}],
+			flags: {
+				$not: {
+					$bitsAnySet: flags.job.completed | flags.job.aborted | flags.job.declined
+				}
+			}}, ["_id","created"], (err,doc) => {
 			if(err) return reject(err);
 			console.log(doc);
 			if(doc) return resolve({pass:false, data:doc});

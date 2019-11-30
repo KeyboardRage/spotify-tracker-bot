@@ -337,7 +337,11 @@ let eventsSchema = new mongoose.Schema({
 		"url": String,
 		"downloaded": Boolean,
 		"download_date": Date,
-		"ip_access": Array
+		"accessLogs": [{
+			ref: "jobFileAccessLogs",
+			type: mongoose.Schema.Types.ObjectId
+		}],
+		"hash": String
 	}]
 }, {collection: "marketEvents"});
 let marketEvents = maindb.model("marketEvents", eventsSchema);
@@ -345,7 +349,7 @@ module.exports.marketEvents = marketEvents;
 
 // An individual job
 let jobsSchema = new mongoose.Schema({
-	"_id":Number,
+	"_id": Number,
 	"target": {
 		ref: "marketUsers",
 		type: String,
@@ -414,8 +418,23 @@ let votesSchema = new mongoose.Schema({
 let votesModel = maindb.model("votesModel", votesSchema);
 module.exports.votesModel = votesModel;
 
-let voteChangeStream = votesModel.watch();
-
-voteChangeStream.on("data", chunk => {
-	console.log(chunk);
-});
+let jobFileAccessLogsSchema = new mongoose.Schema({
+	_id: mongoose.Schema.Types.ObjectId,
+	user: String,
+	file: String,
+	job: {
+		ref: "jobsModel",
+		type: Number
+	},
+	event: {
+		ref: "marketEvents",
+		type: Number
+	},
+	tokenUsed: String,
+	accessHash: String,
+	accessedAt: Date,
+	staff: Boolean,
+	ip: String
+}, {collection: "jobFileAccessLogs"});
+let jobFileAccessLogs = maindb.model("jobFileAccessLogs", jobFileAccessLogsSchema);
+module.exports.jobFileAccessLogs = jobFileAccessLogs;

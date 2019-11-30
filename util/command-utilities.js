@@ -655,3 +655,30 @@ async function getImgur(input) {
 		});
 	});
 }
+
+/**
+ * Loose search for user's username or nickname in guilds
+ * @param {String} input The name to search for
+ * @param {Map} members Discord.js guild members collection
+ * @param {Number} [timeout=2000] Max time to allow for search to finish
+ * @returns {Promise} Resolves: UID, null if no user, false if timed out.
+ * @example
+ * let user = looseSearch(args.join(" "), msg.guild.members, 3000);
+ * if(!user) return msg.channel.send(user===false?"Search took too long":"Could not find user in guild");
+ */
+module.exports.looseSearch = looseSearch;
+async function looseSearch(input, members, timeout=2000) {
+	return new Promise(done => {
+		Promise.race([new Promise(r=>setTimeout(()=>{r(done(false));}, timeout)), new Promise(r => {
+			let users = members.map(u=>{return {n:u.displayName.toLowerCase(), id:u.id};});
+			for (let i = 0; i < users.length; i++) {
+				for (let n = 0; n < users[i].n.length; n++) {
+					if (users[i].n.slice(0, n).startsWith(input.toLowerCase())) {
+						return r(done(users[i].id));
+					}
+				}
+			}
+			return r(done(null));
+		})]);
+	});
+}

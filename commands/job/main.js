@@ -1,6 +1,7 @@
 const _info = require("./info.js");
 const _new = require("./new.js");
 const minor = require("./minors");
+const _event = require("./events");
 
 module.exports = {
 	info: _info,
@@ -8,7 +9,8 @@ module.exports = {
 	new: _new,
 	accept: minor.accept,
 	decline: minor.decline,
-	abort: minor.abort
+	abort: minor.abort,
+	event: _event
 	// other: _other
 };
 /*

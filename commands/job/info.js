@@ -59,3 +59,8 @@ async function _info(msg, args, doc) {
 async function _main(msg, args, doc) {
 	// Gives list of main entrypoint commands.
 }
+/*
+job info files → Info regarding file submission to events
+
+
+*/

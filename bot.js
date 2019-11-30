@@ -8,6 +8,7 @@ const chalk = require("chalk");
 const {masterLoadCommands,masterCacheLoader,masterPermissionsLoader} = require("./util/init");
 const fn = require("./util/response_functions");
 const {init} = require("./util/stats");
+const sess = require("./util/session");
 Client.locks = {users: new Set(), cmds: new Set(), cooldowns: new Map()};
 masterCacheLoader()
 	.then(()=>{
@@ -37,19 +38,16 @@ Client.on("message", async msg => {
 	cmd = await fn.check_alias(Client, cmd);
 	if(!cmd) return;
 	if(Client.block_all) return fn.blocked_for(msg, config.messages.restart);
-	if(!await fn.user_locked(msg, cmd)) return;
 	if(msg.channel.type!=="dm" && await fn.disabled(msg.channel.id, cmd, args, doc)) return;
-	if(await fn.check_cooldown(msg, cmd)) return;
+	if(await fn.check_blocks(msg, cmd)) return;
 	if(msg.channel.type==="dm" && !Client.commands[cmd].dm) return msg.channel.send(config.messages.dm_only);
-	if(await fn.checkLock(msg.author.id, cmd, msg.channel.type==="dm"?false:msg.guild.id)) return fn.blocked_for(msg, config.messages.user_locked);
 	fn.catch_new(msg, cmd, doc);
-	// if(msg.channel.type!=="dm" && await fn.check_self_perms(msg, cmd, doc.prefix)) return;
 
 	doc.level = await Client.commands[cmd].permission(msg, doc);
 	if(process.env.DEBUG==="true") console.log(doc.level);
 
 	if(!doc.level.grant) return msg.channel.send(config.messages.no_permission);
-	fn.add_cooldown(msg, cmd);
+	sess.add_cooldown(msg.author.id, cmd, Client.commands[cmd].cooldown.min);
 	// Configure sentry to contain extra metadata in potential errors:
 	Sentry.configureScope(scope=>{
 		scope.setUser({id:msg.author.id, username:msg.author.username});

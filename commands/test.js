@@ -5,7 +5,7 @@ const {marketUserModel,userTags} = require("../util/database");
 const {RedisDB} = require("../util/redis");
 const {restartWhenReady} = require("../util/session");
 const request = require("request");
-
+const async_hooks = require('async_hooks');
 module.exports = {
 	cmd: "test",
 	aliases: ["testing"],
@@ -15,12 +15,19 @@ module.exports = {
 	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg, cmd, args) {
-		looseSearch(args.join(" "), msg.guild.members)
-			.then(r => {
-				if(r===undefined||r===false) msg.channel.send("Search took too long.");
-				else if(r===null) msg.channel.send("No user found.");
-				else msg.channel.send("User found, UID `"+r+"`");
-			});
+		return;
+		// msg.channel.send("<:Info:588844523052859392> **Restarting:** Bot has been queued for restart...");
+		// restartWhenReady(msg.client, err => {
+		// 	if(err) console.log(err);
+		// 	console.log("RESTARTED.");
+		// 	msg.client.commands["gitupdate"].exec(msg, cmd, args);
+		// });
+		// looseSearch(args.join(" "), msg.guild.members)
+		// 	.then(r => {
+		// 		if(r===undefined||r===false) msg.channel.send("Search took too long.");
+		// 		else if(r===null) msg.channel.send("No user found.");
+		// 		else msg.channel.send("User found, UID `"+r+"`");
+		// 	});
 	},
 	help(msg, cmd, args, doc) {
 		(this.aliases.includes(this.cmd)) ? null: this.aliases.unshift(this.cmd);
@@ -37,31 +44,6 @@ module.exports = {
 	}
 };
 
-/**
- * Loose search for user's username or nickname in guilds
- * @param {String} input The name to search for
- * @param {Map} members Discord.js guild members collection
- * @param {Number} [timeout=2000] Max time to allow for search to finish
- * @returns {Promise} Resolves: UID, null if no user, false if timed out.
- * @example
- * let user = looseSearch(args.join(" "), msg.guild.members, 3000);
- * if(!user) return msg.channel.send(user===false?"Search took too long":"Could not find user in guild");
- */
-async function looseSearch(input, members, timeout=2000) {
-	return new Promise(done => {
-		Promise.race([new Promise(r=>setTimeout(()=>{r(done(false));}, timeout)), new Promise(r => {
-			let users = members.map(u=>{return {n:u.displayName.toLowerCase(), id:u.id};});
-			for (let i = 0; i < users.length; i++) {
-				for (let n = 0; n < users[i].n.length; n++) {
-					if (users[i].n.slice(0, n).startsWith(input.toLowerCase())) {
-						return r(done(users[i].id));
-					}
-				}
-			}
-			return r(done(null));
-		})]);
-	});
-}
 
 
 /**

@@ -214,61 +214,6 @@ async function _stats_up(/**@type {String}*/guild_id, /**@type {String}*/cmd) {
 	}
 }
 
-async function _user_locked(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
-	return new Promise(resolve => {
-		if (msg.client.locks.cooldowns.has(msg.author.id+"_"+cmd)) {
-
-			let time = msg.client.locks.cooldowns.get(msg.author.id+"_"+cmd);
-			msg.channel.send(`**Cooldown:** Wait another \`${time-Date.now()/1000}\` seconds.`)
-				.then(m => {
-					setTimeout(() => {
-						try {
-							m.delete();
-						} catch (err) {}
-					}, 3000);
-				});
-			return resolve(false);
-		}
-		else if(msg.client.locks.users.has(msg.author.id)) {
-			msg.channel.send(config.messages.user_locked)
-				.then(m=>{
-					setTimeout(()=>{
-						try {
-							m.delete();
-						} catch (err) {}
-					},3000);
-				});
-			return resolve(false);
-		}
-		else if(msg.channel.type!=="dm"&&msg.client.locks.cmds.has(msg.guild.id+"_"+cmd)) {
-			msg.channel.send(config.messages.cmd_locked);
-			return resolve(false);
-		} else {
-			return resolve(true);
-		}
-	});
-}
-
-async function _user_lock(/**@type {"msg"}*/msg, /**@type {String}*/type, /**@type {String}*/value, /**@type {Number}*/cooldown) {
-	switch(type) {
-	case "cooldown":
-		//TODO: Change to Redis with expiry later
-		msg.client.locks.cooldowns.set(msg.author.id+"_"+value, Date.now()+(cooldown*1000));
-		setTimeout(()=>{
-			try {
-				msg.client.locks.cooldowns.delete(msg.author.id+"_"+value);
-			} catch (err) {}
-		}, cooldown*1000);
-		return;
-	case "user":
-		return msg.client.locks.user.add(msg.author.id);
-	case "cmd":
-		return msg.client.locks.cmd.add(msg.guild.id+"_"+value);
-	default:
-		return;
-	}
-}
-
 async function _check_ban(/**@type {String}*/guild_id, /**@type {String}*/author_id) {
 	const RedisDB = require("./redis.js").RedisDB;
 
@@ -497,69 +442,6 @@ function _blocked_for(/**@type {"msg"}*/msg, /**@type {String}*/reason) {
 	});
 }
 
-async function _checkLock(/**@type {String}*/userId, /**@type {String}*/cmd, /**@type {String}*/guildId) {
-	/**
-	 * 0 = No locks.
-	 * 2 = Guild-wide lock
-	 * 3 = Manual user specific lock.
-	 */
-	// TODO: Change how guild locks work. Practically useless as is. Needs to be 'locks -> guild:cmd, user'.
-	return new Promise(resolve => {
-		// First check global locks:
-		const {checkLock} = require("./redis");
-		let stop=false;
-		checkLock(userId, cmd)
-			.then(r => {
-				if(r) {
-					stop=true;
-					return;
-				} else if(guildId) {
-					// If not, check guildLock.
-					return checkLock(userId, cmd, guildId);
-				}
-			})
-			.then(r=>{
-				// Return guildLock, or global if stopped. Only stops if it's true.
-				if(stop) return resolve(3);
-				if(r) return resolve(2);
-				return resolve(0);
-			})
-			.catch(err=>{
-				throw err;
-			});
-	});
-}
-
-async function _add_cooldown(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
-	const {RedisDB} = require("./redis");
-	RedisDB.set(`${msg.author.id}:${cmd}`, true, "EX", msg.client.commands[cmd].cooldown.min, err => {
-		if(err) return;
-	});
-}
-
-async function _check_cooldown(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
-	return new Promise(resolve => {
-		const {RedisDB} = require("./redis");
-		RedisDB.get(`${msg.author.id}:${cmd}`, (err,res) => {
-			if(err) return resolve(false);
-
-			if(res) {
-				msg.channel.send(config.messages.cooldown).then(m => {
-					try {
-						setTimeout(() => {
-							m.delete();
-						}, 3000);
-					} catch (_) {
-						return;
-					}
-				});
-			}
-			return resolve(res);
-		});
-	});
-}
-
-
 async function _update_market_users(/**@type {Number}*/action, /**@type {"GuildMember"}*/member) {
 	if(member.user.bot) return;
 	// 0 = remove
@@ -619,6 +501,47 @@ async function _sync_market_users_for_guild(/**@type {"Guild"}*/guild) {
 		});
 }
 
+async function _check_blocks(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
+	return new Promise(resolve => {
+		const {check_session,check_cooldown} = require("./session");
+		// uid:cmd | time
+		// Cooldown check:
+		check_cooldown(msg.author.id, cmd)
+			.then(r => {
+				if(r) {
+					msg.channel.send(`**Cooldown:** Wait another \`${((parseInt(r)-Date.now())/1000).toFixed(2)}\` seconds.`).then(m => m.delete(3000)); // Delete after 3 sec
+					return resolve(true);
+				}
+				
+				// User lock check:
+				// locks, cmd:user | true
+				return check_session(msg.author.id, cmd);
+			})
+			.then(r => {
+				if(r) {
+					msg.channel.send("**Denied:** You're already in a unique session with the `"+cmd+"` command. Finish it first.").then(m=>m.delete(3000));
+					return true;
+				} else if(msg.channel.type!=="dm") {
+
+					// If not, check guildLock if in guild
+					// locks:guild, cmd | user
+					return check_session(msg.author.id, cmd, msg.guild.id);
+				} else return false;
+			})
+			.then(r=>{
+				if(r===true) return resolve(true);
+				if(r) {
+					msg.channel.send(`**Denied:** Only one session at once per guild. User with UID \`${r}\` is in session with this command.`).then(m=>m.delete(5000));
+					return resolve(true);
+				}
+				return resolve(false); // All clear.
+			})
+			.catch(err=>{
+				throw err;
+			});
+	});
+}
+
 
 // MASTER FUNCTION EXPORT.
 module.exports = {
@@ -656,14 +579,6 @@ module.exports = {
 
 	stats_up: async function(/**@type {String}*/guild_id, /**@type {String}*/cmd) {
 		return _stats_up(guild_id, cmd);
-	},
-
-	user_locked: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
-		return await _user_locked(msg, cmd);
-	},
-
-	user_lock: async function(/**@type {"msg"}*/msg, /**@type {String}*/type, /**@type {String}*/value, /**@type {Number}*/cooldown=5) {
-		return await _user_lock(msg, type, value, cooldown);
 	},
 
 	check_ban: async function(/**@type {String}*/guild_id, /**@type {String}*/author_id) {
@@ -713,18 +628,6 @@ module.exports = {
 	blocked_for: function(/**@type {"msg"}*/msg, /**@type {String}*/reason) {
 		return _blocked_for(msg, reason);
 	},
-
-	checkLock: async function(/**@type {String}*/userId, /**@type {String}*/cmd, /**@type {String}*/guildId) {
-		return await _checkLock(userId, cmd, guildId);
-	},
-
-	add_cooldown: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
-		return _add_cooldown(msg, cmd);
-	},
-
-	check_cooldown: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
-		return await _check_cooldown(msg, cmd);
-	},
 	
 	update_market_users: async function(/**@type {Number}*/action, /**@type {"GuildMember"}*/member) {
 		return _update_market_users(action, member);
@@ -736,5 +639,9 @@ module.exports = {
 
 	sync_market_users_for_guild: async function(/**@type {"Guild"}*/guild) {
 		return _sync_market_users_for_guild(guild);
+	},
+
+	check_blocks: async function(/**@type {"msg"}*/msg, /**@type {String}*/cmd) {
+		return await _check_blocks(msg, cmd);
 	}
 };

@@ -6,7 +6,7 @@ module.exports = {
 	cmd: "job",
 	aliases: ["jobs","work"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.owner,
+	permissionLevel: ACCESS.user,
 	dm: true,
 	daccess: [""],
 	desc: "Make, modify, or perform actions on a job",
@@ -16,7 +16,7 @@ module.exports = {
 
 		// Add a 'staff action' flag
 		if(args.indexOf("--staff")>=0) {
-			if(doc.level&staff) {
+			if(doc.level.userLevel&staff) {
 				args.splice(args.indexOf("--staff"), 1);
 				doc.level.staff = true;
 			} else {
@@ -25,9 +25,10 @@ module.exports = {
 		}
 
 		if(!args.length) return fn.info.command(msg, args, doc);
-		if(args[0] && args.length===1) return msg.channel.send("**Missing argument:** You must also tell me who the buyer is.");
+		// if(args[0] && args.length===1) return msg.channel.send("**Missing argument:** You must also tell me who the buyer is.");
 		switch(args[0].toLowerCase()) {
 		case "new":
+			// TODO: Split the question about payment in to a new embed so user notice it.
 			if(msg.channel.type==="dm") return msg.channel.send("**Denied:** This sub-command can only be used in guilds.");
 			return fn.new(msg, args, doc);
 		case "accept":
@@ -36,6 +37,9 @@ module.exports = {
 			return fn.decline(msg, args, doc);
 		case "abort":
 			return fn.abort(msg, args, doc);
+		case "+":
+		case "event":
+			return fn.event(msg, args, doc);
 		}
 	},
 	help(msg, cmd, args, doc) {

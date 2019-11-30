@@ -5,7 +5,9 @@ const fn = require("../util/command-utilities"),
 	{RedisDB} = require("../util/redis");
 let guildRoles = Object();
 const Discord = require("discord.js");
+const {set_session,del_session,check_session} = require("../util/session");
 const ACCESS = require("../data/permissions.json");
+
 module.exports = {
 	cmd: "init",
 	aliases: ["initialize","start"],
@@ -15,13 +17,15 @@ module.exports = {
 	daccess: [],
 	desc: "Starts the bot setup guide. Guides you though setting all the bot settings.",
 	async exec(msg, cmd, args, doc) {
-		msg.client.locks = {
-			...msg.client.locks,
-			[msg.guild.id]: {
-				user: msg.author.id,
-				cmd: "init"
-			}
-		};
+		//! Deprecated for 'set_session'
+		// msg.client.locks = {
+		// 	...msg.client.locks,
+		// 	[msg.guild.id]: {
+		// 		user: msg.author.id,
+		// 		cmd: "init"
+		// 	}
+		// };
+		set_session(msg.author.id, "init", msg.guild.id);
 
 		msg.guild.roles.map(role => {
 			guildRoles = {
@@ -92,7 +96,11 @@ let secondsleft = false;
 
 async function send(msg, doc, meta, reply, cb) {
 	let timelimit = 90;
-	if (msg.author.id !== msg.client.locks[msg.guild.id].user) return;
+	// if (msg.author.id !== msg.client.locks[msg.guild.id].user) return;
+	check_session(msg.author.id, "init", msg.guild.id)
+		.then(r => {
+			if(msg.author.id !== r) return;
+		});
 
 	secondsleft = false;
 	if (meta.run) {
@@ -126,7 +134,9 @@ async function send(msg, doc, meta, reply, cb) {
 				if (err.code && err.code === 50013) {
 					clearTimeout(t);
 					clearTimeout(tt);
-					delete msg.client.locks[msg.guild.id];
+					// delete msg.client.locks[msg.guild.id]; //! Deprecated
+					del_session(msg.author.id, "init", msg.guild.id);
+
 					return msg.author.send("**Could not initiate:** I do not have permission to write in that channel.")
 						.catch(()=>{
 							return;
@@ -141,7 +151,8 @@ async function send(msg, doc, meta, reply, cb) {
 async function stop(msg, doc, meta, abort=false) {
 	clearTimeout(t);
 	clearTimeout(tt);
-	delete msg.client.locks[msg.guild.id];
+	// delete msg.client.locks[msg.guild.id]; //! Deprecated
+	del_session(msg.author.id, "init", msg.guild.id);
 	if (abort) return msg.channel.send("<:Stop:588844523832999936> Alright, aborted. Progress discarded.");
 
 	let response = (meta.err) ? "<:Stop:588844523832999936> I had to stop.\n" : "<:Stop:588844523832999936> Stopped.\n";
@@ -204,7 +215,9 @@ async function init(msg, doc, meta, reply) {
 	if (reply !== "next") {
 		clearTimeout(t);
 		clearTimeout(tt);
-		delete msg.client.locks[msg.guild.id];
+		// delete msg.client.locks[msg.guild.id]; //! Deprecated
+		del_session(msg.author.id, "init", msg.guild.id);
+
 		return msg.channel.send("Alright, stopped.");
 	}
 
@@ -549,7 +562,9 @@ async function commands(msg, doc, meta, reply) {
 async function summary(msg, doc, meta) {
 	clearTimeout(t);
 	clearTimeout(tt);
-	delete msg.client.locks[msg.guild.id];
+	// delete msg.client.locks[msg.guild.id]; //! Deprecated
+	del_session(msg.author.id, "init", msg.guild.id);
+
 
 	let isEveryoneRole = false,
 		roleExist = {

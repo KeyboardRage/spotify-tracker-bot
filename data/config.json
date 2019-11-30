@@ -43,7 +43,7 @@
 		"dm_only":"**Denied:** This command can only be used in guilds.",
 		"no_permission":"**Denied:** You do not have the necessary permissions for this command.",
 		"cooldown": "**Cooldown:** Wait until cooldown is over.",
-		"restart": "**Aborted:** Bot is queued for restart. All commands blocked for ~30 seconds."
+		"restart": "**Aborted:** Bot is queued for restart. All commands blocked for up to ~30 seconds."
 	},
 	"colors": {
 		"red":"cd1818",
