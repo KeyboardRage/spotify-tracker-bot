@@ -12,7 +12,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
-	daccess: [""],
 	desc: "Interact with profiles on Grafik",
 	async exec(msg, cmd, args, doc) {
 		if(!args.length) return fn.profile.find(msg, args, doc);

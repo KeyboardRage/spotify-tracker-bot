@@ -10,7 +10,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner,
 	dm: true,
-	daccess: [""],
 	desc: "Schedule bot for restart. Optionally also pull from git along with restart.",
 	async exec(msg, cmd, args) {
 		msg.channel.send(`<:Info:588844523052859392> **Restarting:** Bot has been queued for restart${args.includes("--git")?" and Git update":""}...`);

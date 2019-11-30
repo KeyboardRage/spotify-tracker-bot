@@ -13,7 +13,6 @@ module.exports = {
 	cooldown: {min: 8},
 	permissionLevel: ACCESS.user,
 	dm:true,
-	daccess: [""],
 	desc: "Search textures on Pexels by keyword(s).",
 	async exec(msg, cmd, args) {
 		

@@ -9,7 +9,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm:true,
-	daccess: ["ATTACH_FILES", "EMBED_LINKS"],
 	desc: "Checks the contrast between two given colors.",
 	exec(msg, cmd, args, doc) {
 		if(args[0] === "info") {

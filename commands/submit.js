@@ -8,7 +8,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner|ACCESS.community,
 	dm: true,
-	daccess: [""],
 	desc: "Submit a new file to a library.",
 	async exec(msg, cmd, args, doc) {
 		let type = args.shift();

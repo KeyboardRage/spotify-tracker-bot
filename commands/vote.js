@@ -7,7 +7,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm:true,
-	daccess: [""],
 	desc: "Get link(s) to pages where you can vote for the bot.",
 	exec(msg) {
 		// The response for help on this command.

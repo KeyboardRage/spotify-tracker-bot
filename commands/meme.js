@@ -9,7 +9,6 @@ module.exports = {
 	cooldown: {min: 2},
 	permissionLevel: ACCESS.user,
 	dm: true,
-	daccess: [""],
 	desc: "Post random design/art related memes, meme by ID, or random meme by keyword.",
 	async exec(msg, cmd, args) {
 		// The response for help on this command.

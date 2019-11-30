@@ -8,7 +8,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner,
 	dm: true,
-	daccess: [""],
 	desc: "Make, modify, or perform actions on a job",
 	async exec(msg, cmd, args, doc) {
 		// The response for help on this command.

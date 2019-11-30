@@ -11,7 +11,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm:true,
-	daccess: [""],
 	desc: "Get various pings for the bot.",
 	async exec(msg, cmd, args) {
 		msg.channel.startTyping();

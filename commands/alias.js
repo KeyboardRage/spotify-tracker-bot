@@ -8,7 +8,6 @@ module.exports = {
 	cooldown: {min: 3},
 	permissionLevel: ACCESS.user,
 	dm:true,
-	daccess: ["ATTACH_FILES","EMBED_LINKS"],
 	desc: "Finds aliases and non-alias of given command.",
 	exec(msg, cmd, args) {
 		// Check if even anything to check.

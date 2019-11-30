@@ -14,7 +14,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
-	daccess: [""],
 	desc: "Search for company, service, item logos.",
 	async exec(msg, cmd, args, doc) {
 		// TODO: Only search.

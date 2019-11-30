@@ -5,7 +5,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner,
 	dm: true,
-	daccess: [""],
 	desc: "Reloads a module. Bot owner only.",
 	exec(msg, cmd, args) {
 		if	(!msg.client.commands.hasOwnProperty(args[0])) {

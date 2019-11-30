@@ -22,7 +22,6 @@ class Command {
 		this.help = commandModule.help;
 		this.exec = commandModule.exec;
 		this.dm = commandModule.dm;
-		this.daccess = commandModule.daccess;
 	}
 
 	reload() {
@@ -40,7 +39,6 @@ class Command {
 		this.help = commandModule.help;
 		this.exec = commandModule.exec;
 		this.dm = commandModule.dm;
-		this.daccess = commandModule.daccess;
 	}
 
 	/**

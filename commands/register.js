@@ -8,7 +8,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
-	daccess: [""],
 	desc: "Register as a designer / buyer and set up a profile.",
 	async exec(msg, cmd, args, doc) {
 		return fn.register(msg, doc);

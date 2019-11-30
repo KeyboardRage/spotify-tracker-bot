@@ -7,7 +7,6 @@ module.exports = {
 	cooldown: {min: 1},
 	permissionLevel: ACCESS.user,
 	dm:true,
-	daccess: [""],
 	desc: "Creates a basic 'Let Me Google That For You' link you can click.",
 	exec(msg, cmd, args) {
 		if (args.length === 0) return msg.channel.send("**Missing argument(s):** You need to provide something for me to make search link of.");

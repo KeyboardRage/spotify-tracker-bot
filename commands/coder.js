@@ -8,7 +8,6 @@ module.exports = {
 	cooldown: {min: 3},
 	permissionLevel: ACCESS.user,
 	dm: true,
-	daccess: [""],
 	desc: "Does HTML entity, hex, and binary encoding/decoding",
 	async exec(msg, cmd, args) {
 		let joined = args.join(" ");

@@ -9,7 +9,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.dev|ACCESS.owner,
 	dm:true,
-	daccess: [""],
 	desc: "Lifts a potential global UID ban.",
 	exec(msg, cmd, args) {
 		let uids = msg.mentions.users.map(user => {

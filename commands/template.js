@@ -14,7 +14,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm:true,
-	daccess: [""],
 	desc: "Template library for various platforms and mediums, available in various formats *(Community driven submissions! Contact <@164736401051484160> to get your stuff added and credited)*.",
 	async exec(msg, cmd, args, doc) {
 		if(!args[0]) return msg.channel.send("<:Stop:588844523832999936> **Missing argument:** You need to provide a search query.");

@@ -12,7 +12,6 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.owner|ACCESS.community,
 	dm: true,
-	daccess: [""],
 	desc: "Generic testing command. Replies with what you say.",
 	async exec(msg, cmd, args) {
 		return;
