@@ -6,7 +6,7 @@ module.exports = {
 	cmd: "job",
 	aliases: ["jobs","work"],
 	cooldown: {min: 5},
-	permissionLevel: ACCESS.user,
+	permissionLevel: ACCESS.owner,
 	dm: true,
 	daccess: [""],
 	desc: "Make, modify, or perform actions on a job",
