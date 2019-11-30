@@ -114,9 +114,13 @@ async function _find(msg, args, doc, search=false) {
 			dm = (msg.channel.type === "dm");
 		// Only possible if in guild
 		if(!dm) {
-			user = msg.guild.members.find(u => u.user.id == args[0]);
+			user = msg.guild.members.find(u => u.user.id == args.join(" "));
 			if (!user) user = msg.mentions.members.first() || msg.guild.members.find(u => u.user.tag.toLowerCase() == args.join(" ").toLowerCase()) || msg.guild.members.find(u => u.user.username.toLowerCase() == args.join(" ").toLowerCase()) || msg.guild.members.find(u => u.displayName.toLowerCase() == args.join(" ").toLowerCase());
 			user = (user) ? user.id : null;
+			// Fuzzy search:
+			user = await fe.looseSearch(args.join(" "), msg.guild.members, 3000).catch(err=>{
+				fn.notifyErr(msg.client, err);
+			});
 		}
 
 		if (!user) {
