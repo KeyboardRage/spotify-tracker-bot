@@ -24,7 +24,7 @@ module.exports = {
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd}\``)
 			.addField("Examples", `\`${doc.prefix}${this.cmd}\``)
-			.addField("What is it for?", "Profiles allow users to find a user's social media, portfolio, contact info, and availability status without the need of the user to be present. In the future, profiles will have profil cards, track sales/purchases *(which is why 'buyers' can register too)*, disputes, comissions open, and more — across and isolated to guilds.");
+			.addField("What is it for?", "Profiles allow users to find a user's social media, portfolio, contact info, and availability status without the need of the user to be present. In the future, profiles will have profil cards, track sales/purchases *(which is why 'buyers' can register too)*, disputes, commissions open, and more — across and isolated to guilds.");
 		msg.channel.send(embed);
 	}
 };

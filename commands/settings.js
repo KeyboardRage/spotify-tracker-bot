@@ -44,8 +44,8 @@ module.exports = {
 				.addField("Aliases", `${this.aliases.join(", ")}`, true)
 				.addField("Usage", `\`${doc.prefix}setting <argument> [options]\``, true)
 				.addField("Valid arguments", "`prefix`\n`command`\n`channel`\n`moderator`\n`permission`", true)
-				.addField("Information", `To get informationed one of the valid arguments, use \`${doc.prefix}setting ? <argument>\`.`)
-				.addField("Examples", `For a list of usage examples, do \`${doc.prefix}setting ? exmaples\`.`);
+				.addField("Information", `To get information on a specific argument, use \`${doc.prefix}setting ? <argument>\`.`)
+				.addField("Examples", `For a list of usage examples, do \`${doc.prefix}setting ? examples\`.`);
 			msg.channel.send(embed);
 		} else {
 			if (args[1] === "prefix") {

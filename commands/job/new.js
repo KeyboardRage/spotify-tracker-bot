@@ -29,7 +29,7 @@ async function init(msg, args, doc) {
 	let stop=false;
 	lock(msg.author.id, "job")
 		.then(() => {
-			return findUser(msg.client, args[1], {inGuild:msg.guild.id, msg:msg, onlyId:true});
+			return findUser(msg.client, args[1], {inGuild:msg.guild.id, msg:msg, onlyId:true, loose:msg.guild.members});
 		})
 		.then(async r => {
 			if(!r) {

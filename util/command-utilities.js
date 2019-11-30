@@ -536,13 +536,13 @@ module.exports.Role = Role;
  * Searches for user, globall (by ID), or in guild by name, mention, ID, username, or tag.
  * @param {"Client"} Client The bot itself
  * @param {String} input The input to search for user on
- * @param {Object} [options={onlyId:false<Boolean>, inGuild:false<String>, msg:false<Object>}] Options. OnlyId is the only boolean, rest require the string/object.
+ * @param {Object} [options={onlyId:false<Boolean>, inGuild:false<String>, msg:false<Object>, loose:false<Object>}] Options. OnlyId is the only boolean, rest require the string/object.
  * @returns {Promise} Resolves to desired result or null.
  * @example
  * let userId_inMention = await findUser(msg.client, "name", {onlyId:true, inGuild:"123123123123", msg:msg});
  */
-async function findUser(Client, input, options={onlyId:false,inGuild:false,msg:false}) {
-	return new Promise(resolve => {
+async function findUser(Client, input, options={onlyId:false,inGuild:false,msg:false,loose:false}) {
+	return new Promise(async resolve => {
 		let user;
 		if(options.inGuild) {
 			let guild = Client.guilds.get(options.inGuild);
@@ -558,7 +558,18 @@ async function findUser(Client, input, options={onlyId:false,inGuild:false,msg:f
 
 			user = guild.members.find(u => u.user.tag.toLowerCase() == input.toLowerCase()) || guild.members.find(u => u.user.username.toLowerCase() == input.toLowerCase()) || guild.members.find(u => u.displayName.toLowerCase() == input.toLowerCase());
 			if(user) return resolve((options.onlyId)?user.id:user);
-			return resolve(null);
+
+			looseSearch(input, options.loose)
+				.then(u=>{
+					if(options.onlyId) return u;
+					return Client.fetchUser(u);
+				})
+				.then(u => {
+					return resolve(u);
+				})
+				.catch(() => {
+					return resolve(null);
+				});
 		}
 
 		// Only search outside if it's an ID.

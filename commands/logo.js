@@ -30,8 +30,8 @@ module.exports = {
 			.addField("Description", this.desc, true)
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
-			.addField("Usage", `\`${doc.prefix}${this.cmd} <text>\``)
-			.addField("Examples", `\`${doc.prefix}${this.cmd} lorem ipsum\``);
+			.addField("Usage", `\`${doc.prefix}${this.cmd} <search term(s)>\``)
+			.addField("Examples", `\`${doc.prefix}${this.cmd} discord\`\n\`${doc.prefix}${this.cmd} grafik\``);
 		msg.channel.send(embed);
 	}
 };
