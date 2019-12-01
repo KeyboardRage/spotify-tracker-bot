@@ -9,6 +9,18 @@ module.exports = {
 	permissionLevel: ACCESS.user,
 	dm:true,
 	desc: "Generic conversion of a value from unit A to unit B.",
+	longDesc:"TEXT",
+	examples: ["convert 30 pica cm", "convert 2 days hours", "convert 200 m/h km/h", "convert 29 C F", "convert 300 NOK $"],
+	flags: [],
+	group: 1,
+	meta: [{
+		text:"Currencies",
+		value:"nok, usd, gbp, etc."
+	}, {
+		text:"Units",
+		value:"Length, time, volume, velocity, power, cubic, etc."
+	}],
+	syntax:"convert <# amount> <from unit> <to unit>",
 	exec(msg, cmd, args) {
 		if (!/^(\d+(\.\d+)?)|(\.\d+)$/.test(args[0])) return msg.reply("First argument must be the `amount`. Second is `from`, third is `to`.");
 

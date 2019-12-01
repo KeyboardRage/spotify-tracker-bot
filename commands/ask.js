@@ -12,6 +12,12 @@ module.exports = {
 	permissionLevel: ACCESS.owner,
 	dm: true,
 	desc: "Submits bug report on the bot. Report a bug or unexpected behaviour.",
+	longDesc: "TEXT",
+	examples: ["ask what's our prefix?", "ask what permission is needed for the watermark command?","ask what does the alias command do?"],
+	flags: [],
+	group: 2,
+	meta: [],
+	syntax: "ask <question>",
 	async exec(msg, cmd, args, doc) {
 		msg.channel.startTyping();
 		ask(msg, args.join(" "))

@@ -14,8 +14,6 @@ class Command {
 
 		// Things inside the command module
 		this.permissionLevel = commandModule.permissionLevel;
-		this.desc = commandModule.desc;
-		this.list = commandModule.list;
 		this.cooldown = commandModule.cooldown;
 		this.aliases = commandModule.aliases;
 		this.cmd = commandModule.cmd;
@@ -31,8 +29,6 @@ class Command {
 
 		// Things inside the command module
 		this.permissionLevel = commandModule.permissionLevel;
-		this.desc = commandModule.desc;
-		this.list = commandModule.list;
 		this.cooldown = commandModule.cooldown;
 		this.aliases = commandModule.aliases;
 		this.cmd = commandModule.cmd;

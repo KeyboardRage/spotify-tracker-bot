@@ -9,6 +9,12 @@ module.exports = {
 	permissionLevel: ACCESS.user,
 	dm:true,
 	desc: "Finds aliases and non-alias of given command.",
+	longDesc: "Long desc",
+	examples: ["alias alias", "alias settings", "alias watermark"],
+	flags: [],
+	group: 2,
+	meta: [],
+	syntax: "alias <command or alias>",
 	exec(msg, cmd, args) {
 		// Check if even anything to check.
 		if(args[0] === undefined) return msg.channel.send("**Invalid argument:** Missing a command/alias to check. Correct usage is `+alias <alias or cmd>`.");

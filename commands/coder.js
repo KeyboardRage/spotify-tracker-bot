@@ -4,11 +4,29 @@ const Entities = require("html-entities").AllHtmlEntities;
 
 module.exports = {
 	cmd: "encode",
-	aliases: ["decode","code","binary","hex"],
+	aliases: ["decode","code","binary","hex","parse"],
 	cooldown: {min: 3},
 	permissionLevel: ACCESS.user,
 	dm: true,
 	desc: "Does HTML entity, hex, and binary encoding/decoding",
+	longDesc: "TEXT",
+	examples:["encode d cd1818 --hex","parse e --binary hello world","parse encode ×","code decparseode &times;"],
+	flags: [{
+		flag:"--hex",
+		default: false,
+		text:"Input to encode/decode is hexadecimal"
+	}, {
+		flag:"--html",
+		default: true,
+		text:"Input to encode/decode is an HTML entity"
+	}, {
+		flag: "--binary",
+		default: false,
+		text:"Input to encode/decode is binary string"
+	}],
+	group: 1,
+	meta: [],
+	syntax: "encode <'e'|'encode'|'d'|'decode'> <input> ['--hex'|'--html'|'--binary']",
 	async exec(msg, cmd, args) {
 		let joined = args.join(" ");
 		

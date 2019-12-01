@@ -7,6 +7,8 @@ let guildRoles = Object();
 const Discord = require("discord.js");
 const {set_session,del_session,check_session} = require("../util/session");
 const ACCESS = require("../data/permissions.json");
+const fe = require("../util/response_functions");
+const Sentry = require("../util/extras");
 
 module.exports = {
 	cmd: "init",
@@ -123,10 +125,17 @@ async function send(msg, doc, meta, reply, cb) {
 			.then(r => {
 				clearTimeout(t);
 				clearTimeout(tt);
+				Sentry.configureScope(scope => {
+					scope.setExtra("message", r);
+				});
 
 				if (r === "stop") return stop(msg, doc, meta, false);
 				else if (r === "abort") return stop(msg, doc, meta, true);
 				else if (r === "wait" && secondsleft) return send(msg, doc, meta, "<:Yes:588844524177195047> Time extended.", cb);
+				else if(!r || !r.length || !r.toLowerCase()) {
+					fe.notifyErr(msg.client, new Error("Collected, but no content? User response:"+r));
+					return send(msg, doc, meta, "I didn't quite catch that. Try again?", cb);
+				}
 				else return cb(msg, doc, meta, r.toLowerCase());
 			})
 			.catch(err => {
@@ -243,6 +252,7 @@ async function prefix(msg, doc, meta, reply) {
 }
 
 async function permission(msg, doc, meta, reply) {
+	console.log(meta.step);
 	try {
 		// This function is re-used for setting Moderator as well.
 		let response,
@@ -363,7 +373,7 @@ async function permission(msg, doc, meta, reply) {
 				});
 			
 			if(role === false) {
-				response = `<:Stop:588844523832999936> Not allowed to give everyone moderator permission.`;
+				response = `<:Stop:588844523832999936> Not a valid role.`;
 				cb = permission;
 			}
 			else if (role === null) {
@@ -372,6 +382,10 @@ async function permission(msg, doc, meta, reply) {
 				\n•    A role ID, role name, or mention the role`;
 				cb = permission;
 			} else {
+				if(meta.step>=13 && role === msg.guild.id) {
+					cb = permission;
+					
+				} 
 				doc[(meta.step===8)?"permission":"moderator"].value = role;
 				response = `<:Yes:588844524177195047> ${(meta.step===8)?"Permission":"Moderator"} set to **${doc[(meta.step===8)?"permission":"moderator"].type}** for **${roleTag(role)}**.`;
 				cb = (meta.step === 8) ? permission : channels;

@@ -10,6 +10,12 @@ module.exports = {
 	permissionLevel: ACCESS.user,
 	dm:true,
 	desc: "Checks the contrast between two given colors.",
+	longDesc:"TEXT",
+	examples: ["convert #ab7000 fff", "convert cmyk(10,100,42,0) 0xCD1818", "convert info"],
+	flags: [],
+	group: 1,
+	meta: [],
+	syntax: "convert <'info'|<color one> <color two>>",
 	exec(msg, cmd, args, doc) {
 		if(args[0] === "info") {
 			const embed = new Discord.RichEmbed()

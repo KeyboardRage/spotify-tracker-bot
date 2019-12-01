@@ -11,9 +11,18 @@ module.exports = {
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
-	desc: "Takes a colour and outputs other formats of that color, and a preview.",
+	desc: "Takes a colour and outputs other formats of that colour, and a preview.",
+	longDesc:"TEXT",
+	examples: ["colour fff", "colour #ab7000", "colour cmyk(10,100,42,0)"],
+	flags: [],
+	group: 1,
+	meta: [{
+		text:"Accepts",
+		value:"hex, rgb, cmyk, hsb, hsl, hsv, lab"
+	}],
+	syntax: "colour <colour>",
 	exec(msg, cmd, args) {
-		if(args.length === 0) return msg.channel.send("**Missing argument:** You must specify a color. Use `+color ?` for a list of valid color types.");
+		if(args.length === 0) return msg.channel.send("**Missing argument:** You must specify a colour. Use `+colour ?` for a list of valid colour types.");
 
 		// Remove pound sign
 		args[0] = args[0].replace("#", "%23");
@@ -37,7 +46,7 @@ module.exports = {
 					console.error(err);
 					fn.notifyErr(msg.client, err);
 					Sentry.captureException(err);
-					return msg.channel.send("**Could not complete command:** The backend replied with a malformatted response. Incidentl logged.");
+					return msg.channel.send("**Could not complete command:** The backend replied with a malformatted response. Incident logged.");
 				}
 
 				if(body.err) {

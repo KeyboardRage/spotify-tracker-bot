@@ -12,6 +12,12 @@ module.exports = {
 	permissionLevel: ACCESS.user,
 	dm: true,
 	desc: "Submits bug report on the bot. Report a bug or unexpected behaviour.",
+	longDesc: "TEXT",
+	examples: ["bug bot starts typing then never say anything", "bug taking 10 seconds to respond", "bug color command says API gave error"],
+	flags: [],
+	group: 2,
+	meta: [],
+	syntax:"bug <your message>",
 	async exec(msg, cmd, args) {
 		if(args.length != 0) {
 			let message = args.join(" ");

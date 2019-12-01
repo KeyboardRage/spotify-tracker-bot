@@ -149,6 +149,9 @@ async function send(msg, doc, reply, meta, callback) {
 		// Pass a message first
 		fn.dmAndAwait(msg.author, reply)
 			.then(r => {
+				Sentry.configureScope(scope => {
+					scope.setExtra("message", r);
+				});
 				return callback(msg, doc, meta, r);
 			})
 			.catch(err=> {
@@ -399,6 +402,7 @@ async function catch_tags(msg, doc, meta, r) {
 }
 
 async function catch_portfolio(msg, doc, meta, r) {
+	console.log(r);
 	// Catch the portfolio listing.
 	if(r.toLowerCase()==="list") return send(msg, doc, get_portfolio_list(msg, meta), meta, catch_portfolio);
 	else if(r.toLowerCase()==="done") return send(msg, doc, null, meta, give_info);
@@ -436,8 +440,8 @@ async function give_info(msg, doc, meta) {
 					else if (portfolios[elm].need_url_prefix) socials += `**${portfolios[elm].name}**: [${portfolios[elm].prefix}${meta.portfolios[elm]}](${portfolios[elm].url_prefix}${meta.portfolios[elm]})\n`;
 					else socials += `**${portfolios[elm].name}**: ${portfolios[elm].prefix}${meta.portfolios[elm]}\n`;
 				}
-				embed.addField("Status", `**Availability:** ${(meta.open)?"open for comissions.":"not open for comissions."}\n${(meta.tags)?"**User works with:**\n"+meta.tags.join(", "):""}`)
-					.addField("Portfolio and social media", socials);
+				embed.addField("Status", `**Availability:** ${(meta.open)?"open for comissions.":"not open for comissions."}\n${(meta.tags)?"**User works with:**\n"+meta.tags.join(", "):""}`);
+				if(socials.length) embed.addField("Portfolio and social media", socials);
 			}
 			embed.addField("Editing profile", "You can at any time change any of the fields, or even add more information, through `"+doc.prefix+"profile edit`. Use  `"+doc.prefix+"profile cmds` to see all possible actions.");
 			return msg.author.send("**Registration complete!**", {embed});
