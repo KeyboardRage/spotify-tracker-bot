@@ -421,7 +421,10 @@ module.exports.votesModel = votesModel;
 
 let jobFileAccessLogsSchema = new mongoose.Schema({
 	_id: mongoose.Schema.Types.ObjectId,
-	user: String,
+	user: {
+		ref: "marketUsers",
+		type: String
+	},
 	file: String,
 	job: {
 		ref: "jobsModel",
@@ -439,3 +442,18 @@ let jobFileAccessLogsSchema = new mongoose.Schema({
 }, {collection: "jobFileAccessLogs"});
 let jobFileAccessLogs = maindb.model("jobFileAccessLogs", jobFileAccessLogsSchema);
 module.exports.jobFileAccessLogs = jobFileAccessLogs;
+
+let userSubmissionSchema = new mongoose.Schema({
+	_id: mongoose.Schema.Types.ObjectId,
+	user: {
+		ref: "marketUsers",
+		type: String
+	},
+	library: Number,
+	flags: Int32,
+	content: String,
+	attachments: Array,
+	guild: String
+}, {collection: "userSubmissions"});
+let userSubmissionModel = maindb.model("userSubmissionModel", userSubmissionSchema);
+module.exports.userSubmissionModel = userSubmissionModel;

@@ -7,7 +7,7 @@ const ACCESS = require("../data/permissions.json");
 const config = require("../data/config.json");
 module.exports = {
 	cmd: "bug",
-	aliases: ["report"],
+	aliases: ["bug"],
 	cooldown: {min: 5},
 	permissionLevel: ACCESS.user,
 	dm: true,
@@ -54,7 +54,7 @@ module.exports = {
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Aliases", `${this.aliases.join(", ")}`, true)
 			.addField("Usage", `\`${doc.prefix}${this.cmd} <your comment/report>\``)
-			.addField("Examples", `\`${doc.prefix}${this.cmd} bot starts typing then never say anything\`\n\`${doc.prefix}${this.cmd} taking 10 seconds to respond\`\n\`${doc.prefix}${this.cmd} color command gives some sort of error\``)
+			.addField("Examples", `\`${doc.prefix}${this.cmd} bot starts typing then never say anything\`\n\`${doc.prefix}${this.cmd} taking 10 seconds to respond\`\n\`${doc.prefix}${this.cmd} color command gives some sort of error\``);
 		return msg.channel.send(embed);
 	}
 };

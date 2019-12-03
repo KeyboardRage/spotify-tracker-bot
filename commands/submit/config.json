@@ -1,0 +1,15 @@
+{
+	"libs_map": {
+		"meme":1,
+		"memes":1,
+		"logo":2,
+		"logos":2,
+		"template":3,
+		"templates":3
+	},
+	"libs": {
+		"1":"memes",
+		"2":"logos",
+		"3":"templates"
+	}
+}
