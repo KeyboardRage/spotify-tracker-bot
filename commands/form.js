@@ -938,10 +938,16 @@ async function formEditName(msg, optional) {
 //*Completed: (may require updated text only)
 async function info(msg) {
 	// if(args[1]===undefined) {
-	let welcome = "***FORM BUILD***\n\
+	let welcome = "***FORM BUILDER***\n\
 		\n<:Grafik:588847763341705263> **A Premium feature** <:Grafik:588847763341705263>\n\
-		\n**About**: This tool allows you to make forms users will fill in DM, and then the result will be posted in a channel of your choice. The result can be displayed in plaintext, or as an embed if you provide me a proper JSON. The values the user provide are acessible for you to display as you please, as well as a set of other pre-defined variables, like username, UID, current date, and so on.\
-		\n***COMMANDS:***\
+		\n**About**: This tool allows you to make forms users will fill in DM, \
+		\nand then the result will be posted in a channel of your choice.\
+		\nThe result can be displayed in plaintext, or as an embed if you \
+		\nprovide me a proper JSON. The values the user provide are \
+		\nacessible for you to display as you please, as well as a set of \
+		\nother pre-defined variables, like username, UID, current date, \
+		\nand so on.\
+		\n\n***COMMANDS:***\
 		\n**Forms:**\
 		\n- `form demo` Posts a video demo of this command/feature\
 		\n- `form template` Information doc about templates\
