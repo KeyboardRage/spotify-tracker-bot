@@ -433,7 +433,7 @@ async function create_embed(msg, doc) {
 				.addField("**About:**", string);
 
 			// Set thumbnail if possible
-			if(user.avatarURL.length) {
+			if(user.avatarURL && user.avatar.length) {
 				embed.setThumbnail(user.avatarURL);
 			}
 
