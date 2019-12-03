@@ -93,6 +93,7 @@ let serverSettingsSchema = new mongoose.Schema({
 	"prefix": String,
 	"premium": Boolean,
 	"completedSetup":Boolean,
+	"whitelistMode":Boolean,
 	"permission": Object,
 	"moderator": Object,
 	"enabledChannels": mongoose.SchemaTypes.Mixed,

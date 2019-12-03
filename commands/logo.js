@@ -1,10 +1,6 @@
 const ACCESS = require("../data/permissions.json");
 const Discord = require("discord.js");
-const retry = require("retry");
 const {logoModel} = require("../util/database");
-const {RedisDB} = require("../util/redis");
-const {restartWhenReady} = require("../util/session");
-const request = require("request");
 const fn = require("../util/response_functions");
 const {sendAndAwait} = require("../util/command-utilities");
 

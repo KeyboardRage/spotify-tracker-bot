@@ -181,6 +181,7 @@ async function _add_guild(/**@type {"Guild"}*/guild, /**@type {"Client"}*/Client
 					prefix:process.env.PREFIX,
 					completedSetup:false,
 					premium:false,
+					whitelistMode:false,
 					permission: {
 						type:"inherit",
 						value:guild.id
@@ -335,6 +336,7 @@ async function _disabled(/**@type {String}*/channel_id, /**@type {String}*/cmd, 
 
 		if(doc.enabledCommands.hasOwnProperty(cmd) && !doc.enabledCommands[cmd]) return resolve(true);
 		else if (doc.enabledChannels.hasOwnProperty(channel_id) && !doc.enabledChannels[channel_id]) return resolve(true);
+		else if (doc.whitelistMode && !doc.enabledChannels.hasOwnProperty(channel_id)) return resolve(true);
 		else return resolve(false);
 	});
 }
@@ -346,12 +348,22 @@ async function _catch_new(/**@type {String}*/msg, /**@type {String}*/cmd, /**@ty
 	if(msg.channel.type!=="dm") {
 		if(!doc.enabledCommands.hasOwnProperty(cmd)) save = 2;
 		if(!doc.enabledChannels.hasOwnProperty(msg.channel.id)) save += 4;
-	
+
+		let bool=true;
+		if(doc.hasOwnProperty("whitelistMode") && doc.whitelistMode) bool=false;
+		else doc.whitelistMode = false;
+
 		if(save) {
 			let d = await _get_doc(doc._id);
 			if(d) {
-				if(save&2) {d.enabledCommands[cmd] = true; d.markModified("enabledCommands");}
-				if(save&4) {d.enabledChannels[msg.channel.id] = true; d.markModified("enabledChannels");}
+				if(save&2) {
+					if(!d.hasOwnProperty("whitelistMode")) d.whitelistMode=false;
+					d.enabledCommands[cmd] = true; d.markModified("enabledCommands");
+				}
+				if(save&4) {
+					if(!d.hasOwnProperty("whitelistMode")) d.whitelistMode=false;
+					d.enabledChannels[msg.channel.id] = bool; d.markModified("enabledChannels");
+				}
 				d.save(err => {
 					if(err) throw err;
 				});

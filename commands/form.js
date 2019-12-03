@@ -17,7 +17,7 @@ module.exports = {
 	desc: "[<:Grafik:588847763341705263> Premium] Create / manage / use a customizable form.",
 	async exec(msg, cmd, args, doc) {
 		if (args[0] === "demo") return msg.channel.send("https://youtu.be/mzX8Eh3cd5Y");
-		if (!doc.premium && !["info", "v"].includes(args[0])) {
+		if (!doc.premium && !["info", "v"].includes(args[0].toLowerCase())) {
 			return msg.channel.send("<:Grafik:588847763341705263> **Premium needed** <:Grafik:588847763341705263>\
 			\n**This guild does not have any premium features.**\
 			\nPremium costs $2 a month, but is currently not yet available for public.\

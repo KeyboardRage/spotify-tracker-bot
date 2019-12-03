@@ -693,3 +693,135 @@ async function looseSearch(input, members, timeout=2000) {
 		})]);
 	});
 }
+
+async function _looseRoleSearch(input, roles, timeout=2000) {
+	return new Promise(done => {
+		Promise.race([new Promise(r=>setTimeout(()=>{r(done(false));}, timeout)), new Promise(_r => {
+			let r = roles.map(u=>{return {n:u.name.toLowerCase(), id:u.id};});
+			for (let i = 0; i < r.length; i++) {
+				for (let n = 0; n < r[i].n.length; n++) {
+					if (r[i].n.slice(0, n).startsWith(input.toLowerCase())) {
+						return _r(done(r[i].id));
+					}
+				}
+			}
+			return _r(done(null));
+		})]);
+	});
+}
+
+/**
+ * Loose roles search based single string input.
+ * @param {String} input The string used to check
+ * @param {"Collection"} guildRoles The guild's roles
+ * @returns {Promise} Returns role ID or null
+ * @example
+ * let role = await findRole(args.join(" "), msg.guild.roles);
+ * if(!role) return msg.reply("Could not find role");
+ */
+module.exports.findRole = findRole;
+async function findRole(input, roles) {
+	return new Promise(async resolve => {
+		let role;
+		if(/^\d{16,34}$/.test(input)) {
+			// UID
+			role = roles.get(input);
+			if(role) return resolve(role.id);
+			else return resolve(null);
+		} else if (/^<@&\d{13,34}>$/.test(input)) {
+			// Role mention
+			role = roles.get(input.replace(/<|@|&|>/g,""));
+			if(role) return resolve(role.id);
+			else return resolve(null);
+		} else {
+			// Role name
+			role = roles.find(r=>r.name.toLowerCase()===input.toLowerCase());
+			if(role) return resolve(role.id);
+
+			return resolve(await _looseRoleSearch(input, roles));
+		}
+	});
+}
+
+async function _looseChannelSearch(input, channels, timeout=2000) {
+	return new Promise(done => {
+		Promise.race([new Promise(r=>setTimeout(()=>{r(done(false));}, timeout)), new Promise(_r => {
+			let r = channels.map(u=>{return {n:u.name.toLowerCase(), id:u.id};});
+			for (let i = 0; i < r.length; i++) {
+				for (let n = 0; n < r[i].n.length; n++) {
+					if (r[i].n.slice(0, n).startsWith(input.toLowerCase())) {
+						return _r(done(r[i].id));
+					}
+				}
+			}
+			return _r(done(null));
+		})]);
+	});
+}
+
+/**
+ * Loose channel find based on single string input.
+ * @param {String} input The text to use as search
+ * @param {Collection} channels The guild's channels
+ * @returns {Promoise} Resolves to channel ID, or null if not found.
+ * @example
+ * let ch = await findChannel(args[0], msg.guild.channels);
+ * if(!ch) return msg.reply("No channel found");
+ */
+module.exports.findChannel = findChannel;
+async function findChannel(input, channels) {
+	return new Promise(async resolve => {
+		let channel;
+		if (/^\d{16,34}$/.test(input)) {
+			// UID
+			channel = channels.get(input);
+			if (channel) return resolve(channel.id);
+			else return resolve(null);
+		} else if (/^<#\d{13,34}>$/.test(input)) {
+			// channel mention
+			channel = channels.get(input.replace(/<|#|>/g, ""));
+			if (channel) return resolve(channel.id);
+			else return resolve(null);
+		} else {
+			// channel name
+			channel = channels.find(r => r.name.toLowerCase() === input.toLowerCase());
+			if (channel) return resolve(channel.id);
+			return resolve(await _looseChannelSearch(input, channels));
+		}
+	});
+}
+
+/**
+ * Returns emote number string
+ * @param {Number} number A numeric value to convert in to string of emotes.
+ * @returns {String} The emote string for that number
+ */
+module.exports.num = num;
+function num(input) {
+	if(isNaN(input)) throw new Error("Not a number.");
+	let string = String();
+	input = input.toString();
+	for(let i=0;i<input.length;i++) {
+		switch(input[i]) {
+		case "1":
+			string+="<:One:588844523329683476>";continue;
+		case "2":
+			string+="<:Two:588844524659540030>";continue;
+		case "3":
+			string+="<:Three:588844524659539972>";continue;
+		case "4":
+			string+="<:Four:588844515520020598>";continue;
+		case "5":
+			string+="<:Five:588844516283252736>";continue;
+		case "6":
+			string+="<:Six:588844524332384276>";continue;
+		case "7":
+			string+="<:Seven:588844523938119680>";continue;
+		case "8":
+			string+="<:Eight:588844512286343179>";continue;
+		case "9":
+			string+="<:Nine:588844524433047552>";continue;
+		}
+	}
+	return string;
+}
