@@ -36,9 +36,9 @@ async function main(msg, doc, data) {
 				.setFooter(msg.author.tag, msg.author.avatarURL)
 				.addField("New community contribution", "**Submission ID:** `" + _doc._id + "`\
 			\n**Library:** " + config.libs[_doc.library] + "\
-			\n**User:** `"+msg.author.id+"` "+msg.author.tag+"\
-			\n**Guild:** `"+msg.guild.id+"` "+msg.guild.name)
-				.addField("Content", `${_doc.content?_doc.content:"None."}`)
+			\n**User:** `"+msg.author.id+"` "+msg.author.tag);
+			if(msg.channel.type!=="dm") _embed.addField("Guild", `\`${msg.guild.id}\` ${msg.guild.tag}`);
+			_embed.addField("Content", `${_doc.content?_doc.content:"None."}`)
 				.addField("Attachments", `${_doc.attachments.length ? _doc.attachments.join("\n") :"None."}`);
 
 			let sent=0;
