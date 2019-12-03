@@ -79,7 +79,7 @@ async function stop(msg, _doc, meta, type=false) {
 
 	let cmds = Object();
 	for(let cmd in msg.client.commands) {
-		if(meta.data.commands.includes(cmd)) cmds = {...cmds, [cmd]:false};
+		if(meta.data.commands && meta.data.commands.includes(cmd)) cmds = {...cmds, [cmd]:false};
 		else cmds = {...cmds, [cmd]:true};
 	}
 
@@ -473,7 +473,7 @@ async function summary(msg, _doc, meta) {
 
 	let cmds = Object();
 	for(let cmd in msg.client.commands) {
-		if(meta.data.commands.includes(cmd)) cmds = {...cmds, [cmd]:false};
+		if(meta.data.commands && meta.data.commands.includes(cmd)) cmds = {...cmds, [cmd]:false};
 		else cmds = {...cmds, [cmd]:true};
 	}
 
