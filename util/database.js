@@ -139,22 +139,52 @@ module.exports.statisticsModel = statisticsModel;
 let formFieldSchema = new mongoose.Schema({
 	"question": String,
 	"order": Number,
-	"filter": Number,
+	"filter": Int32,
 	"fitlerValue": String
 });
 module.exports.formFieldSchema = formFieldSchema;
 // Forms: form container
 let formSchema = new mongoose.Schema({
-	"serverId": String,
+	"guild": String, // guild
 	"fields": [formFieldSchema],
-	"channel": String,
-	"flags": Number,
+	"created": Date,
+	"used": Number, // count_used
+	"channel": String, // output channel
+	"flags": Int32,
 	"template": String,
 	"name": String
 }, {collection: "forms"});
 let formModel = maindb.model("formModel", formSchema);
 module.exports.formModel = formModel;
 
+let formResponseSchmea = new mongoose.Schema({
+	"_id":mongoose.SchemaTypes.ObjectId,
+	"guild": String,
+	"respondent": {
+		"id": {
+			ref: "marketUsers",
+			type: String
+		},
+		"username": String,
+		"discriminator": String
+	},
+	"form": {
+		"name": String,
+		"id": {
+			ref: "formModel",
+			type: mongoose.SchemaTypes.ObjectId,
+		},
+		"created": Date
+	},
+	"answers": [{
+		question_number: Number,
+		question: String,
+		answer: String,
+		attachments: [String]
+	}]
+}, {collection:"formResponses"});
+let formResponseModel = maindb.model("formResponseModel", formResponseSchmea);
+module.exports.formResponseModel = formResponseModel;
 
 // Template library
 let templateSchema = new mongoose.Schema({

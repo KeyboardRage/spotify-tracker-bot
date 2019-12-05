@@ -39,11 +39,11 @@ module.exports = {
 		}
 
 		// Get one form
-		formModel.findOne({serverId:msg.guild.id, name:args[0]}, async (err,formDoc) => {
+		formModel.findOne({guild:msg.guild.id, name:args[0]}, async (err,formDoc) => {
 			if(err) return handleErr(err, msg);
 			if (!formDoc) return msg.channel.send("<:Stop:588844523832999936> **Invalid argument:** There's no such form as `" + args[0] + "`.");
 			if (formDoc.template === null) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** This form does not have an output template.");
-			if (doc.fields.length === 0) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** There's no fields in this form.");
+			if (!formDoc.fields || formDoc.fields.length === 0) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** There are no questions in this form.");
 			if (await findChannel(msg, formDoc.channel) === null) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** The output channel does not exist.");
 
 			let meta = {step:0, errorStack:0};

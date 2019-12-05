@@ -139,7 +139,7 @@ async function formNew(msg, args) {
 	if (args[1] === undefined) return msg.channel.send("<:Info:588844523052859392> You must give the form a name!");
 	if (args[1].length>20) return msg.channel.send("<:Stop:588844523832999936> **Invalid argument:** The form name is too long.");
 
-	formModel.findOne({serverId:msg.guild.id, name:args[1]}, "name", (err,doc) => {
+	formModel.findOne({guild:msg.guild.id, name:args[1]}, "name", (err,doc) => {
 		if (err) return handleErr(err, msg);
 		if (doc) return msg.channel.send("<:Stop:588844523832999936> **Conflicting argument:** A form with that name already exists.");
 
@@ -148,7 +148,7 @@ async function formNew(msg, args) {
 			channel: msg.channel.id,
 			flags: 0,
 			template: null,
-			serverId: msg.guild.id,
+			guild: msg.guild.id,
 			name: args[1]
 		});
 		// Binary map for flags:
@@ -176,7 +176,7 @@ async function formNew(msg, args) {
 async function formDelete(msg, args) {
 	if(args[1]===undefined) return msg.channel.send("<:Stop:588844523832999936> **Missing argument:** You must give me the name of the form you want to delete.");
 
-	formModel.deleteOne({serverId:msg.guild.id, name:args[1]}, (err,doc) => {
+	formModel.deleteOne({guild:msg.guild.id, name:args[1]}, (err,doc) => {
 		if(err) return handleErr(err, msg);
 		if (doc.deletedCount === 0) return msg.channel.send("<:Info:588844523052859392> Could not find a form with that name.");
 		else return msg.channel.send(`<:Yes:588844524177195047> **${args[1]}** deleted.`);
@@ -185,7 +185,7 @@ async function formDelete(msg, args) {
 
 //*Completed:
 async function formList(msg) {
-	formModel.find({serverId:msg.guild.id}, ["name","fields"], (err,docs) => {
+	formModel.find({guild:msg.guild.id}, ["name","fields"], (err,docs) => {
 		if(err) return handleErr(err, msg);
 		if (docs.length === 0) return msg.channel.send("<:Info:588844523052859392> This guild has no forms.");
 		else {
@@ -200,7 +200,7 @@ async function formList(msg) {
 async function formExport(msg, args) {
 	if (args[1] === undefined) return msg.channel.send("<:Stop:588844523832999936> **Missing argument:** You must give me the name of the form you want to export.");
 	
-	formModel.findOne({serverId:msg.guild.id, name:args[1]}, async (err,doc) => {
+	formModel.findOne({guild:msg.guild.id, name:args[1]}, async (err,doc) => {
 		if(err) return handleErr(err, msg);
 		if (!doc) return msg.channel.send("<:Stop:588844523832999936> Could not find form `" + args[1] + "`.");
 		
@@ -431,7 +431,7 @@ async function formImport(msg) {
 					else return msg.channel.send("<:Stop:588844523832999936> **Invalid input:** The imported document did not pass all the checks.");
 				}
 
-				formModel.findOne({serverId:msg.guild.id, name:imported.name}, async (err,doc) => {
+				formModel.findOne({guild:msg.guild.id, name:imported.name}, async (err,doc) => {
 					if(err) return handleErr(err, msg);
 					if(doc) {
 						sendAndAwait(msg, "<:Stop:588844523832999936> **Conflicting input:** A form with this name already exist. Give me a new name for the form to proceed with import:")
@@ -465,7 +465,7 @@ async function formSaveImport(formatted, msg) {
 		channel:formatted.channel,
 		flags:formatted.flags,
 		template:formatted.template,
-		serverId:msg.guild.id,
+		guild:msg.guild.id,
 		fields:formatted.fields
 	});
 
@@ -479,7 +479,7 @@ async function formSaveImport(formatted, msg) {
 async function formSelect(msg, args) {
 	if(args[1]===undefined) return msg.channel.send("You must give me the name of the form you want to select.");
 
-	formModel.findOne({serverId:msg.guild.id, name:args[1]}, "name", (err,doc) => {
+	formModel.findOne({guild:msg.guild.id, name:args[1]}, "name", (err,doc) => {
 		if(err) return handleErr(err, msg);
 		if (!doc) return msg.channel.send("<:Stop:588844523832999936> Could not find a form **" + args[1] + "**.");
 
@@ -500,9 +500,9 @@ async function formSelect(msg, args) {
  * await formRedisSelect(msg.guild.id, "5d8dfbd8fus89b0g8g6dfs6b3kj")
  * .catch(err => {return handleErr(err, msg)});
  */
-async function formRedisSelect(serverId, formId) {
+async function formRedisSelect(guild, formId) {
 	return new Promise((resolve,reject) => {
-		RedisDB.hset("formsSelected", serverId, formId, err => {
+		RedisDB.hset("formsSelected", guild, formId, err => {
 			if (err) return reject(err);
 			return resolve(formId);
 		});
@@ -1033,7 +1033,7 @@ async function getSelected(guildId, bool=false) {
 async function startLoop(msg, args, guildDoc) {
 	if (args[1] === undefined) return msg.channel.send("<:Info:588844523052859392> **Missing argument:** You must give me a form to run.");
 
-	formModel.findOne({serverId: msg.guild.id, name:args[1]}, async (err,doc) => {
+	formModel.findOne({guild: msg.guild.id, name:args[1]}, async (err,doc) => {
 		if (err) return handleErr(err, msg);
 		if (!doc) return msg.channel.send("<:Stop:588844523832999936> **Invalid argument:** That form does not exist.");
 		if (doc.template === null) return msg.channel.send(`<:Info:588844523052859392> **Cannot run command:** This form does not have an output template.\
@@ -1173,7 +1173,7 @@ async function getDoc(guildId, name, bool=false) {
 				return resolve(doc);
 			});
 		} else {
-			formModel.findOne({serverId:guildId, name:name}, (err,doc) => {
+			formModel.findOne({guild:guildId, name:name}, (err,doc) => {
 				if(err) return reject(err);
 				if(!doc) return resolve(null);
 				return resolve(doc);
