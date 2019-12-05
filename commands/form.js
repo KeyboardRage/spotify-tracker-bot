@@ -90,7 +90,7 @@ module.exports = {
 			.setTimestamp(Date())
 			.setColor(process.env.THEME)
 			.setFooter(msg.author.tag, msg.author.avatarURL)
-			.addField("Description", this.desc, true)
+			.addField("Description", "[<:Grafik:588847763341705263> Premium] Create / manage / use a customizable form.", true)
 			.addField("Permission", `${(this.permissionLevel===2)?"Normal users":(this.permissionLevel===3)?"Bot Moderator":(this.permissionLevel===4)?"Guild Administrator":"Bot developer"}`)
 			.addField("Meta", `Can be used in DM: **${(this.dm)?"Yes":"No"}** — Cooldown: **${this.cooldown.min} sec**`, true)
 			.addField("Notes", `\`form\` and its sub-commands are meant for Admins. Normal users have the \`f\` command to use forms: \`${doc.prefix}f <form name>\` to use a form, and \`${doc.prefix}f --list\` to show list of all forms.`)
