@@ -145,11 +145,12 @@ let formFieldSchema = new mongoose.Schema({
 module.exports.formFieldSchema = formFieldSchema;
 // Forms: form container
 let formSchema = new mongoose.Schema({
-	"guild": String, // guild
+	"_id": mongoose.SchemaTypes.ObjectId,
+	"guild": String,
 	"fields": [formFieldSchema],
 	"created": Date,
-	"used": Number, // count_used
-	"channel": String, // output channel
+	"count_used": Number, // count_used
+	"output_channel": String, // output channel
 	"flags": Int32,
 	"template": String,
 	"name": String

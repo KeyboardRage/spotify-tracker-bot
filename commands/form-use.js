@@ -45,7 +45,7 @@ module.exports = {
 			if (!formDoc) return msg.channel.send("<:Stop:588844523832999936> **Invalid argument:** There's no such form as `" + args[0] + "`.");
 			if (formDoc.template === null) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** This form does not have an output template.");
 			if (!formDoc.fields || formDoc.fields.length === 0) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** There are no questions in this form.");
-			if (await findChannel(msg, formDoc.channel) === null) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** The output channel does not exist.");
+			if (await findChannel(msg, formDoc.output_channel) === null) return msg.channel.send("<:Info:588844523052859392> **Cannot run command:** The output channel does not exist.");
 
 			let meta = {step:0, errorStack:0};
 			set_session(msg.author.id, "f");
@@ -214,7 +214,7 @@ async function runField(msg, doc, reply, meta) {
 							// eslint-disable-next-line no-console
 							if(err) console.error(err);
 							try {
-								msg.guild.channels.get(doc.channel).send(formResponse);
+								msg.guild.channels.get(doc.output_channel).send(formResponse);
 							} catch(e) {
 								msg.channel.send("<:Stop:588844523832999936> Output channel was deleted during form submission. Using this channel instead.");
 								msg.channel.send(formResponse);

@@ -145,8 +145,9 @@ async function formNew(msg, args) {
 
 		// Pre-filled content for new form
 		let form = new formModel({
-			channel: msg.channel.id,
+			output_channel: msg.channel.id,
 			flags: 0,
+			count_used:0,
 			template: null,
 			guild: msg.guild.id,
 			name: args[1]
@@ -207,8 +208,9 @@ async function formExport(msg, args) {
 		doc = doc.toObject();
 
 		let formatted = {
-			channel:doc.channel,
+			output_channel:doc.output_channel,
 			name:doc.name,
+			count_used: doc.count_used,
 			flags:doc.flags,
 			template:doc.template,
 			fields: await checker.sanitiseFields(doc.fields).catch(err=>{return handleErr(err, msg, err.message);})
@@ -273,7 +275,7 @@ let checker = {
 	},
 	checkAllFields: async function(raw) {
 		return new Promise((resolve, reject) => {
-			if (!raw.hasOwnProperty("channel") || !raw.hasOwnProperty("name") || !raw.hasOwnProperty("flags") || !raw.hasOwnProperty("template") || !raw.hasOwnProperty("fields")) {
+			if (!raw.hasOwnProperty("output_channel") || !raw.hasOwnProperty("count_used") || !raw.hasOwnProperty("name") || !raw.hasOwnProperty("flags") || !raw.hasOwnProperty("template") || !raw.hasOwnProperty("fields")) {
 				return reject({
 					sanitiserErr:true, message: "<:Stop:588844523832999936> **Invalid input:** A property is missing from the imported document."
 				});
@@ -314,7 +316,8 @@ let checker = {
 		return new Promise(resolve => {
 			let stripped = {
 				name: raw.name,
-				channel: raw.channel,
+				output_channel: raw.output_channel,
+				count_used: raw.count_used,
 				template: raw.template,
 				flags: raw.flags,
 				fields: raw.fields
@@ -337,12 +340,12 @@ let checker = {
 	},
 	checkChannel: async function(raw, msg) {
 		return new Promise(async (resolve, reject) => {
-			if (raw.channel.length > 40) raw.channel = raw.channel.slice(0, 49);
-			raw.channel = raw.channel.replace(/[^0-9]+/gi, "");
+			if (raw.output_channel.length > 40) raw.output_channel = raw.output_channel.slice(0, 49);
+			raw.output_channel = raw.output_channel.replace(/[^0-9]+/gi, "");
 			if (raw.name.length === 0) return reject({
 				sanitiserErr:true, message: "<:Stop:588844523832999936> **Invalid input:** The form ended up not having a channel ID to check after sanitation. Make sure to only use characters 0 to 9."
 			});
-			let channel = await findChannel(msg, raw.channel);
+			let channel = await findChannel(msg, raw.output_channel);
 			if (channel === null) {
 				sendAndAwait(msg, "<:Stop:588844523832999936> **Invalid input:** The given channel does not exist in this guild. **Reply with a channel name, ID, or mention to target:**")
 					.then(async r => {
@@ -350,15 +353,15 @@ let checker = {
 						if (channel === null) return reject({
 							sanitiserErr:true, message: "<:Stop:588844523832999936> **Invalid input:** The given channel does not exist in this guild. **Aborting import**."
 						});
-						raw.channel = channel;
-						return resolve(raw.channel);
+						raw.output_channel = channel;
+						return resolve(raw.output_channel);
 					})
 					.catch(err => {
 						return reject(err);
 					});
 			} else {
-				raw.channel = channel;
-				return resolve(raw.channel);
+				raw.output_channel = channel;
+				return resolve(raw.output_channel);
 			}
 		});
 	},
@@ -423,7 +426,7 @@ async function formImport(msg) {
 					imported = await checker.strip(imported);
 					imported.fields = await checker.sanitiseFields(imported.fields);
 					imported.name = await checker.checkName(imported);
-					imported.channel = await checker.checkChannel(imported, msg);
+					imported.output_channel = await checker.checkChannel(imported, msg);
 					imported.flags = await checker.checkFlags(imported);
 					imported.template = await checker.checkTemplate(imported);
 				} catch (err) {
@@ -462,7 +465,7 @@ async function formImport(msg) {
 async function formSaveImport(formatted, msg) {
 	let imported = new formModel({
 		name:formatted.name,
-		channel:formatted.channel,
+		output_channel:formatted.output_channel,
 		flags:formatted.flags,
 		template:formatted.template,
 		guild:msg.guild.id,
@@ -637,7 +640,7 @@ async function formEdit(msg, args, guildDoc) {
 	if(selected===null) return msg.channel.send(`<:Info:588844523052859392> **Cannot use command:** You must select a form first with \`${guildDoc.prefix}form select <form name>\`.`);
 	
 	switch(args[1]) {
-	case "channel":
+	case "output_channel":
 		return formEditChannel(msg, args.slice(2), guildDoc); //! Done
 	case "template":
 		return formEditTemplate(msg, args.slice(2), selected); //TODO: DO THIS!
@@ -762,7 +765,7 @@ async function formEditChannel(msg, optional, guildDoc) {
 			let channel = await findChannel(msg, (typeof reply==="string")?reply:reply[0]);
 			if (channel === null) return msg.channel.send("<:Stop:588844523832999936> **Invalid argument:** Could not find that channel.");
 
-			currentDoc.channel = channel;
+			currentDoc.output_channel = channel;
 			await save(currentDoc).catch(err => {throw err;});
 			return msg.channel.send(`<:Yes:588844524177195047> **Output channel** for **${currentDoc.name}** set to <#${channel}>`);
 		})
@@ -1040,7 +1043,7 @@ async function startLoop(msg, args, guildDoc) {
 		\n\`${guildDoc.prefix}form info template\` for more information.`);
 		if (doc.fields.length === 0) return msg.channel.send(`<:Info:588844523052859392> **Cannot run command:** There's no fields in this form.\
 		\n\`${guildDoc.prefix}form info fields\` for more information.`);
-		if(await findChannel(msg, doc.channel) === null) return msg.channel.send(`<:Info:588844523052859392> **Cannot run command:** The output channel does not exist.\
+		if(await findChannel(msg, doc.output_channel) === null) return msg.channel.send(`<:Info:588844523052859392> **Cannot run command:** The output channel does not exist.\
 		\n\`${guildDoc.prefix}form info channel\` for more information.`);
 
 		let meta = {step:0, errorStack:0};
@@ -1090,7 +1093,7 @@ async function runField(msg, doc, reply, meta) {
 							// eslint-disable-next-line no-console
 							if(err) console.error(err);
 							try {
-								msg.guild.channels.get(doc.channel).send(formResponse);
+								msg.guild.channels.get(doc.output_channel).send(formResponse);
 							} catch(e) {
 								msg.channel.send("<:Stop:588844523832999936> Output channel was deleted during form submission. Using this channel instead.");
 								msg.channel.send(formResponse);
