@@ -232,16 +232,17 @@ async function validate_portfolio(r) {
 		switch (parseInt(num)) {
 		case 1:
 			// Type: site
-			if(!/https?:\/\//i.test(args)) args = "https://"+args;
+			if(!/https?:\/\//i.test(args)) args = "https://"+args.replace(/ /g,"%20");
 			if(!rg.site.test(args)) return {pass:false, data:"**Invalid argument:** The input after the number did not match that of a valid website URL. Try again."};
 			else return resolve({pass:true, data:args, type:num});
 		case 8:
 			// Type: facebook
-			if(!/https?:\/\//i.test(args)) args = "https://"+args;
+			if(!/https?:\/\//i.test(args)) args = "https://"+args.replace(/ /g,"%20");
 			if(!rg.fb.test(args)) return {pass:false, data:"**Invalid argument:** The input after the number did not match that of a valid Facebook URL. Try again."};
 			else return resolve({pass:true, data:args, type:num});
 		default:
 			// All other is of type username
+			if(/ /.test(args)) return resolve({pass:false, data:"**Invalid argument:** The username includes invalid characters: **one ore more spaces**. Remove invalid symbols and try again."});
 			args = args.replace("@", "");
 			// Test matching URL, meaning the latter reg determine if URL or username
 			if(rg.username.test(args)) return resolve({pass:true, data:args, type:num});

@@ -578,22 +578,6 @@ async function findUser(Client, input, options={onlyId:false,inGuild:false,msg:f
 			return resolve((options.onlyId)?user.id:user);
 		} else return resolve(null);
 	});
-
-	//! Deprecated:
-	// // By ID
-	// if (/^(\d+)$/.test(input)) {
-	// 	let u = (sameGuild) ? msg.guild.members.get(input) : msg.client.fetchUser(input);
-	// 	if (u) return u;
-	// }
-	// // By mention
-	// if (/^<@&(\d+)>$/.test(input)) {
-	// 	let u = (sameGuild) ? msg.guild.members.get(input) : msg.client.fetchUser(input);
-	// 	if (u) return u;
-	// }
-	// // By name
-	// let u = (sameGuild) ? msg.guild.members.find(u => u.user.username.toLowerCase() === input.toLowerCase()) : msg.client.find(u => u.username.toLowerCase() === input.toLowerCase());
-	// if (u) return u;
-	// return null;
 }
 module.exports.findUser = findUser;
 

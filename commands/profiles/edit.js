@@ -278,10 +278,12 @@ async function _edit_set(msg, args, doc) {
 	case 5:
 		// company site
 		if(rg.site.test(args[1]) && args[1].length<40) {
-			args[1] = (/^https?:\/\//.test(args[1]))?args[1]:"https://"+args[1]; // Append https protocol if none set.
-			update(msg.author.id, {$set:{"meta.company_url":args[1], last_updated:Date()}})
+			args.shift();
+			args = args.join(" ").replace(/ /g,"%20");
+			args = (/^https?:\/\//.test(args))?args:"https://"+args; // Append https protocol if none set.
+			update(msg.author.id, {$set:{"meta.company_url":args, last_updated:Date()}})
 				.then(()=>{
-					return msg.channel.send("**Success:** Now linking your company at the URL `"+args[1]+"`.");
+					return msg.channel.send("**Success:** Now linking your company at the URL `"+args+"`.");
 				}).catch(err=>{return handleErr(err, msg);});
 		} else return msg.channel.send("**Invalid argument:** Either your link is really long *(40+ chars)*, or it does not conform to common link formats.");
 		break;
@@ -310,6 +312,7 @@ async function _edit_set(msg, args, doc) {
 			switch (parseInt(num)) {
 			case 1:
 				// Type: site
+				args = args.replace(/ /g, "%20");
 				args = (/^https?:\/\//i.test(args))?args:"https://"+args;
 				if(!rg.site.test(args)) return msg.channel.send("**Invalid argument:** The input after the number did not match that of a valid website URL. Try again.");
 				else {
@@ -322,6 +325,7 @@ async function _edit_set(msg, args, doc) {
 				break;
 			case 8:
 				// Type: facebook
+				args = args.replace(/ /g, "%20");
 				args = (/^https?:\/\//i.test(args))?args:"https://"+args;
 				if(!rg.fb.test(args)) return msg.channel.send("**Invalid argument:** The input after the number **did not match** that of a valid **Facebook URL**. Try again.");
 				else {
@@ -333,6 +337,7 @@ async function _edit_set(msg, args, doc) {
 				}
 				break;
 			default:
+				if(/ /.test(args)) return msg.channel.send("**Invalid argument:** The username includes invalid characters: **one or more spaces**. Remove invalid symbols and try again.");
 				// All other is of type username
 				args = args.replace("@", "");
 
@@ -436,14 +441,16 @@ async function _edit_set(msg, args, doc) {
 			if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(msg.attachments.first().proxyURL)) return msg.channel.semd("**Invalid format:** \nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
 			args[1] = msg.attachments.first().proxyURL;
 		} else {
-			if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `"+args[1]+"` is not a valid common link scheme.");
-			if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
-			if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
-			else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
+			args.shift();
+			args = args.join(" ").replace(/ /g, "%20");
+			if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args)) return msg.channel.send("**Invalid argument:** `"+args+"` is not a valid common link scheme.");
+			if (/\?/ig.test(args)) args = args.split("?")[0]; // Remove querystring.
+			if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args)) args = await getImgur(args.split("/")[args.split("/").length - 1]);
+			else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.(png|webp|jpg|jpeg|gif)$/ig.test(args)) return msg.channel.send("**Invalid argument:** Your link ends with `" + args.split("/")[args.split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp`");
 		}
-		update(msg.author.id, {$set:{"meta.cover_img":args[1], last_modified:Date()}})
+		update(msg.author.id, {$set:{"meta.cover_img":args, last_modified:Date()}})
 			.then(()=>{
-				return msg.channel.send("**Success:** Your featured image was set to `"+args[1]+"`.\n*Note: If you control the host, you can update the image itself instead of setting a new one — though Discord will most likely cache it.*");
+				return msg.channel.send("**Success:** Your featured image was set to `"+args+"`.\n*Note: If you control the host, you can update the image itself instead of setting a new one — though Discord will most likely cache it.*");
 			}).catch(err=>{return handleErr(err, msg);});
 		break;
 	case 11:
@@ -461,12 +468,14 @@ async function _edit_set(msg, args, doc) {
 			if(!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(msg.attachments.first().proxyURL)) return msg.channel.semd("**Invalid format:** The image must be a PNG.");
 			args[1] = msg.attachments.first().proxyURL;
 		} else {
-			if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** `" + args[1] + "` is not a valid common link scheme.");
-			if (/\?/ig.test(args[1])) args[1] = args[1].split("?")[0]; // Remove querystring.
-			if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args[1])) args[1] = await getImgur(args[1].split("/")[args[1].split("/").length - 1]);
-			else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(args[1])) return msg.channel.send("**Invalid argument:** Your link ends with `" + args[1].split("/")[args[1].split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`");
+			args.shift();
+			args = args.join(" ").replace(/ /g, "%20");
+			if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?$/ig.test(args)) return msg.channel.send("**Invalid argument:** `" + args + "` is not a valid common link scheme.");
+			if (/\?/ig.test(args)) args = args.split("?")[0]; // Remove querystring.
+			if (/^https:\/\/imgur.com\/(a|gallery)\/\w+$/.test(args)) args = await getImgur(args.split("/")[args.split("/").length - 1]);
+			else if (!/^(https?:\/\/)?(www\.)?([a-zA-Z0-9]+(-?[a-zA-Z0-9])*\.)+[\w]{2,}(\/\S*)?\.png$/ig.test(args)) return msg.channel.send("**Invalid argument:** Your link ends with `" + args.split("/")[args.split("/").length - 1] + "`, which is not a format I can use.\nStick to `.png`");
 		}
-		request.patch({url:`${process.env.NEW_API}${process.env.API_VERSION}/profile/watermark`, form:{user:msg.author.id, url:args[1]}}, (err,res,body) => {
+		request.patch({url:`${process.env.NEW_API}${process.env.API_VERSION}/profile/watermark`, form:{user:msg.author.id, url:args}}, (err,res,body) => {
 			if (err) return handleErr(err, msg);
 			try {
 				body = JSON.parse(body);

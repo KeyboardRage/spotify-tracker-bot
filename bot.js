@@ -27,6 +27,12 @@ masterCacheLoader()
 Client.on("ready", () => {
 	Client.block_all = false;
 	console.info(chalk.black.bgGreen(" ✓ ") + chalk.green(` Logged in as ${Client.user.tag}`));
+	Client.user.setActivity("Restart complete.", {
+		type: "WATCHING"
+	});
+	setTimeout(()=>{
+		Client.user.setActivity(null);
+	}, 15000);
 	init(Client);
 	fn.sync_market_users(Client);
 });
@@ -82,5 +88,11 @@ Client.on("error", err => {
 	console.error(chalk.red("Error number: "), err.Error);
 	console.error(chalk.red("Error number: "), err.errno);
 });
+
+
+Client.on("presenceUpdate", (_old, _new) => {
+	console.log(_new);
+});
+
 Client.login(process.env.BOT_TOKEN_ID);
 //TODO: Add RAM check: https://github.com/ChristopherBThai/Discord-OwO-Bot/blob/master/parent_methods/ramCheck.js
