@@ -13,7 +13,7 @@
     "iso8601-duration": "^1.2.0",
     "jimp": "^0.8.2",
     "lipsum": "github:traviskaufman/node-lipsum#v2",
-    "mongoose": "^5.7.1",
+    "mongoose": "^5.7.5",
     "mongoose-int32": "^0.3.1",
     "mustache": "^3.1.0",
     "node-lipsum": "github:mvastola/node-lipsum",
