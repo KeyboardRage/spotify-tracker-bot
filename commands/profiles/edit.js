@@ -9,15 +9,19 @@ const {getImgur} = require("../../util/command-utilities");
 
 module.exports = {
 	edit: async function(msg, args, doc) {
+		if(!await marketUserModel.exists({_id:msg.author.id})) return msg.channel.send(`You do not have a profile. Create one with \`${doc.prefix}register\`.`);
 		return await _edit(msg, args, doc);
 	},
 	edit_unset: async function (msg, args, doc) {
+		if(!await marketUserModel.exists({_id:msg.author.id})) return msg.channel.send(`You do not have a profile. Create one with \`${doc.prefix}register\`.`);
 		return await _edit_unset(msg, args, doc);
 	},
 	edit_set: async function(msg, args, doc) {
+		if(!await marketUserModel.exists({_id:msg.author.id})) return msg.channel.send(`You do not have a profile. Create one with \`${doc.prefix}register\`.`);
 		return await _edit_set(msg, args, doc);
 	}
 };
+
 
 
 async function _edit(msg, args, doc) {
@@ -184,6 +188,7 @@ async function _edit_unset(msg, args, doc) {
 
 async function update(userId, data) {
 	return new Promise((resolve,reject) => {
+		console.log(data);
 		marketUserModel.updateOne({_id:userId}, data, (err,r) => {
 			if(err) return reject(err);
 			if(!r.n) {
