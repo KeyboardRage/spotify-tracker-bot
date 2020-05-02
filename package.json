@@ -1,0 +1,37 @@
+{
+  "name": "spotify-tacker-bot",
+  "version": "0.0.1",
+  "description": "A Discord bot that tracks Spotify plays",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeyboardRage/spotify-tracker-bot.git"
+  },
+  "keywords": [
+    "spotify",
+    "tracker",
+    "discord",
+    "bot",
+    "feed",
+    "plays"
+  ],
+  "author": "VirtusGraphics",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KeyboardRage/spotify-tracker-bot/issues"
+  },
+  "homepage": "https://github.com/KeyboardRage/spotify-tracker-bot#readme",
+  "dependencies": {
+    "async-ratelimiter": "^1.2.7",
+    "discord.js": "^12.1.1",
+    "dotenv": "^8.2.0",
+    "ioredis": "^4.16.3",
+    "moment": "^2.24.0",
+    "mongoose": "^5.9.7",
+    "mongoose-int32": "^0.3.1",
+    "npm": "^6.14.4"
+  }
+}

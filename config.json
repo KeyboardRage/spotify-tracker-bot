@@ -1,0 +1,41 @@
+{
+	"ownerUID": "164736401051484160",
+	"prefix": "!!",
+	"listenMode": "whitelist",
+	"music": {
+		"min_playtime": 10
+	},
+	"redis": {
+		"options": {
+			"maxRetriesPerRequest": 2,
+			"db": 3
+		}
+	},
+	"ratelimit": {
+		"max": 1
+	},
+	"client": {
+		"flags": {
+			"blacklist": {
+				"presence": 2,
+				"cmds": 4
+			},
+			"whitelist": {
+				"presence": 2,
+				"cmds": 4
+			}
+		},
+		"options": {
+			"messageCacheMaxSize": 50,
+			"messageCacheLifetime": 120,
+			"messageSweepInterval": 120,
+			"disableMentions": "everyone",
+			"retryLimit": 3,
+			"presence": {
+				"type": "LISTENING",
+				"name": "to Spotify"
+			}
+		},
+		"invitePermission": 0
+	}
+}
