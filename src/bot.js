@@ -17,12 +17,12 @@ const {Store, Mongo} = require("./util/setup");
 fn.loadCommands(Client);
 
 /**
- * Log in console when ready
+ * Log in to the bot
  */
 Client.login(process.env.BOT_TOKEN);
 
 /**
- * Log in to the bot
+ * Log in console when ready
  */
 Client.on("ready", ()=>{
 	Client.cooldowns = new Map(); // Contains command cooldowns. //TODO: Move to Redis with TTL later.
