@@ -1,5 +1,9 @@
-[!["Spotify tracker bot logo"](https://cdn.discordapp.com/icons/653289817081118724/5669a159eaa69db3cc273025e290b6dc.png "Spotify tracker icon")](https://discord.gg/sJUAqQ5)
-[Join the guild](https://discord.gg/sJUAqQ5)
+["Spotify tracker bot logo"](https://cdn.discordapp.com/icons/653289817081118724/5669a159eaa69db3cc273025e290b6dc.png)]
+
+# DEPRECATED
+The bot will not be developed further as Discord have made significant changes to how commands will be working henceforth. Furthermore the API endpoint this bot uses, and relies on, has been changed to a different version. To use this endpoitn requires migration of the underlying Discord.JS library.
+
+The repository remains publicly visible for anyone who wants to look at it.
 
 # Spotify tracker
 **Disclaimer** — This is **not** a bot that does *any* kind of playing or listening of music. The only thing it does is reading your Rich Presence for Spotify plays. It does **not** track you unless you explicitly tell it to first.  
